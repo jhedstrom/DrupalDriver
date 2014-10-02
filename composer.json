@@ -19,6 +19,7 @@
   },
   "autoload": {
     "psr-0": {
+      "Drupal\\Component": "src/",
       "Drupal\\Driver": "src/"
     }
   },

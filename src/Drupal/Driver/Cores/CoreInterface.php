@@ -22,6 +22,11 @@ interface CoreInterface {
   public function __construct($drupalRoot, $uri = 'default', Random $random);
 
   /**
+   * Return random generator.
+   */
+  public function getRandom();
+
+  /**
    * Bootstrap Drupal.
    */
   public function bootstrap();

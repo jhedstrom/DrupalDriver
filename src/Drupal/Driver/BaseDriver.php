@@ -10,6 +10,13 @@ use Drupal\Driver\Exception\UnsupportedDriverActionException;
 abstract class BaseDriver implements DriverInterface {
 
   /**
+   * {@inheritDoc}
+   */
+  public function getRandom() {
+    throw new UnsupportedDriverActionException($this->errorString('generate random'), $this);
+  }
+
+  /**
    * Implements DriverInterface::bootstrap().
    */
   public function bootstrap() {

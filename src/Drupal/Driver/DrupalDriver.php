@@ -57,6 +57,13 @@ class DrupalDriver implements DriverInterface, DrupalSubContextFinderInterface {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public function getRandom() {
+    return $this->getCore()->getRandom();
+  }
+
+  /**
    * Implements DriverInterface::bootstrap().
    */
   public function bootstrap() {

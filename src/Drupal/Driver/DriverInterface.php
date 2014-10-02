@@ -8,6 +8,11 @@ namespace Drupal\Driver;
 interface DriverInterface {
 
   /**
+   * Returns a random generator.
+   */
+  public function getRandom();
+
+  /**
    * Bootstrap operations, as needed.
    */
   public function bootstrap();

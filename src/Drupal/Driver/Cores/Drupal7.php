@@ -42,6 +42,13 @@ class Drupal7 implements CoreInterface {
   /**
    * {@inheritDoc}
    */
+  public function getRandom() {
+    return $this->random;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
     if (!defined('DRUPAL_ROOT')) {
