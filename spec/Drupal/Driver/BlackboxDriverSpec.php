@@ -20,8 +20,8 @@ class BlackboxDriverSpec extends ObjectBehavior
     function it_should_not_allow_api_methods()
     {
         $user = $node = $term = new \stdClass();
-        $this->shouldThrow('Drupal\Exception\UnsupportedDriverActionException')->duringUserCreate($user);
-        $this->shouldThrow('Drupal\Exception\UnsupportedDriverActionException')->duringCreateNode($node);
-        $this->shouldThrow('Drupal\Exception\UnsupportedDriverActionException')->duringCreateTerm($term);
+        $this->shouldThrow('Drupal\Driver\Exception\UnsupportedDriverActionException')->duringUserCreate($user);
+        $this->shouldThrow('Drupal\Driver\Exception\UnsupportedDriverActionException')->duringCreateNode($node);
+        $this->shouldThrow('Drupal\Driver\Exception\UnsupportedDriverActionException')->duringCreateTerm($term);
     }
 }

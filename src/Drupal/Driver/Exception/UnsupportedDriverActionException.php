@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Exception;
+namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
 

@@ -2,7 +2,7 @@
 
 namespace Drupal\Driver;
 
-use Drupal\Exception\UnsupportedDriverActionException;
+use Drupal\Driver\Exception\UnsupportedDriverActionException;
 
 /**
  * Implements DriverInterface.
