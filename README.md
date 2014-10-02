@@ -2,6 +2,8 @@ Provides a collection of drivers with a common interface for interacting with [D
 
 ### Drivers
 
+These drivers support Drupal versions 7 and 8.
+
 * Blackbox
 * Direct Drupal API bootstrap
 * Drush
