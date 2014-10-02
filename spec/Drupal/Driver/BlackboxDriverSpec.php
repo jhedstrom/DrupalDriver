@@ -24,4 +24,9 @@ class BlackboxDriverSpec extends ObjectBehavior
         $this->shouldThrow('Drupal\Driver\Exception\UnsupportedDriverActionException')->duringCreateNode($node);
         $this->shouldThrow('Drupal\Driver\Exception\UnsupportedDriverActionException')->duringCreateTerm($term);
     }
+
+    function it_should_not_have_a_random_generator()
+    {
+        $this->shouldThrow('Drupal\Driver\Exception\UnsupportedDriverActionException')->duringGetRandom();
+    }
 }
