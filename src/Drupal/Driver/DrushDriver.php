@@ -2,8 +2,9 @@
 
 namespace Drupal\Driver;
 
-use Drupal\Exception\BootstrapException,
-    Drupal\DrupalExtension\Context\DrupalSubContextFinderInterface;
+use Drupal\Component\Utility\Random;
+use Drupal\Exception\BootstrapException;
+use Drupal\DrupalExtension\Context\DrupalSubContextFinderInterface;
 
 use Symfony\Component\Process\Process;
 
@@ -33,6 +34,13 @@ class DrushDriver extends BaseDriver {
   private $bootstrapped = FALSE;
 
   /**
+   * Random generator.
+   *
+   * @var \Drupal\Component\Utility\Random
+   */
+  private $random;
+
+  /**
    * Set drush alias or root path.
    *
    * @param string $alias
@@ -41,8 +49,10 @@ class DrushDriver extends BaseDriver {
    *   The root path of the Drupal install. This is an alternative to using aliases.
    * @param string $binary
    *   The path to the drush binary.
+   * @param \Drupal\Component\Utility\Random $random
+   *   Random generator.
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush') {
+  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random) {
     if ($alias) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
@@ -57,6 +67,14 @@ class DrushDriver extends BaseDriver {
     }
 
     $this->binary = $binary;
+    $this->random = $random;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getRandom() {
+    return $this->random;
   }
 
   /**
