@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jhedstrom/DrupalDriver.svg?branch=master)](https://travis-ci.org/jhedstrom/DrupalDriver)
+
 Provides a collection of drivers with a common interface for interacting with [Drupal](http://drupal.org).
 
 ### Drivers
