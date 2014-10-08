@@ -52,6 +52,9 @@ class DrupalDriver implements DriverInterface, DrupalSubContextFinderInterface {
    */
   public function __construct($drupalRoot, $uri) {
     $this->drupalRoot = realpath($drupalRoot);
+    if (!$this->drupalRoot) {
+      throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupalRoot));
+    }
     $this->uri = $uri;
     $this->version = $this->getDrupalVersion();
   }
