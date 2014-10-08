@@ -2,8 +2,8 @@
 
 namespace Drupal\Driver;
 
-use Drupal\Exception\BootstrapException,
-    Drupal\DrupalExtension\Context\DrupalSubContextFinderInterface;
+use Drupal\Driver\Exception\BootstrapException;
+use Drupal\DrupalExtension\Context\DrupalSubContextFinderInterface;
 
 use Behat\Behat\Tester\Exception\PendingException;
 

@@ -3,7 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
-use Drupal\Exception\BootstrapException;
+use Drupal\Driver\Exception\BootstrapException;
 
 /**
  * Drupal 7 core.

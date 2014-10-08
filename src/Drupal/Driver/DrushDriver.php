@@ -3,7 +3,7 @@
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
-use Drupal\Exception\BootstrapException;
+use Drupal\Driver\Exception\BootstrapException;
 use Drupal\DrupalExtension\Context\DrupalSubContextFinderInterface;
 
 use Symfony\Component\Process\Process;

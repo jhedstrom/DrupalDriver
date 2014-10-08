@@ -3,7 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
-use Drupal\Exception\BootstrapException;
+use Drupal\Driver\Exception\BootstrapException;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
