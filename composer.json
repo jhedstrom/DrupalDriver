@@ -4,7 +4,7 @@
   "description": "A collection of reusable Drupal drivers",
   "keywords": ["drupal", "web", "test"],
   "homepage": "http://github.com/jhedstrom/DrupalDriver",
-  "license": "MIT",
+  "license": "GPL-2.0+",
   "authors": [
      {
        "name": "Jonathan Hedstrom",
