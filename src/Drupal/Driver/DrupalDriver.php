@@ -3,14 +3,14 @@
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\DrupalExtension\Context\DrupalSubContextFinderInterface;
+use Drupal\Driver\SubDriverFinderInterface;
 
 use Behat\Behat\Tester\Exception\PendingException;
 
 /**
  * Fully bootstraps Drupal and uses native API calls.
  */
-class DrupalDriver implements DriverInterface, DrupalSubContextFinderInterface {
+class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
   /**
    * Track whether Drupal has been bootstrapped.
@@ -122,9 +122,9 @@ class DrupalDriver implements DriverInterface, DrupalSubContextFinderInterface {
   }
 
   /**
-   * Implements DrupalSubContextFinderInterface::getPaths().
+   * {@inheritDoc}
    */
-  public function getSubContextPaths() {
+  public function getSubDriverPaths() {
     // Ensure system is bootstrapped.
     if (!$this->isBootstrapped()) {
       $this->bootstrap();
