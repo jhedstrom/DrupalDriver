@@ -211,6 +211,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
+   * Automatically set the core from the current version.
+   */
+  public function setCoreFromVersion() {
+    $core = '\Drupal\Driver\Cores\Drupal' . $this->getDrupalVersion();
+    $this->core = new $core($this->drupalRoot, $this->uri);
+  }
+
+  /**
    * Return current core.
    */
   public function getCore() {

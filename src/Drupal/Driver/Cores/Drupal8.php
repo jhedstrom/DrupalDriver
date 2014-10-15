@@ -36,9 +36,12 @@ class Drupal8 implements CoreInterface {
   /**
    * {@inheritDoc}
    */
-  public function __construct($drupalRoot, $uri = 'default', Random $random) {
+  public function __construct($drupalRoot, $uri = 'default', Random $random = NULL) {
     $this->drupalRoot = realpath($drupalRoot);
     $this->uri = $uri;
+    if (!isset($random)) {
+      $random = new Random();
+    }
     $this->random = $random;
   }
 
