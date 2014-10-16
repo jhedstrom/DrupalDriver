@@ -173,9 +173,8 @@ class Drupal8 implements CoreInterface {
       }
       return $role->id();
     }
-    else {
-      return FALSE;
-    }
+
+    return FALSE;
   }
 
   /**

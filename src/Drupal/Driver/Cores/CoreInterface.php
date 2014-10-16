@@ -72,7 +72,7 @@ interface CoreInterface {
   /**
    * Validate, and prepare environment for Drupal bootstrap.
    *
-   * @throws BootstrapException
+   * @throws \Drupal\Driver\Exception\BootstrapException
    *
    * @see _drush_bootstrap_drupal_site_validate()
    */
@@ -94,7 +94,7 @@ interface CoreInterface {
    * @param array $permissions
    *   An array of permissions to create the role with.
    *
-   * @return string
+   * @return string|boolean
    *   Role ID of newly created role, or FALSE if role creation failed.
    */
   public function roleCreate(array $permissions);
