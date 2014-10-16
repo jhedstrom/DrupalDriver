@@ -57,9 +57,9 @@ class DrushDriver extends BaseDriver {
    * @param \Drupal\Component\Utility\Random $random
    *   Random generator.
    *
-   * @throws \BootstrapException
+   * @throws \Drupal\Driver\Exception\BootstrapException
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random) {
+  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
     if (isset($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
@@ -70,10 +70,14 @@ class DrushDriver extends BaseDriver {
       $this->root = realpath($root_path);
     }
     else {
-      throw new \BootstrapException('A drush alias or root path is required.');
+      throw new BootstrapException('A drush alias or root path is required.');
     }
 
     $this->binary = $binary;
+
+    if (!isset($random)) {
+      $random = new Random();
+    }
     $this->random = $random;
   }
 
@@ -92,7 +96,7 @@ class DrushDriver extends BaseDriver {
     // @todo check that this is a functioning alias.
     // See http://drupal.org/node/1615450
     if (!isset($this->alias) && !isset($this->root)) {
-      throw new \BootstrapException('A drush alias or root path is required.');
+      throw new BootstrapException('A drush alias or root path is required.');
     }
     $this->bootstrapped = TRUE;
   }
