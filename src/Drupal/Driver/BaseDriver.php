@@ -17,26 +17,26 @@ abstract class BaseDriver implements DriverInterface {
   }
 
   /**
-   * Implements DriverInterface::bootstrap().
+   * {@inheritDoc}
    */
   public function bootstrap() {
   }
 
   /**
-   * Implements DriverInterface::isBootstrapped().
+   * {@inheritDoc}
    */
   public function isBootstrapped() {
   }
 
   /**
-   * Implements DriverInterface::userCreate().
+   * {@inheritDoc}
    */
   public function userCreate(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('create users'), $this);
   }
 
   /**
-   * Implements DriverInterface::userDelete().
+   * {@inheritDoc}
    */
   public function userDelete(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('delete users'), $this);
@@ -45,71 +45,72 @@ abstract class BaseDriver implements DriverInterface {
   public function processBatch() {
     throw new UnsupportedDriverActionException($this->errorString('process batch actions'), $this);
   }
+
   /**
-   * Implements DriverInterface::userAddRole().
+   * {@inheritDoc}
    */
   public function userAddRole(\stdClass $user, $role) {
     throw new UnsupportedDriverActionException($this->errorString('add roles'), $this);
   }
 
   /**
-   * Implements DriverInterface::fetchWatchdog().
+   * {@inheritDoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     throw new UnsupportedDriverActionException($this->errorString('access watchdog entries'), $this);
   }
 
   /**
-   * Implements DriverInterface::clearCache().
+   * {@inheritDoc}
    */
   public function clearCache($type = NULL) {
     throw new UnsupportedDriverActionException($this->errorString('clear Drupal caches'), $this);
   }
 
   /**
-   * Implements DriverInterface::createNode().
+   * {@inheritDoc}
    */
   public function createNode($node) {
     throw new UnsupportedDriverActionException($this->errorString('create nodes'), $this);
   }
 
   /**
-   * Implements DriverInterface::nodeDelete().
+   * {@inheritDoc}
    */
   public function nodeDelete($node) {
     throw new UnsupportedDriverActionException($this->errorString('delete nodes'), $this);
   }
 
   /**
-   * Implements DriverInterface::runCron().
+   * {@inheritDoc}
    */
   public function runCron() {
     throw new UnsupportedDriverActionException($this->errorString('run cron'), $this);
   }
 
   /**
-   * Implements DriverInterface::createTerm().
+   * {@inheritDoc}
    */
   public function createTerm(\stdClass $term) {
     throw new UnsupportedDriverActionException($this->errorString('create terms'), $this);
   }
 
   /**
-   * Implements DriverInterface::termDelete().
+   * {@inheritDoc}
    */
   public function termDelete(\stdClass $term) {
     throw new UnsupportedDriverActionException($this->errorString('delete terms'), $this);
   }
 
   /**
-   * Implements DriverInterface::roleCreate().
+   * {@inheritDoc}
    */
   public function roleCreate(array $permissions) {
     throw new UnsupportedDriverActionException($this->errorString('create roles'), $this);
   }
 
   /**
-   * Implements DriverInterface::roleDelete().
+   * {@inheritDoc}
    */
   public function roleDelete($rid) {
     throw new UnsupportedDriverActionException($this->errorString('delete roles'), $this);

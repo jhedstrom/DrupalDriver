@@ -67,7 +67,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * Implements DriverInterface::bootstrap().
+   * {@inheritDoc}
    */
   public function bootstrap() {
     $this->getCore()->bootstrap();
@@ -75,7 +75,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * Implements DriverInterface::isBootstrapped().
+   * {@inheritDoc}
    */
   public function isBootstrapped() {
     // Assume the blackbox is always bootstrapped.
@@ -83,14 +83,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * Implements DriverInterface::userCreate().
+   * {@inheritDoc}
    */
   public function userCreate(\stdClass $user) {
     $this->getCore()->userCreate($user);
   }
 
   /**
-   * Implements DriverInterface::userDelete().
+   * {@inheritDoc}
    */
   public function userDelete(\stdClass $user) {
     $this->getCore()->userDelete($user);
@@ -101,21 +101,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * Implements DriverInterface::userAddRole().
+   * {@inheritDoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $this->getCore()->userAddRole($user, $role_name);
   }
 
   /**
-   * Implements DriverInterface::fetchWatchdog().
+   * {@inheritDoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     throw new PendingException(sprintf('Currently no ability to access watchdog entries in %s', $this));
   }
 
   /**
-   * Implements DriverInterface::clearCache().
+   * {@inheritDoc}
    */
   public function clearCache($type = NULL) {
     $this->getCore()->clearCache();
@@ -226,21 +226,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * Implements DriverInterface::createNode().
+   * {@inheritDoc}
    */
   public function createNode($node) {
     return $this->getCore()->nodeCreate($node);
   }
 
   /**
-   * Implements CoreInterface::nodeDelete().
+   * {@inheritDoc}
    */
   public function nodeDelete($node) {
     return $this->getCore()->nodeDelete($node);
   }
 
   /**
-   * Implements DriverInterface::runCron().
+   * {@inheritDoc}
    */
   public function runCron() {
     if (!$this->getCore()->runCron()) {
@@ -249,28 +249,28 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * Implements DriverInterface::createTerm().
+   * {@inheritDoc}
    */
   public function createTerm(\stdClass $term) {
     return $this->getCore()->termCreate($term);
   }
 
   /**
-   * Implements DriverInterface::termDelete().
+   * {@inheritDoc}
    */
   public function termDelete(\stdClass $term) {
     return $this->getCore()->termDelete($term);
   }
 
   /**
-   * Implements DriverInterface::roleCreate().
+   * {@inheritDoc}
    */
   public function roleCreate(array $permissions) {
     return $this->getCore()->roleCreate($permissions);
   }
 
   /**
-   * Implements DriverInterface::roleCreate().
+   * {@inheritDoc}
    */
   public function roleDelete($rid) {
     $this->getCore()->roleDelete($rid);
