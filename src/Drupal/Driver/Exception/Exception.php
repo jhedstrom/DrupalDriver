@@ -29,7 +29,7 @@ abstract class Exception extends \Exception {
    *
    * @return Session
    */
-  protected function getDriver() {
+  public function getDriver() {
     return $this->driver;
   }
 }
