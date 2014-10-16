@@ -11,6 +11,9 @@
        "email": "jhedstrom@gmail.com"
      }
   ],
+  "require": {
+    "symfony/process": "~2.5"
+  },
   "require-dev": {
     "phpspec/phpspec": "~2.0",
     "phpunit/phpunit": "3.7.*"
