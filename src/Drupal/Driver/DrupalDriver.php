@@ -149,39 +149,41 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Determine major Drupal version.
    *
-   * @throws BootstrapException
+   * @throws \Drupal\Driver\Exception\BootstrapException
    *
    * @see drush_drupal_version()
    */
   function getDrupalVersion() {
     if (!isset($this->version)) {
-      // Support 6, 7 and 8.
-      $version_constant_paths = array(
-        // Drupal 6.
-        '/modules/system/system.module',
-        // Drupal 7.
-        '/includes/bootstrap.inc',
-        // Drupal 8.
-        '/core/vendor/autoload.php',
-        '/core/includes/bootstrap.inc',
-      );
 
-      if ($this->drupalRoot === FALSE) {
+      if (!isset($this->drupalRoot)) {
         throw new BootstrapException('`drupal_root` parameter must be defined.');
       }
 
-      foreach ($version_constant_paths as $path) {
-        if (file_exists($this->drupalRoot . $path)) {
-          require_once $this->drupalRoot . $path;
+      // Try and find D8.
+      if (file_exists($this->drupalRoot . '/core/vendor/autoload.php')) {
+        // Load the autoloader so we can access the class constants.
+        require_once $this->drupalRoot . '/core/vendor/autoload.php';
+        if (defined('Drupal::VERSION')) {
+          $version = \Drupal::VERSION;
         }
       }
-      if (defined('VERSION')) {
-        $version = VERSION;
-      }
-      elseif (defined('\Drupal::VERSION')) {
-        $version = \Drupal::VERSION;
-      }
       else {
+        // D7 stores VERSION in bootstrap.inc.
+        // D6 and below does it in system.module.
+        $version_constant_paths = array('/includes/bootstrap.inc', '/modules/system/system.module');
+        foreach ($version_constant_paths as $path) {
+          if (file_exists($this->drupalRoot . $path)) {
+            require_once $this->drupalRoot . $path;
+            if (defined('VERSION')) {
+              $version = VERSION;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!isset($version)) {
         throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 6, 7, and 8.');
       }
 
@@ -194,6 +196,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
         throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version));
       }
     }
+
     return $this->version;
   }
 
