@@ -223,23 +223,6 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Helper function to derive the Drupal root directory from given alias.
-   */
-  public function getDrupalRoot($alias = NULL) {
-    if (!isset($alias)) {
-      $alias = $this->alias;
-    }
-
-    // Use drush site-alias to find path.
-    $path = $this->drush('site-alias', array('@' . $alias), array('pipe' => NULL));
-
-    // Remove anything past the # that occasionally returns with site-alias.
-    $path = reset(explode('#', $path));
-
-    return $path;
-  }
-
-  /**
    * Run Drush commands dynamically from a DrupalContext.
    */
   public function __call($name, $arguments) {
