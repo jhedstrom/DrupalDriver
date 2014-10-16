@@ -13,19 +13,25 @@ use Symfony\Component\Process\Process;
 class DrushDriver extends BaseDriver {
   /**
    * Store a drush alias for tests requiring shell access.
+   *
+   * @var string
    */
-  public $alias = FALSE;
+  public $alias;
 
   /**
    * Store the root path to a Drupal installation. This is an alternative to
    * using drush aliases.
+   *
+   * @var string
    */
-  public $root = FALSE;
+  public $root;
 
   /**
    * Store the path to drush binary.
+   *
+   * @var string
    */
-  public $binary = FALSE;
+  public $binary;
 
   /**
    * Track bootstrapping.
@@ -50,15 +56,17 @@ class DrushDriver extends BaseDriver {
    *   The path to the drush binary.
    * @param \Drupal\Component\Utility\Random $random
    *   Random generator.
+   *
+   * @throws \BootstrapException
    */
   public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random) {
-    if ($alias) {
+    if (isset($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
 
       $this->alias = $alias;
     }
-    elseif ($root_path) {
+    elseif (isset($root_path)) {
       $this->root = realpath($root_path);
     }
     else {
@@ -77,27 +85,27 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Implements DriverInterface::bootstrap().
+   * {@inheritDoc}
    */
   public function bootstrap() {
     // Check that the given alias works.
     // @todo check that this is a functioning alias.
     // See http://drupal.org/node/1615450
-    if (!$this->alias && !$this->root) {
-      throw new BootstrapException('A drush alias or root path is required.');
+    if (!isset($this->alias) && !isset($this->root)) {
+      throw new \BootstrapException('A drush alias or root path is required.');
     }
     $this->bootstrapped = TRUE;
   }
 
   /**
-   * Implements DriverInterface::isBootstrapped().
+   * {@inheritDoc}
    */
   public function isBootstrapped() {
     return $this->bootstrapped;
   }
 
   /**
-   * Implements DriverInterface::userCreate().
+   * {@inheritDoc}
    */
   public function userCreate(\stdClass $user) {
     $arguments = array(
@@ -116,7 +124,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Implements DriverInterface::userDelete().
+   * {@inheritDoc}
    */
   public function userDelete(\stdClass $user) {
     $arguments = array($user->name);
@@ -128,7 +136,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Implements DriverInterface::userAddRole().
+   * {@inheritDoc}
    */
   public function userAddRole(\stdClass $user, $role) {
     $arguments = array(
@@ -139,7 +147,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Implements DriverInterface::fetchWatchdog().
+   * {@inheritDoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     $options = array(
@@ -151,7 +159,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Implements DriverInterface::clearCache().
+   * {@inheritDoc}
    */
   public function clearCache($type = 'all') {
     $type = array($type);
@@ -174,7 +182,7 @@ class DrushDriver extends BaseDriver {
       }
     }
 
-    $alias = $this->alias ? "@{$this->alias}" : '--root=' . $this->root;
+    $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;
 
     $process = new Process("{$this->binary} {$alias} {$command} {$string_options} {$arguments}");
     $process->setTimeout(3600);
@@ -197,14 +205,14 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Implements DriverInterface::processBatch().
+   * {@inheritDoc}
    */
   public function processBatch() {
     // Do nothing. Drush should internally handle any needs for processing batch ops.
   }
 
   /**
-   * Implements DriverInterface::runCron().
+   * {@inheritDoc}
    */
   public function runCron() {
     $this->drush('cron');
@@ -214,7 +222,7 @@ class DrushDriver extends BaseDriver {
    * Helper function to derive the Drupal root directory from given alias.
    */
   public function getDrupalRoot($alias = NULL) {
-    if (!$alias) {
+    if (!isset($alias)) {
       $alias = $this->alias;
     }
 
