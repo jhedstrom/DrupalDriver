@@ -17,7 +17,7 @@ These drivers support Drupal versions 7 and 8.
 ``` json
 {
   "require": {
-    "drupal/drupal-driver": "~1.0.*@stable"
+    "drupal/drupal-driver": "~1.0"
   }
 }
 ```
