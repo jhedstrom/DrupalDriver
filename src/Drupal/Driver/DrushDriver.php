@@ -60,13 +60,13 @@ class DrushDriver extends BaseDriver {
    * @throws \Drupal\Driver\Exception\BootstrapException
    */
   public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
-    if (isset($alias)) {
+    if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
 
       $this->alias = $alias;
     }
-    elseif (isset($root_path)) {
+    elseif (!empty($root_path)) {
       $this->root = realpath($root_path);
     }
     else {
