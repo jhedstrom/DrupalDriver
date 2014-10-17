@@ -27,7 +27,7 @@ class DrushDriverTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \Drupal\Driver\Exception\BootstrapException
    */
   function testWithNeither() {
-    $driver = new DrushDriver('', '');
+    new DrushDriver('', '');
   }
 
 }
