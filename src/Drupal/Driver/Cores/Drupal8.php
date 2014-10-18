@@ -256,12 +256,12 @@ class Drupal8 implements CoreInterface {
   public function userAddRole(\stdClass $user, $role_name) {
     // Allow both machine and human role names.
     $roles = user_role_names();
-    if ($id = array_search($role_name, $roles)) {
+    $id = array_search($role_name, $roles);
+    if (FALSE !== $id) {
       $role_name = $id;
     }
-    $role = user_role_load($role_name);
 
-    if (!$role) {
+    if (!$role = user_role_load($role_name)) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
     }
 
