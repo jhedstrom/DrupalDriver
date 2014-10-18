@@ -223,7 +223,6 @@ class Drupal8 implements CoreInterface {
       $key = array_search($definition['title'], $permissions);
       if (FALSE !== $key) {
         $permissions[$key] = $name;
-
       }
     }
   }
