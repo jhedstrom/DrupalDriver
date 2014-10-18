@@ -147,10 +147,11 @@ class Drupal8 implements CoreInterface {
     // Generate a random label.
     $name = trim($this->random->name(8, TRUE));
 
+    // Convert labels to machine names.
+    $this->convertPermissions($permissions);
+
     // Check the all the permissions strings are valid.
-    if (!$this->checkPermissions($permissions)) {
-      throw new \RuntimeException('All permissions are not valid.');
-    }
+    $this->checkPermissions($permissions);
 
     // Create new role.
     $role = entity_create('user_role', array(
@@ -163,28 +164,21 @@ class Drupal8 implements CoreInterface {
       // Grant the specified permissions to the role, if any.
       if (!empty($permissions)) {
         user_role_grant_permissions($role->id(), $permissions);
-
-        // TODO: Fix this.
-        /*$assigned_permissions = db_query('SELECT permission FROM {role_permission} WHERE rid = :rid', array(':rid' => $role->id()))->fetchCol();
-        $missing_permissions = array_diff($permissions, $assigned_permissions);
-        if ($missing_permissions) {
-          return FALSE;
-        }*/
       }
       return $role->id();
     }
 
-    return FALSE;
+    throw new \RuntimeException(sprintf('Failed to create a role with "" permission(s).', implode(', ', $permissions)));
   }
 
   /**
    * {@inheritDoc}
    */
-  public function roleDelete($rid) {
-    $role = user_role_load($rid);
+  public function roleDelete($role_name) {
+    $role = user_role_load($role_name);
 
     if (!$role) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $rid));
+      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
     }
 
     $role->delete();
@@ -198,6 +192,43 @@ class Drupal8 implements CoreInterface {
   }
 
   /**
+   * Retrieve all permissions.
+   *
+   * @return array
+   *   Array of all defined permissions.
+   */
+  function getAllPermissions() {
+    $permissions = &drupal_static(__FUNCTION__);
+
+    if (!isset($permissions)) {
+      $current_path = getcwd();
+      chdir(DRUPAL_ROOT);
+      $permissions = \Drupal::service('user.permissions')->getPermissions();
+      chdir($current_path);
+    }
+
+    return $permissions;
+  }
+
+  /**
+   * Convert any permission labels to machine name.
+   *
+   * @param array &$permissions
+   *   Array of permission names.
+   */
+  protected function convertPermissions(&$permissions) {
+    $allPermissions = $this->getAllPermissions();
+
+    foreach ($allPermissions as $name => $definition) {
+      $key = array_search($definition['title'], $permissions);
+      if (FALSE !== $key) {
+        $permissions[$key] = $name;
+
+      }
+    }
+  }
+
+  /**
    * Check to make sure that the array of permissions are valid.
    *
    * @param array $permissions
@@ -206,20 +237,15 @@ class Drupal8 implements CoreInterface {
    *   Reset cached available permissions.
    * @return bool TRUE or FALSE depending on whether the permissions are valid.
    */
-  protected function checkPermissions(array $permissions, $reset = FALSE) {
-    $available = &drupal_static(__FUNCTION__);
-
-    if (!isset($available) || $reset) {
-      $available = array_keys(\Drupal::moduleHandler()->invokeAll('permission'));
-    }
-
-    $valid = TRUE;
+  protected function checkPermissions(array &$permissions, $reset = FALSE) {
+    $available = $this->getAllPermissions();
+    return true;
     foreach ($permissions as $permission) {
       if (!in_array($permission, $available)) {
-        $valid = FALSE;
+        throw new \RuntimeException(sprintf('Invalid permission "%s".', $permission));
       }
     }
-    return $valid;
+    return TRUE;
   }
 
   /**
