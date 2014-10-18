@@ -131,23 +131,6 @@ class Drupal7 implements CoreInterface {
       $user->status = 1;
     }
 
-    // Convert roles to proper structure.
-    if (isset($user->roles)) {
-      foreach ($user->roles as $key => $rid) {
-        // These may be role names.
-        if (is_string($rid)) {
-          $role = user_role_load_by_name($rid);
-          $rid = $role->rid;
-        }
-        else {
-          $role = user_role_load($rid);
-        }
-        unset($user->roles[$key]);
-        $user->roles[$rid] = $role->name;
-
-      }
-    }
-
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
     $account = clone $user;
@@ -234,25 +217,18 @@ class Drupal7 implements CoreInterface {
     user_role_grant_permissions($role->rid, $permissions);
 
     if ($role && !empty($role->rid)) {
-      $count = db_query('SELECT COUNT(*) FROM {role_permission} WHERE rid = :rid', array(':rid' => $role->rid))->fetchField();
-      if ($count == count($permissions)) {
-        return $role->rid;
-      }
-      else {
-        return FALSE;
-      }
+      return $role->name;
+    }
 
-    }
-    else {
-      return FALSE;
-    }
+    throw new \RuntimeException(sprintf('Failed to create a role with "" permission(s).', implode(', ', $permissions)));
   }
 
   /**
    * {@inheritDoc}
    */
-  public function roleDelete($rid) {
-    user_role_delete((int) $rid);
+  public function roleDelete($role_name) {
+    $role = user_role_load_by_name($role_name);
+    user_role_delete((int) $role->rid);
   }
 
   /**

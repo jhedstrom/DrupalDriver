@@ -66,6 +66,11 @@ interface CoreInterface {
 
   /**
    * Add a role to a user.
+   *
+   * @param \stdClass $user
+   *   The Drupal user object.
+   * @param string
+   *   The role name.
    */
   public function userAddRole(\stdClass $user, $role_name);
 
@@ -94,17 +99,17 @@ interface CoreInterface {
    * @param array $permissions
    *   An array of permissions to create the role with.
    *
-   * @return string|boolean
-   *   Role ID of newly created role, or FALSE if role creation failed.
+   * @return integer
+   *   The created role name.
    */
   public function roleCreate(array $permissions);
 
   /**
    * Delete a role
    *
-   * @param $rid
+   * @param string $role_name
    *   A role name to delete.
    */
-  public function roleDelete($rid);
+  public function roleDelete($role_name);
 
 }
