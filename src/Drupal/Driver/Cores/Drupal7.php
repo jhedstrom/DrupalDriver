@@ -134,7 +134,14 @@ class Drupal7 implements CoreInterface {
     // Convert roles to proper structure.
     if (isset($user->roles)) {
       foreach ($user->roles as $key => $rid) {
-        $role = user_role_load($rid);
+        // These may be role names.
+        if (is_string($rid)) {
+          $role = user_role_load_by_name($rid);
+          $rid = $role->rid;
+        }
+        else {
+          $role = user_role_load($rid);
+        }
         unset($user->roles[$key]);
         $user->roles[$rid] = $role->name;
 
