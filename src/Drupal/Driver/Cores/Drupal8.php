@@ -168,7 +168,7 @@ class Drupal8 implements CoreInterface {
       return $role->id();
     }
 
-    throw new \RuntimeException(sprintf('Failed to create a role with "" permission(s).', implode(', ', $permissions)));
+    throw new \RuntimeException(sprintf('Failed to create a role with "%s" permission(s).', implode(', ', $permissions)));
   }
 
   /**
@@ -233,19 +233,15 @@ class Drupal8 implements CoreInterface {
    *
    * @param array $permissions
    *   Permissions to check.
-   * @param bool $reset
-   *   Reset cached available permissions.
-   * @return bool TRUE or FALSE depending on whether the permissions are valid.
    */
-  protected function checkPermissions(array &$permissions, $reset = FALSE) {
-    $available = $this->getAllPermissions();
-    return true;
+  protected function checkPermissions(array &$permissions) {
+    $available = array_keys($this->getAllPermissions());
+
     foreach ($permissions as $permission) {
       if (!in_array($permission, $available)) {
         throw new \RuntimeException(sprintf('Invalid permission "%s".', $permission));
       }
     }
-    return TRUE;
   }
 
   /**
