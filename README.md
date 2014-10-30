@@ -2,6 +2,8 @@
 
 Provides a collection of light-weight drivers with a common interface for interacting with [Drupal](http://drupal.org). These are generally intended for testing, and are not meant to be API-complete.
 
+[Read the full documentation](http://drupal-drivers.readthedocs.org)
+
 [![Latest Stable Version](https://poser.pugx.org/drupal/drupal-driver/v/stable.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Total Downloads](https://poser.pugx.org/drupal/drupal-driver/downloads.svg)](https://packagist.org/packages/drupal/drupal-driver) [![License](https://poser.pugx.org/drupal/drupal-driver/license.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/?branch=master)
 
 ### Drivers
