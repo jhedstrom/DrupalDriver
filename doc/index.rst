@@ -3,17 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Drupal Drivers's documentation!
-==========================================
+Welcome to Drupal Driver' documentation!
+========================================
+
+The `Drupal Drivers`_ are a collection of light-weight drivers with a common interface for interacting with Drupal_. These are generally intended for testing, and are not meant to be API-complete.
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   intro
+   install
    drivers
-
 
 Indices and tables
 ==================
@@ -22,3 +23,5 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+.. _Drupal: http://drupal.org
+.. _`Drupal Drivers`: https://github.com/jhedstrom/DrupalDriver
