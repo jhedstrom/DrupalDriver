@@ -15,13 +15,7 @@ Contents:
 
    install
    drivers
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   usage
 
 .. _Drupal: http://drupal.org
 .. _`Drupal Drivers`: https://github.com/jhedstrom/DrupalDriver
