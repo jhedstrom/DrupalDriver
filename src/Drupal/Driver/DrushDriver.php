@@ -46,6 +46,13 @@ class DrushDriver extends BaseDriver {
   private $random;
 
   /**
+   * Global arguments or options for drush commands.
+   *
+   * @var string
+   */
+  private $arguments = '';
+
+  /**
    * Set drush alias or root path.
    *
    * @param string $alias
@@ -171,24 +178,57 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
+   * Sets common drush arguments or options.
+   *
+   * @param string $arguments
+   *   Global arguments to add to every drush command.
+   */
+  public function setArguments($arguments) {
+    $this->arguments = $arguments;
+  }
+
+  /**
+   * Get common drush arguments.
+   */
+  public function getArguments() {
+    return $this->arguments;
+  }
+
+  /**
+   * Parse arguments into a string.
+   *
+   * @param array $arguments
+   *   An array of argument/option names to values.
+   *
+   * @return string
+   */
+  protected static function parseArguments(array $arguments) {
+    $string = '';
+    foreach ($arguments as $name => $value) {
+      if (is_null($value)) {
+        $string .= ' --' . $name;
+      }
+      else {
+        $string .= '--' . $name . '=' . $value;
+      }
+    }
+    return $string;
+  }
+
+  /**
    * Execute a drush command.
    */
   public function drush($command, array $arguments = array(), array $options = array()) {
     $arguments = implode(' ', $arguments);
-    $string_options = '';
     $options['nocolor'] = '';
-    foreach ($options as $name => $value) {
-      if (is_null($value)) {
-        $string_options .= ' --' . $name;
-      }
-      else {
-        $string_options .= ' --' . $name . '=' . $value;
-      }
-    }
+    $string_options = $this->parseArguments($options);
 
     $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;
 
-    $process = new Process("{$this->binary} {$alias} {$command} {$string_options} {$arguments}");
+    // Add any global arguments.
+    $global = $this->getArguments();
+
+    $process = new Process("{$this->binary} {$alias} {$global} {$command} {$string_options} {$arguments}");
     $process->setTimeout(3600);
     $process->run();
 
