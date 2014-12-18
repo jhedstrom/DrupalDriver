@@ -3,6 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Component\Utility\RandomInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
@@ -36,9 +37,11 @@ class Drupal8 implements CoreInterface {
   /**
    * {@inheritDoc}
    */
-  public function __construct($drupalRoot, $uri = 'default', Random $random = NULL) {
+  public function __construct($drupalRoot, $uri = 'default', RandomInterface $random = NULL) {
     $this->drupalRoot = realpath($drupalRoot);
     $this->uri = $uri;
+
+    // @todo This should not be optional but injected by a factory method.
     if (!isset($random)) {
       $random = new Random();
     }

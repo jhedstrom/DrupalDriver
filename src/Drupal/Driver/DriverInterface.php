@@ -9,6 +9,8 @@ interface DriverInterface {
 
   /**
    * Returns a random generator.
+   *
+   * @return \Drupal\Component\Utility\RandomInterface
    */
   public function getRandom();
 

@@ -3,6 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Component\Utility\RandomInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
@@ -26,14 +27,14 @@ class Drupal7 implements CoreInterface {
   /**
    * Random generator.
    *
-   * @var \Drupal\Component\Utility\Random
+   * @var \Drupal\Component\Utility\RandomInterface
    */
   private $random;
 
   /**
    * {@inheritDoc}
    */
-  public function __construct($drupalRoot, $uri = 'default', Random $random) {
+  public function __construct($drupalRoot, $uri = 'default', RandomInterface $random) {
     $this->drupalRoot = realpath($drupalRoot);
     $this->uri = $uri;
     $this->random = $random;
