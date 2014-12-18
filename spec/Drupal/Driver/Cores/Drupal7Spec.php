@@ -20,6 +20,6 @@ class Drupal7Spec extends ObjectBehavior
 
     function it_should_return_a_random_generator()
     {
-        $this->getRandom()->shouldBeAnInstanceOf('Drupal\Component\Utility\Random');
+        $this->getRandom()->shouldBeAnInstanceOf('Drupal\Component\Utility\RandomInterface');
     }
 }
