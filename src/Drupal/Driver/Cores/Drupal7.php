@@ -423,7 +423,11 @@ class Drupal7 implements CoreInterface {
       throw new \Exception(sprintf('No "%s" vocabulary found.'));
     }
 
+    // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
+    $current_path = getcwd();
+    chdir(DRUPAL_ROOT);
     \taxonomy_term_save($term);
+    chdir($current_path);
 
     // Loading a term by name returns an array of term objects, but there should
     // only be one matching term in a testing context, so take the first match
