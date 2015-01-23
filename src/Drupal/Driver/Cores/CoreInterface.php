@@ -165,4 +165,22 @@ interface CoreInterface {
    */
   public function getEntityFieldTypes($entity_type);
 
+  /**
+   * Creates a language.
+   *
+   * @param \stdClass $language
+   *   An object with the following properties:
+   *   - langcode: the langcode of the language to create.
+   */
+  public function languageCreate($language);
+
+  /**
+   * Deletes a language.
+   *
+   * @param \stdClass $language
+   *   An object with the following properties:
+   *   - langcode: the langcode of the language to delete.
+   */
+  public function languageDelete($language);
+
 }

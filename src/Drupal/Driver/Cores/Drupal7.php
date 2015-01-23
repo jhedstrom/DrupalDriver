@@ -346,6 +346,66 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function languageCreate($language) {
+    include_once DRUPAL_ROOT . '/includes/iso.inc';
+    include_once DRUPAL_ROOT . '/includes/locale.inc';
+
+    // Get all predefined languages, regardless if they are enabled or not.
+    $predefined_languages = _locale_get_predefined_list();
+
+    // If the language code is not valid then throw an InvalidArgumentException.
+    if (!isset($predefined_languages[$language->langcode])) {
+      throw new InvalidArgumentException("There is no predefined language with langcode '{$language->langcode}'.");
+    }
+
+    // Enable a language only if it has not been enabled already.
+    $enabled_languages = locale_language_list();
+    if (!isset($enabled_languages[$language->langcode])) {
+      locale_add_language($language->langcode);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete($language) {
+    $langcode = $language->langcode;
+    // Do not remove English or the default language.
+    if (!in_array($langcode, array(language_default('language'), 'en'))) {
+      // @see locale_languages_delete_form_submit().
+      $languages = language_list();
+      if (isset($languages[$langcode])) {
+        // Remove translations first.
+        db_delete('locales_target')
+          ->condition('language', $langcode)
+          ->execute();
+        cache_clear_all('locale:' . $langcode, 'cache');
+        // With no translations, this removes existing JavaScript translations
+        // file.
+        _locale_rebuild_js($langcode);
+        // Remove the language.
+        db_delete('languages')
+          ->condition('language', $langcode)
+          ->execute();
+        db_update('node')
+          ->fields(array('language' => ''))
+          ->condition('language', $langcode)
+          ->execute();
+        if ($languages[$langcode]->enabled) {
+          variable_set('language_count', variable_get('language_count', 1) - 1);
+        }
+        module_invoke_all('multilingual_settings_changed');
+        drupal_static_reset('language_list');
+      }
+
+      // Changing the language settings impacts the interface:
+      cache_clear_all('*', 'cache_page', TRUE);
+    }
+  }
+
+  /**
    * Helper function to get all permissions.
    *
    * @return array

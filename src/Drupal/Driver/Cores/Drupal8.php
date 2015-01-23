@@ -345,4 +345,16 @@ class Drupal8 extends AbstractCore {
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate($langcode) {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete($langcode) {
+  }
+
 }
