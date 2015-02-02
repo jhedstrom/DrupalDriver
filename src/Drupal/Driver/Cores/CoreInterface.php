@@ -172,7 +172,7 @@ interface CoreInterface {
    *   An object with the following properties:
    *   - langcode: the langcode of the language to create.
    */
-  public function languageCreate($language);
+  public function languageCreate(\stdClass $language);
 
   /**
    * Deletes a language.
@@ -181,6 +181,6 @@ interface CoreInterface {
    *   An object with the following properties:
    *   - langcode: the langcode of the language to delete.
    */
-  public function languageDelete($language);
+  public function languageDelete(\stdClass $language);
 
 }

@@ -348,13 +348,13 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function languageCreate($langcode) {
+  public function languageCreate(\stdClass $language) {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function languageDelete($langcode) {
+  public function languageDelete(\stdClass $language) {
   }
 
 }

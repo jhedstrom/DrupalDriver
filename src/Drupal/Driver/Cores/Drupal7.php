@@ -348,7 +348,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function languageCreate($language) {
+  public function languageCreate(\stdClass $language) {
     include_once DRUPAL_ROOT . '/includes/iso.inc';
     include_once DRUPAL_ROOT . '/includes/locale.inc';
 
@@ -370,7 +370,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function languageDelete($language) {
+  public function languageDelete(\stdClass $language) {
     $langcode = $language->langcode;
     // Do not remove English or the default language.
     if (!in_array($langcode, array(language_default('language'), 'en'))) {
