@@ -9,8 +9,10 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\Language\Language;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
@@ -349,12 +351,27 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function languageCreate(\stdClass $language) {
+    $langcode = $language->langcode;
+
+    // Enable a language only if it has not been enabled already.
+    if (!ConfigurableLanguage::load($langcode)) {
+      $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
+      if (!$created_language) {
+        throw new InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
+      }
+      $created_language->save();
+      return $language;
+    }
+
+    return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
   public function languageDelete(\stdClass $language) {
+    $configurable_language = ConfigurableLanguage::load($language->langcode);
+    $configurable_language->delete();
   }
 
 }
