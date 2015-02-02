@@ -364,7 +364,10 @@ class Drupal7 extends AbstractCore {
     $enabled_languages = locale_language_list();
     if (!isset($enabled_languages[$language->langcode])) {
       locale_add_language($language->langcode);
+      return $language;
     }
+
+    return FALSE;
   }
 
   /**
