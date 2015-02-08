@@ -139,7 +139,7 @@ class Drupal7 implements CoreInterface {
     // Attempt to decipher any fields that may be specified.
     $account = $this->expandEntityFields($account);
 
-    user_save($account, (array) $user);
+    user_save($account, (array) $account);
 
     // Store UID.
     $user->uid = $account->uid;
