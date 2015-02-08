@@ -24,12 +24,14 @@ class EntityreferenceHandler extends AbstractHandler {
 
       $target_id = NULL;
       foreach ($this->field_info['bundles'] as $entity => $bundles) {
-        $result = db_select($entity_info[$entity]['base table'], 't')
-          ->fields('t', array($entity_info[$entity]['entity keys']['id']))
-          ->condition('t.' . $entity_info[$entity]['entity keys']['label'], $value)
-          ->execute()->fetchField();
-        if ($result) {
-          $target_id = $result;
+        if (isset($entity_info[$entity]['entity keys']['label'])) {
+          $result = db_select($entity_info[$entity]['base table'], 't')
+            ->fields('t', array($entity_info[$entity]['entity keys']['id']))
+            ->condition('t.' . $entity_info[$entity]['entity keys']['label'], $value)
+            ->execute()->fetchField();
+          if ($result) {
+            $target_id = $result;
+          }
         }
       }
       if ($target_id) {
