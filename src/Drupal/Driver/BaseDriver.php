@@ -117,6 +117,13 @@ abstract class BaseDriver implements DriverInterface {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public function isField($field_name) {
+    throw new UnsupportedDriverActionException($this->errorString('field handling'), $this);
+  }
+
+  /**
    * Error printing exception
    *
    * @param string $error

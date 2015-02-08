@@ -276,4 +276,11 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     $this->getCore()->roleDelete($rid);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function isField($field_name) {
+    return $this->getCore()->isField($field_name);
+  }
+
 }

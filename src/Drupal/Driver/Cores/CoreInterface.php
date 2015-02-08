@@ -112,4 +112,19 @@ interface CoreInterface {
    */
   public function roleDelete($role_name);
 
+  /**
+   * Get FieldHandler class.
+   *
+   * @param $field_name
+   * @return \Drupal\Driver\Fields\FieldHandlerInterface
+   */
+  public function getFieldHandler($field_name);
+
+  /**
+   * Check if the specified field is an actual Drupal field.
+   *
+   * @param $field_name
+   * @return boolean
+   */
+  public function isField($field_name);
 }

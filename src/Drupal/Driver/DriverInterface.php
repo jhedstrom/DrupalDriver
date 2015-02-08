@@ -129,4 +129,11 @@ interface DriverInterface {
    */
   public function roleDelete($rid);
 
+  /**
+   * Check if the specified field is an actual Drupal field.
+   *
+   * @param $field_name
+   * @return boolean
+   */
+  public function isField($field_name);
 }
