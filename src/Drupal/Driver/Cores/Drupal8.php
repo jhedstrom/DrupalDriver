@@ -7,8 +7,6 @@ use Drupal\Driver\Exception\BootstrapException;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
-use Drupal\Driver\Exception\UnsupportedDriverActionException;
-
 
 /**
  * Drupal 8 core.
@@ -354,13 +352,13 @@ class Drupal8 implements CoreInterface {
    * {@inheritDoc}
    */
   public function getFieldHandler($field_name) {
-    throw new UnsupportedDriverActionException($this->errorString('field handling not supported.'), $this);
+
   }
 
   /**
    * {@inheritDoc}
    */
   public function isField($field_name) {
-    throw new UnsupportedDriverActionException($this->errorString('field handling not supported.'), $this);
+
   }
 }
