@@ -120,7 +120,7 @@ abstract class BaseDriver implements DriverInterface {
    * {@inheritDoc}
    */
   public function isField($field_name) {
-    throw new UnsupportedDriverActionException($this->errorString('field handling'), $this);
+    return FALSE;
   }
 
   /**
