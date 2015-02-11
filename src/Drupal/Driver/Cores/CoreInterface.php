@@ -32,6 +32,11 @@ interface CoreInterface {
   public function bootstrap();
 
   /**
+   * Get module list.
+   */
+  public function getModuleList();
+
+  /**
    * Clear caches.
    */
   public function clearCache();

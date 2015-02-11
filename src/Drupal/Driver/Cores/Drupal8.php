@@ -341,4 +341,11 @@ class Drupal8 implements CoreInterface {
     $term->delete();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function getModuleList() {
+    return \Drupal::moduleHandler()->getModuleList();
+  }
+
 }
