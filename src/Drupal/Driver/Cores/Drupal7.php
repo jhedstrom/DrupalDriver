@@ -440,4 +440,11 @@ class Drupal7 implements CoreInterface {
     $map = field_info_field_map();
     return isset($map[$field_name]);
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getModuleList() {
+    return module_list();
+  }
 }
