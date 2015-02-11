@@ -142,7 +142,6 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
     // Active profile
     // @todo
-
     return $paths;
   }
 
