@@ -18,23 +18,19 @@ class EntityreferenceHandler extends AbstractHandler {
    */
   public function expand(array $values) {
 
-    $entity_info = entity_get_info();
+    $entity_type = $this->field_info['settings']['target_type'];
+    $entity_info = entity_get_info($entity_type);
+    // For users set label to username.
+    if ($entity_type == 'user') {
+      $entity_info['entity keys']['label'] = 'name';
+    }
+
     $return = array();
     foreach ($values as $value) {
-
-      $target_id = NULL;
-      $referencable_entities = $this->field_info['foreign keys'];
-      foreach ($referencable_entities as $entity => $settings) {
-        if (isset($entity_info[$entity]['entity keys']['label'])) {
-          $result = db_select($entity_info[$entity]['base table'], 't')
-            ->fields('t', array($entity_info[$entity]['entity keys']['id']))
-            ->condition('t.' . $entity_info[$entity]['entity keys']['label'], $value)
-            ->execute()->fetchField();
-          if ($result) {
-            $target_id = $result;
-          }
-        }
-      }
+      $target_id = db_select($entity_info['base table'], 't')
+        ->fields('t', array($entity_info['entity keys']['id']))
+        ->condition('t.' . $entity_info['entity keys']['label'], $value)
+        ->execute()->fetchField();
       if ($target_id) {
         $return[LANGUAGE_NONE][] = array('target_id' => $target_id);
       }
