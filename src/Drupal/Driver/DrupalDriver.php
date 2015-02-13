@@ -131,7 +131,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     }
 
     // Get enabled modules.
-    $modules = \module_list();
+    $modules = $this->getCore()->getModuleList();
     $paths = array();
     foreach ($modules as $module) {
       $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . \drupal_get_path('module', $module);

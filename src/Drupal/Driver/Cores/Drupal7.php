@@ -464,4 +464,11 @@ class Drupal7 implements CoreInterface {
     return $permissions;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function getModuleList() {
+    return module_list();
+  }
+
 }
