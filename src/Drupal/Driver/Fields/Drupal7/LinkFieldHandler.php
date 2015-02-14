@@ -16,7 +16,7 @@ class LinkFieldHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand(array $values) {
+  public function expand($values) {
 
     $return = array();
     foreach ($values as $value) {

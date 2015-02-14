@@ -20,5 +20,5 @@ interface FieldHandlerInterface {
    * @param $values
    * @return array
    */
-  public function expand(array $values);
+  public function expand($values);
 }

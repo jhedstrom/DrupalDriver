@@ -16,7 +16,7 @@ class DatetimeHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand(array $values) {
+  public function expand($values) {
 
     $return = array();
     if (isset($this->field_info['columns']['value2'])) {

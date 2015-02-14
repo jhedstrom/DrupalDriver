@@ -98,7 +98,7 @@ class Drupal7 implements CoreInterface {
     $this->expandEntityProperties($node);
 
     // Attempt to decipher any fields that may be specified.
-    $node = $this->expandEntityFields($node);
+    $node = $this->expandEntityFields('node', $node);
 
     // Set defaults that haven't already been set.
     $defaults = clone $node;
@@ -137,7 +137,7 @@ class Drupal7 implements CoreInterface {
     $account = clone $user;
 
     // Attempt to decipher any fields that may be specified.
-    $account = $this->expandEntityFields($account);
+    $account = $this->expandEntityFields('user', $account);
 
     user_save($account, (array) $account);
 
@@ -298,12 +298,12 @@ class Drupal7 implements CoreInterface {
    * @return \stdClass
    *   Entity object.
    */
-  protected function expandEntityFields(\stdClass $entity) {
+  protected function expandEntityFields($entity_type, \stdClass $entity) {
 
     $new_entity = clone $entity;
     foreach (field_info_field_map() as $field_name => $field_info) {
       if (isset($entity->$field_name)) {
-        $new_entity->$field_name = $this->getFieldHandler($field_name)->expand($entity->$field_name);
+        $new_entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name);
       }
     }
     return $new_entity;
@@ -368,7 +368,7 @@ class Drupal7 implements CoreInterface {
     }
 
     // Attempt to decipher any fields that may be specified.
-    $term = $this->expandEntityFields($term);
+    $term = $this->expandEntityFields('taxonomy_term', $term);
 
     // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
     $current_path = getcwd();
@@ -421,7 +421,7 @@ class Drupal7 implements CoreInterface {
   /**
    * {@inheritDoc}
    */
-  public function getFieldHandler($field_name) {
+  public function getFieldHandler($entity_type, $field_name) {
 
     $field = field_info_field($field_name);
     $class_name = sprintf('\Drupal\Driver\Fields\Drupal7\%sHandler', Container::camelize($field['type']));
@@ -436,7 +436,7 @@ class Drupal7 implements CoreInterface {
   /**
    * {@inheritDoc}
    */
-  public function isField($field_name) {
+  public function isField($entity_type, $field_name) {
     $map = field_info_field_map();
     return isset($map[$field_name]);
   }

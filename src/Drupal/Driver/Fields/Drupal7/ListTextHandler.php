@@ -16,7 +16,7 @@ class ListTextHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand(array $values) {
+  public function expand($values) {
 
     $return = array();
     $allowed_values = array_flip($this->field_info['settings']['allowed_values']);

@@ -278,8 +278,8 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritDoc}
    */
-  public function isField($field_name) {
-    return $this->getCore()->isField($field_name);
+  public function isField($entity_type, $field_name) {
+    return $this->getCore()->isField($entity_type, $field_name);
   }
 
 }
