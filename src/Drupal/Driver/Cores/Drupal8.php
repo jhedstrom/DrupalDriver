@@ -380,7 +380,7 @@ class Drupal8 implements CoreInterface {
 
     if ($this->isField($entity_type, $field_name)) {
       $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
-      $field_type = $fields['field_tags']->getType();
+      $field_type = $fields[$field_name]->getType();
       $class_name = sprintf('\Drupal\Driver\Fields\Drupal8\%sHandler', Container::camelize($field_type));
       if (class_exists($class_name)) {
         return new $class_name($field_name);
