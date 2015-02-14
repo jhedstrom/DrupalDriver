@@ -133,9 +133,4 @@ interface CoreInterface {
    */
   public function isField($field_name);
 
-  /**
-   * Return list of modules.
-   */
-  public function getModuleList();
-
 }
