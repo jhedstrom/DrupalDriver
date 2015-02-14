@@ -120,17 +120,21 @@ interface CoreInterface {
   /**
    * Get FieldHandler class.
    *
+   * @param $entity_type
+   *    Entity type machine name.
    * @param $field_name
+   *    Field machine name.
    * @return \Drupal\Driver\Fields\FieldHandlerInterface
    */
-  public function getFieldHandler($field_name);
+  public function getFieldHandler($entity_type, $field_name);
 
   /**
    * Check if the specified field is an actual Drupal field.
    *
+   * @param $entity_type
    * @param $field_name
    * @return boolean
    */
-  public function isField($field_name);
+  public function isField($entity_type, $field_name);
 
 }
