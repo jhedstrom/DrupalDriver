@@ -2,11 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\TaxonomyTermReferenceHandler
+ * Contains \Drupal\Driver\Fields\Drupal8\TaxonomyTermReferenceHandler
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
-use Drupal\Tests\Core\Entity\EntityManagerTest;
 
 /**
  * Class TaxonomyTermReferenceHandler
