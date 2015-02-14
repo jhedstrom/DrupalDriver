@@ -383,10 +383,10 @@ class Drupal8 implements CoreInterface {
       $field_type = $fields[$field_name]->getType();
       $class_name = sprintf('\Drupal\Driver\Fields\Drupal8\%sHandler', Container::camelize($field_type));
       if (class_exists($class_name)) {
-        return new $class_name($field_name);
+        return new $class_name($entity_type, $field_name);
       }
     }
-    return new \Drupal\Driver\Fields\Drupal8\DefaultHandler($field_name);
+    return new \Drupal\Driver\Fields\Drupal8\DefaultHandler($entity_type, $field_name);
   }
 
   /**

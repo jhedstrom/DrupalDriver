@@ -22,8 +22,9 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    * @param $field_name
    * @return mixed
    */
-  public function __construct($field_name) {
-//    $manager = \Drupal::service('plugin.manager.field.field_type');
+  public function __construct($entity_type, $field_name) {
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    $this->field_info = $fields[$field_name];
   }
 
 }
