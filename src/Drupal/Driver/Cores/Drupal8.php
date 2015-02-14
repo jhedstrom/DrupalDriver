@@ -362,11 +362,4 @@ class Drupal8 implements CoreInterface {
 
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public function getModuleList() {
-    return \Drupal::moduleHandler()->getModuleList();
-  }
-
 }
