@@ -4,9 +4,11 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
+use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Drupal 8 core.
@@ -94,6 +96,7 @@ class Drupal8 implements CoreInterface {
     if (!isset($node->status)) {
       $node->status = 1;
     }
+    $node = $this->expandEntityFields('node', $node);
     $entity = entity_create('node', (array) $node);
     $entity->save();
 
@@ -130,6 +133,7 @@ class Drupal8 implements CoreInterface {
 
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
+    // $user = $this->expandEntityFields('user', $user);
     $account = entity_create('user', (array) $user);
     $account->save();
 
@@ -326,6 +330,7 @@ class Drupal8 implements CoreInterface {
    */
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
+    $term = $this->expandEntityFields('taxonomy_term', $term);
     $entity = Term::create((array) $term);
     $entity->save();
 
@@ -342,6 +347,26 @@ class Drupal8 implements CoreInterface {
   }
 
   /**
+   * Given a entity, expand fields to match the format expected by entity_save().
+   *
+   * @param \stdClass $entity
+   *   Entity object.
+   * @return \stdClass
+   *   Entity object.
+   */
+  protected function expandEntityFields($entity_type, \stdClass $entity) {
+
+    $new_entity = clone $entity;
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    foreach ($fields as $field_name => $field) {
+      if (isset($entity->$field_name) && $this->isField($entity_type, $field_name)) {
+        $new_entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name);
+      }
+    }
+    return $new_entity;
+  }
+
+  /**
    * {@inheritDoc}
    */
   public function getModuleList() {
@@ -351,15 +376,25 @@ class Drupal8 implements CoreInterface {
   /**
    * {@inheritDoc}
    */
-  public function getFieldHandler($field_name) {
+  public function getFieldHandler($entity_type, $field_name) {
 
+    if ($this->isField($entity_type, $field_name)) {
+      $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+      $field_type = $fields['field_tags']->getType();
+      $class_name = sprintf('\Drupal\Driver\Fields\Drupal8\%sHandler', Container::camelize($field_type));
+      if (class_exists($class_name)) {
+        return new $class_name($field_name);
+      }
+    }
+    return new \Drupal\Driver\Fields\Drupal8\DefaultHandler($field_name);
   }
 
   /**
    * {@inheritDoc}
    */
-  public function isField($field_name) {
-
+  public function isField($entity_type, $field_name) {
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
 
 }
