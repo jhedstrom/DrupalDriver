@@ -8,7 +8,7 @@
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Class DefaultFieldHandler
+ * Class EntityReferenceHandler
  * @package Drupal\Driver\Fields\Drupal8
  */
 class EntityReferenceHandler extends AbstractHandler {
