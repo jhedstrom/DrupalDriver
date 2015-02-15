@@ -98,7 +98,7 @@ class Drupal7 implements CoreInterface {
     $this->expandEntityProperties($node);
 
     // Attempt to decipher any fields that may be specified.
-    $node = $this->expandEntityFields('node', $node);
+    $this->expandEntityFields('node', $node);
 
     // Set defaults that haven't already been set.
     $defaults = clone $node;
@@ -137,7 +137,7 @@ class Drupal7 implements CoreInterface {
     $account = clone $user;
 
     // Attempt to decipher any fields that may be specified.
-    $account = $this->expandEntityFields('user', $account);
+    $this->expandEntityFields('user', $account);
 
     user_save($account, (array) $account);
 
@@ -368,7 +368,7 @@ class Drupal7 implements CoreInterface {
     }
 
     // Attempt to decipher any fields that may be specified.
-    $term = $this->expandEntityFields('taxonomy_term', $term);
+    $this->expandEntityFields('taxonomy_term', $term);
 
     // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
     $current_path = getcwd();

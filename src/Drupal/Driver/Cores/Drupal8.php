@@ -133,7 +133,7 @@ class Drupal8 implements CoreInterface {
 
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
-    // $user = $this->expandEntityFields('user', $user);
+    $this->expandEntityFields('user', $user);
     $account = entity_create('user', (array) $user);
     $account->save();
 
@@ -330,7 +330,7 @@ class Drupal8 implements CoreInterface {
    */
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
-    $term = $this->expandEntityFields('taxonomy_term', $term);
+    $this->expandEntityFields('taxonomy_term', $term);
     $entity = Term::create((array) $term);
     $entity->save();
 
