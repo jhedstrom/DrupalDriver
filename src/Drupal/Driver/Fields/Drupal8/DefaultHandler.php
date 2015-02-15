@@ -17,6 +17,6 @@ class DefaultHandler extends AbstractHandler {
    * {@inheritDoc}
    */
   public function expand($values) {
-    return $values[0];
+    return $values;
   }
 }
