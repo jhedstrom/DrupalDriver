@@ -8,12 +8,11 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
-use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Drupal 8 core.
  */
-class Drupal8 implements CoreInterface {
+class Drupal8 extends AbstractCore {
   /**
    * System path to the Drupal installation.
    *
@@ -96,7 +95,7 @@ class Drupal8 implements CoreInterface {
     if (!isset($node->status)) {
       $node->status = 1;
     }
-    $node = $this->expandEntityFields('node', $node);
+    $this->expandEntityFields('node', $node);
     $entity = entity_create('node', (array) $node);
     $entity->save();
 

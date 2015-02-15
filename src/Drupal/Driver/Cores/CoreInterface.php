@@ -137,4 +137,13 @@ interface CoreInterface {
    */
   public function isField($entity_type, $field_name);
 
+  /**
+   * Return array of field types for the specified entity
+   * keyed by their field names.
+   *
+   * @param $entity_type
+   * @return array
+   */
+  public function getEntityFieldTypes($entity_type);
+
 }

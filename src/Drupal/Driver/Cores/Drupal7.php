@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Container;
 /**
  * Drupal 7 core.
  */
-class Drupal7 implements CoreInterface {
+class Drupal7 extends AbstractCore {
   /**
    * System path to the Drupal installation.
    *
