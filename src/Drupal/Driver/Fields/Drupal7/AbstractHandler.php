@@ -22,7 +22,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    * @param $field_name
    * @return mixed
    */
-  public function __construct($field_name) {
+  public function __construct($entity_type, $field_name) {
     $this->field_info = field_info_field($field_name);
   }
 

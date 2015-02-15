@@ -291,25 +291,6 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * Given a entity, expand fields to match the format expected by entity_save().
-   *
-   * @param \stdClass $entity
-   *   Entity object.
-   * @return \stdClass
-   *   Entity object.
-   */
-  protected function expandEntityFields($entity_type, \stdClass $entity) {
-
-    $new_entity = clone $entity;
-    foreach (field_info_field_map() as $field_name => $field_info) {
-      if (isset($entity->$field_name)) {
-        $new_entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name);
-      }
-    }
-    return $new_entity;
-  }
-
-  /**
    * Given an entity object, expand any property fields to the expected structure.
    */
   protected function expandEntityProperties(\stdClass $entity) {
@@ -421,16 +402,15 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritDoc}
    */
-  public function getFieldHandler($entity_type, $field_name) {
-
-    $field = field_info_field($field_name);
-    $class_name = sprintf('\Drupal\Driver\Fields\Drupal7\%sHandler', Container::camelize($field['type']));
-    if (class_exists($class_name)) {
-      return new $class_name($field_name);
+  public function getEntityFieldTypes($entity_type) {
+    $return = array();
+    $fields = field_info_field_map();
+    foreach ($fields as $field_name => $field) {
+      if ($this->isField($entity_type, $field_name)) {
+        $return[$field_name] = $field['type'];
+      }
     }
-    else {
-      return new \Drupal\Driver\Fields\Drupal7\DefaultHandler($field_name);
-    }
+    return $return;
   }
 
   /**

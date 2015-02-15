@@ -346,26 +346,6 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * Given a entity, expand fields to match the format expected by entity_save().
-   *
-   * @param \stdClass $entity
-   *   Entity object.
-   * @return \stdClass
-   *   Entity object.
-   */
-  protected function expandEntityFields($entity_type, \stdClass $entity) {
-
-    $new_entity = clone $entity;
-    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
-    foreach ($fields as $field_name => $field) {
-      if (isset($entity->$field_name) && $this->isField($entity_type, $field_name)) {
-        $new_entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name);
-      }
-    }
-    return $new_entity;
-  }
-
-  /**
    * {@inheritDoc}
    */
   public function getModuleList() {
@@ -375,17 +355,15 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritDoc}
    */
-  public function getFieldHandler($entity_type, $field_name) {
-
-    if ($this->isField($entity_type, $field_name)) {
-      $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
-      $field_type = $fields[$field_name]->getType();
-      $class_name = sprintf('\Drupal\Driver\Fields\Drupal8\%sHandler', Container::camelize($field_type));
-      if (class_exists($class_name)) {
-        return new $class_name($entity_type, $field_name);
+  public function getEntityFieldTypes($entity_type) {
+    $return = array();
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    foreach ($fields as $field_name => $field) {
+      if ($this->isField($entity_type, $field_name)) {
+        $return[$field_name] = $field->getType();
       }
     }
-    return new \Drupal\Driver\Fields\Drupal8\DefaultHandler($entity_type, $field_name);
+    return $return;
   }
 
   /**
