@@ -117,6 +117,13 @@ abstract class BaseDriver implements DriverInterface {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public function isField($entity_type, $field_name) {
+    return FALSE;
+  }
+
+  /**
    * Error printing exception
    *
    * @param string $error

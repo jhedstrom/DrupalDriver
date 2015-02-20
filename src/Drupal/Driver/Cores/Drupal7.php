@@ -4,11 +4,12 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
+use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Drupal 7 core.
  */
-class Drupal7 implements CoreInterface {
+class Drupal7 extends AbstractCore {
   /**
    * System path to the Drupal installation.
    *
@@ -97,7 +98,7 @@ class Drupal7 implements CoreInterface {
     $this->expandEntityProperties($node);
 
     // Attempt to decipher any fields that may be specified.
-    $node = $this->expandEntityFields($node);
+    $this->expandEntityFields('node', $node);
 
     // Set defaults that haven't already been set.
     $defaults = clone $node;
@@ -135,7 +136,10 @@ class Drupal7 implements CoreInterface {
     // hashed password.
     $account = clone $user;
 
-    user_save($account, (array) $user);
+    // Attempt to decipher any fields that may be specified.
+    $this->expandEntityFields('user', $account);
+
+    user_save($account, (array) $account);
 
     // Store UID.
     $user->uid = $account->uid;
@@ -287,85 +291,6 @@ class Drupal7 implements CoreInterface {
   }
 
   /**
-   * Given a node object, expand fields to match the format expected by node_save().
-   *
-   * @param stdClass $entity
-   *   Entity object.
-   * @param string $entityType
-   *   Entity type, defaults to node.
-   * @param string $bundle
-   *   Entity bundle.
-   */
-  protected function expandEntityFields(\stdClass $entity, $entityType = 'node', $bundle = '') {
-    if ($entityType === 'node' && !$bundle) {
-      $bundle = $entity->type;
-    }
-
-    $new_entity = clone $entity;
-    foreach ($entity as $param => $value) {
-      if ($info = field_info_field($param)) {
-        foreach ($info['bundles'] as $type => $bundles) {
-          if ($type == $entityType) {
-            foreach ($bundles as $target_bundle) {
-              if ($bundle === $target_bundle) {
-                unset($new_entity->{$param});
-
-                // Use the first defined column. @todo probably breaks things.
-                $column_names = array_keys($info['columns']);
-                $column = array_shift($column_names);
-
-                // Special handling for date fields (start/end).
-                // @todo generalize this
-                if ('date' === $info['module']) {
-                  // Dates passed in separated by a comma are start/end dates.
-                  $dates = explode(',', $value);
-                  $value = trim($dates[0]);
-                  if (!empty($dates[1])) {
-                    $column2 = array_shift($column_names);
-                    $new_entity->{$param}[LANGUAGE_NONE][0][$column2] = trim($dates[1]);
-                  }
-                  $new_entity->{$param}[LANGUAGE_NONE][0][$column] = $value;
-                }
-                // Special handling for term references.
-                elseif ('taxonomy' === $info['module']) {
-                  $terms = explode(',', $value);
-                  $i = 0;
-                  foreach ($terms as $term) {
-                    $tid = taxonomy_get_term_by_name($term);
-                    if (!$tid) {
-                      throw new \Exception(sprintf("No term '%s' exists.", $term));
-                    }
-
-                    $new_entity->{$param}[LANGUAGE_NONE][$i][$column] = array_shift($tid)->tid;
-                    $i++;
-                  }
-                }
-
-                elseif (is_array($value)) {
-                  foreach ($value as $key => $data) {
-                    if (is_int($key) && (isset($value[$key+1]) || isset($value[$key-1]))) {
-                      $new_entity->{$param}[LANGUAGE_NONE][$key] = $data;
-                    } else {
-                      $new_entity->{$param}[LANGUAGE_NONE][0][$key] = $data;
-                    }
-                  }
-                }
-
-
-                else {
-                  $new_entity->{$param}[LANGUAGE_NONE][0][$column] = $value;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return $new_entity;
-  }
-
-  /**
    * Given an entity object, expand any property fields to the expected structure.
    */
   protected function expandEntityProperties(\stdClass $entity) {
@@ -423,6 +348,9 @@ class Drupal7 implements CoreInterface {
       throw new \Exception(sprintf('No "%s" vocabulary found.'));
     }
 
+    // Attempt to decipher any fields that may be specified.
+    $this->expandEntityFields('taxonomy_term', $term);
+
     // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
     $current_path = getcwd();
     chdir(DRUPAL_ROOT);
@@ -471,4 +399,25 @@ class Drupal7 implements CoreInterface {
     return module_list();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function getEntityFieldTypes($entity_type) {
+    $return = array();
+    $fields = field_info_field_map();
+    foreach ($fields as $field_name => $field) {
+      if ($this->isField($entity_type, $field_name)) {
+        $return[$field_name] = $field['type'];
+      }
+    }
+    return $return;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function isField($entity_type, $field_name) {
+    $map = field_info_field_map();
+    return isset($map[$field_name]);
+  }
 }
