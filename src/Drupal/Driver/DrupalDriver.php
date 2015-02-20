@@ -142,7 +142,6 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
     // Active profile
     // @todo
-
     return $paths;
   }
 
@@ -274,6 +273,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function roleDelete($rid) {
     $this->getCore()->roleDelete($rid);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function isField($entity_type, $field_name) {
+    return $this->getCore()->isField($entity_type, $field_name);
   }
 
 }

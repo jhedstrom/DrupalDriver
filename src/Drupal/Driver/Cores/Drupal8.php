@@ -4,6 +4,7 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
@@ -11,7 +12,7 @@ use Drupal\taxonomy\Entity\Term;
 /**
  * Drupal 8 core.
  */
-class Drupal8 implements CoreInterface {
+class Drupal8 extends AbstractCore {
   /**
    * System path to the Drupal installation.
    *
@@ -94,6 +95,7 @@ class Drupal8 implements CoreInterface {
     if (!isset($node->status)) {
       $node->status = 1;
     }
+    $this->expandEntityFields('node', $node);
     $entity = entity_create('node', (array) $node);
     $entity->save();
 
@@ -130,6 +132,7 @@ class Drupal8 implements CoreInterface {
 
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
+    $this->expandEntityFields('user', $user);
     $account = entity_create('user', (array) $user);
     $account->save();
 
@@ -326,6 +329,7 @@ class Drupal8 implements CoreInterface {
    */
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
+    $this->expandEntityFields('taxonomy_term', $term);
     $entity = Term::create((array) $term);
     $entity->save();
 
@@ -346,6 +350,28 @@ class Drupal8 implements CoreInterface {
    */
   public function getModuleList() {
     return \Drupal::moduleHandler()->getModuleList();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getEntityFieldTypes($entity_type) {
+    $return = array();
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    foreach ($fields as $field_name => $field) {
+      if ($this->isField($entity_type, $field_name)) {
+        $return[$field_name] = $field->getType();
+      }
+    }
+    return $return;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function isField($entity_type, $field_name) {
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
 
 }
