@@ -28,8 +28,6 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    */
   public function __construct($entity_type, $field_name, $language) {
     $this->field_info = field_info_field($field_name);
-    if ($this->field_info['translatable']) {
-      $this->language = $language;
-    }
+    $this->language = field_is_translatable('node', $this->field_info) ? $language : LANGUAGE_NONE;
   }
 }
