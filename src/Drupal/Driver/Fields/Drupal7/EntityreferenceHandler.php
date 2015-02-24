@@ -17,7 +17,6 @@ class EntityreferenceHandler extends AbstractHandler {
    * {@inheritDoc}
    */
   public function expand($values) {
-
     $entity_type = $this->field_info['settings']['target_type'];
     $entity_info = entity_get_info($entity_type);
     // For users set label to username.
@@ -32,7 +31,7 @@ class EntityreferenceHandler extends AbstractHandler {
         ->condition('t.' . $entity_info['entity keys']['label'], $value)
         ->execute()->fetchField();
       if ($target_id) {
-        $return[LANGUAGE_NONE][] = array('target_id' => $target_id);
+        $return[$this->language][] = array('target_id' => $target_id);
       }
     }
     return $return;
