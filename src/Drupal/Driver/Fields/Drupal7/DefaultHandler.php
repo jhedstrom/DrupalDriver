@@ -17,10 +17,9 @@ class DefaultHandler extends AbstractHandler {
    * {@inheritDoc}
    */
   public function expand($values) {
-
     $return = array();
     foreach ($values as $value) {
-      $return[LANGUAGE_NONE][] = array('value' => $value);
+      $return[$this->language][] = array('value' => $value);
     }
     return $return;
   }
