@@ -14,7 +14,7 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritDoc}
    */
-  public function getFieldHandler($entity_type, $field_name) {
+  public function getFieldHandler($entity_type, $field_name, $language) {
 
     $reflection = new \ReflectionClass($this);
     $core_namespace = $reflection->getShortName();
@@ -23,9 +23,9 @@ abstract class AbstractCore implements CoreInterface {
     $default_class = sprintf('\Drupal\Driver\Fields\%s\DefaultHandler', $core_namespace);
     $class_name = sprintf('\Drupal\Driver\Fields\%s\%sHandler', $core_namespace, $camelized_type);
     if (class_exists($class_name)) {
-      return new $class_name($entity_type, $field_name);
+      return new $class_name($entity_type, $field_name, $language);
     }
-    return new $default_class($entity_type, $field_name);
+    return new $default_class($entity_type, $field_name, $language);
   }
 
   /**
@@ -38,13 +38,14 @@ abstract class AbstractCore implements CoreInterface {
    */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
     // If no language is set, set the language to NONE.
-    if(!isset($entity->language)){
+    if (!isset($entity->language)) {
       $entity->language = LANGUAGE_NONE;
     }
     $field_types = $this->getEntityFieldTypes($entity_type);
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {
-        $entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name, $entity->language);
+        $entity->$field_name = $this->getFieldHandler($entity_type, $field_name, isset($entity->language) ? $entity->language : LANGUAGE_NONE
+        )->expand($entity->$field_name);
       }
     }
   }

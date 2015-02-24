@@ -16,13 +16,10 @@ class LinkFieldHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand($values, $language) {
-    if (!$this->field_info['translatable']) {
-      $language = LANGUAGE_NONE;
-    }
+  public function expand($values) {
     $return = array();
     foreach ($values as $value) {
-      $return[$language][] = array(
+      $return[$this->language][] = array(
         'title' => $value[0],
         'url' => $value[1],
       );

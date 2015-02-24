@@ -16,17 +16,14 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand($values, $language) {
-    if (!$this->field_info['translatable']) {
-      $language = LANGUAGE_NONE;
-    }
+  public function expand($values) {
     $return = array();
     foreach ($values as $name) {
       $terms = taxonomy_get_term_by_name($name);
       if (!$terms) {
         throw new \Exception(sprintf("No term '%s' exists.", $name));
       }
-      $return[$language][] = array('tid' => array_shift($terms)->tid);
+      $return[$this->language][] = array('tid' => array_shift($terms)->tid);
     }
     return $return;
   }

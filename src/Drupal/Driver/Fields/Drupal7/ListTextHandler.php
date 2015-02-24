@@ -16,14 +16,11 @@ class ListTextHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand($values, $language) {
-    if (!$this->field_info['translatable']) {
-      $language = LANGUAGE_NONE;
-    }
+  public function expand($values) {
     $return = array();
     $allowed_values = array_flip($this->field_info['settings']['allowed_values']);
     foreach ($values as $value) {
-      $return[$language][] = array('value' => $allowed_values[$value]);
+      $return[$this->language][] = array('value' => $allowed_values[$value]);
     }
     return $return;
   }
