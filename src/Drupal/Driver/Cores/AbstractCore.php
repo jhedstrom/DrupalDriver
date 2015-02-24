@@ -37,11 +37,14 @@ abstract class AbstractCore implements CoreInterface {
    *   Entity object.
    */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
-
+    // If no language is set, set the language to NONE.
+    if(!isset($entity->language)){
+      $entity->language = LANGUAGE_NONE;
+    }
     $field_types = $this->getEntityFieldTypes($entity_type);
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {
-        $entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name);
+        $entity->$field_name = $this->getFieldHandler($entity_type, $field_name)->expand($entity->$field_name, $entity->language);
       }
     }
   }

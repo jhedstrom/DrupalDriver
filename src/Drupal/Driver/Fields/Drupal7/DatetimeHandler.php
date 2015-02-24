@@ -16,12 +16,14 @@ class DatetimeHandler extends AbstractHandler {
   /**
    * {@inheritDoc}
    */
-  public function expand($values) {
-
+  public function expand($values,$language) {
+    if (!$this->field_info['translatable']) {
+      $language = LANGUAGE_NONE;
+    }
     $return = array();
     if (isset($this->field_info['columns']['value2'])) {
       foreach ($values as $value) {
-        $return[LANGUAGE_NONE][] = array(
+        $return[$language][] = array(
           'value' => $value[0],
           'value2' => $value[1],
         );
@@ -29,7 +31,7 @@ class DatetimeHandler extends AbstractHandler {
     }
     else {
       foreach ($values as $value) {
-        $return[LANGUAGE_NONE][] = array('value' => $value);
+        $return[$language][] = array('value' => $value);
       }
     }
     return $return;
