@@ -28,3 +28,20 @@ Any testing application should catch unsupported driver exceptions.
    :language: php
    :linenos:
    :emphasize-lines: 8,19
+
+Practical example with PHPUnit
+------------------------------
+
+By using the phpunit/mink project in conjunction with the Drupal Driver, one can use PHPUnit to drive browser sessions and control Drupal.
+
+To install:
+
+.. literalinclude:: _static/snippets/phpunit-composer.json
+   :language: json
+   :linenos:
+
+and then, in the tests directory, a sample test:
+
+.. literalinclude:: _static/snippets/phpunitDrupalDriver.php
+   :language: php
+   :linenos:
