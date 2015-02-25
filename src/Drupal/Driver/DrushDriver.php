@@ -3,6 +3,7 @@
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Component\Utility\RandomInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 use Symfony\Component\Process\Process;
@@ -41,7 +42,7 @@ class DrushDriver extends BaseDriver {
   /**
    * Random generator.
    *
-   * @var \Drupal\Component\Utility\Random
+   * @var \Drupal\Component\Utility\RandomInterface
    */
   private $random;
 
@@ -61,12 +62,12 @@ class DrushDriver extends BaseDriver {
    *   The root path of the Drupal install. This is an alternative to using aliases.
    * @param string $binary
    *   The path to the drush binary.
-   * @param \Drupal\Component\Utility\Random $random
+   * @param \Drupal\Component\Utility\RandomInterface $random
    *   Random generator.
    *
    * @throws \Drupal\Driver\Exception\BootstrapException
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
+  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', RandomInterface $random = NULL) {
     if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
@@ -82,6 +83,7 @@ class DrushDriver extends BaseDriver {
 
     $this->binary = $binary;
 
+    // @todo This should not be optional but injected by a factory method.
     if (!isset($random)) {
       $random = new Random();
     }

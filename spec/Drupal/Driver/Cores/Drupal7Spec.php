@@ -2,14 +2,13 @@
 
 namespace spec\Drupal\Driver\Cores;
 
-use Drupal\Component\Utility\Random;
-
+use Drupal\Component\Utility\RandomInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
 class Drupal7Spec extends ObjectBehavior
 {
-    function let(Random $random)
+    function let(RandomInterface $random)
     {
         $this->beConstructedWith('path', 'http://www.example.com', $random);
     }
@@ -21,6 +20,6 @@ class Drupal7Spec extends ObjectBehavior
 
     function it_should_return_a_random_generator()
     {
-        $this->getRandom()->shouldBeAnInstanceOf('Drupal\Component\Utility\Random');
+        $this->getRandom()->shouldBeAnInstanceOf('Drupal\Component\Utility\RandomInterface');
     }
 }
