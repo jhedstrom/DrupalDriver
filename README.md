@@ -1,10 +1,10 @@
-[![Build Status](https://travis-ci.org/jhedstrom/DrupalDriver.svg?branch=master)](https://travis-ci.org/jhedstrom/DrupalDriver)
+[![Build Status](https://travis-ci.org/jhedstrom/DrupalDriver.svg?branch=1.0)](https://travis-ci.org/jhedstrom/DrupalDriver)
 
 Provides a collection of light-weight drivers with a common interface for interacting with [Drupal](http://drupal.org). These are generally intended for testing, and are not meant to be API-complete.
 
-[Read the full documentation](http://drupal-drivers.readthedocs.org)
+[![Latest Stable Version](https://poser.pugx.org/drupal/drupal-driver/v/stable.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Total Downloads](https://poser.pugx.org/drupal/drupal-driver/downloads.svg)](https://packagist.org/packages/drupal/drupal-driver) [![License](https://poser.pugx.org/drupal/drupal-driver/license.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/badges/quality-score.png?b=1.0)](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/?branch=1.0)
 
-[![Latest Stable Version](https://poser.pugx.org/drupal/drupal-driver/v/stable.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Total Downloads](https://poser.pugx.org/drupal/drupal-driver/downloads.svg)](https://packagist.org/packages/drupal/drupal-driver) [![License](https://poser.pugx.org/drupal/drupal-driver/license.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/?branch=master)
+[Read the full documentation](http://drupal-drivers.readthedocs.org)
 
 ### Drivers
 

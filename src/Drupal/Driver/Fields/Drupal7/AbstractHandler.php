@@ -23,6 +23,8 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * Get field instance information.
    *
+   * @param $entity
+   * @param $entity_type
    * @param $field_name
    * @return mixed
    */
