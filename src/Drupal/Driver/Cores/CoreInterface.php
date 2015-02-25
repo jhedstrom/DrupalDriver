@@ -126,7 +126,7 @@ interface CoreInterface {
    *    Field machine name.
    * @return \Drupal\Driver\Fields\FieldHandlerInterface
    */
-  public function getFieldHandler($entity_type, $field_name, $language);
+  public function getFieldHandler($entity, $entity_type, $field_name);
 
   /**
    * Check if the specified field is an actual Drupal field.
