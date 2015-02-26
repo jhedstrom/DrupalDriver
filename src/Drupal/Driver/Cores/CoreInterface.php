@@ -8,6 +8,7 @@ use Drupal\Component\Utility\Random;
  * Drupal core interface.
  */
 interface CoreInterface {
+
   /**
    * Instantiate the core interface.
    *
@@ -19,7 +20,7 @@ interface CoreInterface {
    * @param \Drupal\Component\Utility\Random $random
    *   Random string generator.
    */
-  public function __construct($drupalRoot, $uri = 'default', Random $random);
+  public function __construct($drupalRoot, $uri = 'default', Random $random = NULL);
 
   /**
    * Return random generator.

@@ -18,4 +18,9 @@ class Drupal8Spec extends ObjectBehavior
     {
         $this->shouldHaveType('Drupal\Driver\Cores\Drupal8');
     }
+
+    function it_should_return_a_random_generator()
+    {
+        $this->getRandom()->shouldBeAnInstanceOf('Drupal\Component\Utility\Random');
+    }
 }

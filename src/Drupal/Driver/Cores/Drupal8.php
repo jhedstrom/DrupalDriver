@@ -13,45 +13,6 @@ use Drupal\taxonomy\Entity\Term;
  * Drupal 8 core.
  */
 class Drupal8 extends AbstractCore {
-  /**
-   * System path to the Drupal installation.
-   *
-   * @var string
-   */
-  private $drupalRoot;
-
-  /**
-   * URI for the Drupal installation.
-   *
-   * @var string
-   */
-  private $uri;
-
-  /**
-   * Random generator.
-   *
-   * @var \Drupal\Component\Utility\Random
-   */
-  private $random;
-
-  /**
-   * {@inheritDoc}
-   */
-  public function __construct($drupalRoot, $uri = 'default', Random $random = NULL) {
-    $this->drupalRoot = realpath($drupalRoot);
-    $this->uri = $uri;
-    if (!isset($random)) {
-      $random = new Random();
-    }
-    $this->random = $random;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function getRandom() {
-    return $this->random;
-  }
 
   /**
    * {@inheritDoc}
