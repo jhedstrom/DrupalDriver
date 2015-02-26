@@ -4,51 +4,11 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
-use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Drupal 7 core.
  */
 class Drupal7 extends AbstractCore {
-  /**
-   * System path to the Drupal installation.
-   *
-   * @var string
-   */
-  private $drupalRoot;
-
-  /**
-   * URI for the Drupal installation.
-   *
-   * @var string
-   */
-  private $uri;
-
-  /**
-   * Random generator.
-   *
-   * @var \Drupal\Component\Utility\Random
-   */
-  private $random;
-
-  /**
-   * {@inheritDoc}
-   */
-  public function __construct($drupalRoot, $uri = 'default', Random $random = NULL) {
-    $this->drupalRoot = realpath($drupalRoot);
-    $this->uri = $uri;
-    if (!isset($random)) {
-      $random = new Random();
-    }
-    $this->random = $random;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function getRandom() {
-    return $this->random;
-  }
 
   /**
    * {@inheritDoc}
