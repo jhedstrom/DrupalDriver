@@ -17,21 +17,21 @@ abstract class AbstractCore implements CoreInterface {
    *
    * @var string
    */
-  private $drupalRoot;
+  protected $drupalRoot;
 
   /**
    * URI for the Drupal installation.
    *
    * @var string
    */
-  private $uri;
+  protected $uri;
 
   /**
    * Random generator.
    *
    * @var \Drupal\Component\Utility\Random
    */
-  private $random;
+  protected $random;
 
   /**
    * {@inheritDoc}
