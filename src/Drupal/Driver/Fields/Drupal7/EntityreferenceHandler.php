@@ -25,7 +25,7 @@ class EntityreferenceHandler extends AbstractHandler {
     }
 
     $return = array();
-    foreach ($values as $value) {
+    foreach ((array)$values as $value) {
       $target_id = db_select($entity_info['base table'], 't')
         ->fields('t', array($entity_info['entity keys']['id']))
         ->condition('t.' . $entity_info['entity keys']['label'], $value)
