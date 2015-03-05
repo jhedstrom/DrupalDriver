@@ -19,7 +19,7 @@ class DatetimeHandler extends AbstractHandler {
   public function expand($values) {
     $return = array();
     if (isset($this->field_info['columns']['value2'])) {
-      foreach ($values as $value) {
+      foreach ((array)$values as $value) {
         $return[$this->language][] = array(
           'value' => $value[0],
           'value2' => $value[1],
@@ -27,7 +27,7 @@ class DatetimeHandler extends AbstractHandler {
       }
     }
     else {
-      foreach ($values as $value) {
+      foreach ((array)$values as $value) {
         $return[$this->language][] = array('value' => $value);
       }
     }
