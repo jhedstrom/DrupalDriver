@@ -18,7 +18,7 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = array();
-    foreach ($values as $name) {
+    foreach ((array)$values as $name) {
       $terms = taxonomy_get_term_by_name($name);
       if (!$terms) {
         throw new \Exception(sprintf("No term '%s' exists.", $name));
