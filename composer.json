@@ -12,7 +12,8 @@
      }
   ],
   "require": {
-    "symfony/process": "~2.5"
+    "symfony/process": "~2.5",
+    "symfony/dependency-injection": "~2.6"
   },
   "require-dev": {
     "phpspec/phpspec": "~2.0",
