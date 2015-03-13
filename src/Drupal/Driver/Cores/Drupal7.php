@@ -22,7 +22,6 @@ class Drupal7 extends AbstractCore {
     }
 
     // Bootstrap Drupal.
-    $current_path = getcwd();
     chdir(DRUPAL_ROOT);
     drupal_bootstrap(DRUPAL_BOOTSTRAP_CONFIGURATION);
     if (empty($GLOBALS['databases'])) {

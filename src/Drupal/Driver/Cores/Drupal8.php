@@ -24,7 +24,6 @@ class Drupal8 extends AbstractCore {
     }
 
     // Bootstrap Drupal.
-    $current_path = getcwd();
     chdir(DRUPAL_ROOT);
     require_once DRUPAL_ROOT . '/core/includes/bootstrap.inc';
     $this->validateDrupalSite();
