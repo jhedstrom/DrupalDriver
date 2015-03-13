@@ -33,8 +33,6 @@ class Drupal8 extends AbstractCore {
 
     // Initialise an anonymous session. required for the bootstrap.
     \Drupal::service('session_manager')->start();
-
-    chdir($current_path);
   }
 
   /**

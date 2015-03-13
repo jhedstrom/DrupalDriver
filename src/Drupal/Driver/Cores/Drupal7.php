@@ -29,7 +29,6 @@ class Drupal7 extends AbstractCore {
       throw new BootstrapException('Missing database setting, verify the database configuration in settings.php.');
     }
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-    chdir($current_path);
   }
 
   /**
