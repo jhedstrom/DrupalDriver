@@ -3,11 +3,13 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Core\DrupalKernel;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Drupal 8 core.
@@ -26,10 +28,14 @@ class Drupal8 extends AbstractCore {
     // Bootstrap Drupal.
     $current_path = getcwd();
     chdir(DRUPAL_ROOT);
+    require_once DRUPAL_ROOT . '/core/vendor/autoload.php';
     require_once DRUPAL_ROOT . '/core/includes/bootstrap.inc';
     $this->validateDrupalSite();
 
-    drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+    $request = Request::createFromGlobals();
+    $kernel = DrupalKernel::createFromRequest($request, \ComposerAutoloaderInitDrupal8::getLoader(), 'prod');
+    $kernel->boot();
+    $kernel->prepareLegacyRequest($request);
 
     // Initialise an anonymous session. required for the bootstrap.
     \Drupal::service('session_manager')->start();
