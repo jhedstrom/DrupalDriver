@@ -26,7 +26,6 @@ class Drupal8 extends AbstractCore {
     }
 
     // Bootstrap Drupal.
-    $current_path = getcwd();
     chdir(DRUPAL_ROOT);
     require_once DRUPAL_ROOT . '/core/vendor/autoload.php';
     require_once DRUPAL_ROOT . '/core/includes/bootstrap.inc';
@@ -39,8 +38,6 @@ class Drupal8 extends AbstractCore {
 
     // Initialise an anonymous session. required for the bootstrap.
     \Drupal::service('session_manager')->start();
-
-    chdir($current_path);
   }
 
   /**
