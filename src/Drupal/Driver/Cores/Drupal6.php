@@ -11,6 +11,11 @@ use Drupal\Driver\Exception\BootstrapException;
 class Drupal6 extends AbstractCore {
 
   /**
+   * @var array
+   */
+  protected $availablePermissons;
+
+  /**
    * {@inheritDoc}
    */
   public function bootstrap() {
@@ -47,13 +52,16 @@ class Drupal6 extends AbstractCore {
    * {@inheritDoc}
    */
   public function nodeCreate($node) {
+    $current_path = getcwd();
+    chdir(DRUPAL_ROOT);
+
     // Set original if not set.
     if (!isset($node->original)) {
       $node->original = clone $node;
     }
 
     // Assign authorship if none exists and `author` is passed.
-    if (!isset($node->uid) && !empty($node->author) && ($user = user_load_by_name($node->author))) {
+    if (!isset($node->uid) && !empty($node->author) && ($user = user_load(array('name' => $node->author)))) {
       $node->uid = $user->uid;
     }
 
@@ -65,11 +73,15 @@ class Drupal6 extends AbstractCore {
 
     // Set defaults that haven't already been set.
     $defaults = clone $node;
+    module_load_include('inc', 'node', 'node.pages');
     node_object_prepare($defaults);
     $node = (object) array_merge((array) $defaults, (array) $node);
 
     node_save($node);
+
+    chdir($current_path);
     return $node;
+
   }
 
   /**
@@ -98,14 +110,18 @@ class Drupal6 extends AbstractCore {
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
     $account = clone $user;
-
-    // Attempt to decipher any fields that may be specified.
-    $this->expandEntityFields('user', $account);
-
-    $account = user_save(NULL, (array) $account);
-
-    // Store UID.
+    // Convert role array to a keyed array.
+    if (isset($user->roles)) {
+      $roles = array();
+      foreach ($user->roles as $rid) {
+        $roles[$rid] = $rid;
+      }
+      $user->roles = $roles;
+    }
+    $account = user_save((array) $account, (array) $account);
+    // Store the UID
     $user->uid = $account->uid;
+    return $user;
   }
 
   /**
@@ -118,26 +134,21 @@ class Drupal6 extends AbstractCore {
     chdir($current_path);
   }
 
-  public function processBatch() {
-    $current_path = getcwd();
-    chdir(DRUPAL_ROOT);
-    $batch =& batch_get();
-    $batch['progressive'] = FALSE;
-     batch_process();
-    chdir($current_path);
-  }
+  /**
+   * {@inheritdoc}
+   */
+  public function processBatch() { }
 
   /**
    * {@inheritDoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
-    $role = $this->userRoleLoadByName($role_name);
-
+    $roles = array_flip(user_roles());
+    $role = $roles[$role_name];
     if (!$role) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
     }
-
-    user_multiple_role_edit(array($user->uid), 'add_role', $role->rid);
+    user_multiple_role_edit(array($user->uid), 'add_role', $role);
   }
 
   /**
@@ -167,15 +178,14 @@ class Drupal6 extends AbstractCore {
    * @return bool TRUE or FALSE depending on whether the permissions are valid.
    */
   protected function checkPermissions(array $permissions, $reset = FALSE) {
-    $available = &drupal_static(__FUNCTION__);
 
-    if (!isset($available) || $reset) {
-      $available = array_keys(module_invoke_all('permission'));
+    if (!isset($this->availablePermissons) || $reset) {
+      $this->availablePermissons = array_keys(module_invoke_all('permission'));
     }
 
     $valid = TRUE;
     foreach ($permissions as $permission) {
-      if (!in_array($permission, $available)) {
+      if (!in_array($permission, $this->availablePermissons)) {
         $valid = FALSE;
       }
     }
@@ -186,39 +196,31 @@ class Drupal6 extends AbstractCore {
    * {@inheritDoc}
    */
   public function roleCreate(array $permissions) {
-
-    // Both machine name and permission title are allowed.
-    $all_permissions = $this->getAllPermissions();
-
-    foreach ($permissions as $key => $name) {
-      if (!isset($all_permissions[$name])) {
-        $search = array_search($name, $all_permissions);
-        if (!$search) {
-          throw new \RuntimeException(sprintf("No permission '%s' exists.", $name));
-        }
-        $permissions[$key] = $search;
+    // Verify permissions exist.
+    $all_permissions = module_invoke_all('perm');
+    foreach ($permissions as $name) {
+      $search = array_search($name, $all_permissions);
+      if (!$search) {
+        throw new \RuntimeException(sprintf("No permission '%s' exists.", $name));
       }
     }
-
     // Create new role.
-    $role = new \stdClass();
-    $role->name = $this->random->name(8);
-    user_role_save($role);
-    user_role_grant_permissions($role->rid, $permissions);
-
-    if ($role && !empty($role->rid)) {
-      return $role->name;
-    }
-
-    throw new \RuntimeException(sprintf('Failed to create a role with "" permission(s).', implode(', ', $permissions)));
+    $name = $this->random->name(8);
+    db_query("INSERT INTO {role} SET name = '%s'", $name);
+    // Add permissions to role.
+    $rid = db_last_insert_id('role', 'rid');
+    db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $permissions));
+    return $rid;
   }
 
   /**
    * {@inheritDoc}
    */
-  public function roleDelete($role_name) {
-    $role = user_role_load_by_name($role_name);
-    user_role_delete((int) $role->rid);
+  public function roleDelete($rid) {
+    db_query('DELETE FROM {role} WHERE rid = %d', $rid);
+    if (!db_affected_rows()) {
+      throw new \RuntimeException(sprintf('No role "%s" exists.', $rid));
+    }
   }
 
   /**
@@ -286,13 +288,30 @@ class Drupal6 extends AbstractCore {
     }
 
     // Map human-readable node types to machine node types.
-    $types = \node_type_get_types();
+    $types = node_get_types();
     foreach ($types as $type) {
       if ($entity->type == $type->name) {
         $entity->type = $type->type;
         continue;
       }
     }
+  }
+
+  /**
+   * Load vocabularies, optional by VIDs.
+   *
+   * @param array $vids
+   *   The vids to load
+   *
+   * @return array
+   *   An array of vocabulary objects
+   */
+  protected function taxonomyVocabularyLoadMultiple($vids = array()) {
+    $vocabularies = taxonomy_get_vocabularies();
+    if ($vids) {
+      return array_intersect_key($vocabularies, array_flip($vids));
+    }
+    return $vocabularies;
   }
 
   /**
@@ -312,9 +331,7 @@ class Drupal6 extends AbstractCore {
     if (!isset($term->vid)) {
 
       // Try to load vocabulary by machine name.
-      $vocabularies = \taxonomy_vocabulary_load_multiple(FALSE, array(
-        'machine_name' => $term->vocabulary_machine_name
-      ));
+      $vocabularies = $this->taxonomyVocabularyLoadMultiple(array($term->vid));
       if (!empty($vocabularies)) {
         $vids = array_keys($vocabularies);
         $term->vid = reset($vids);
@@ -323,7 +340,7 @@ class Drupal6 extends AbstractCore {
 
     // If `parent` is set, look up a term in this vocab with that name.
     if (isset($term->parent)) {
-      $parent = \taxonomy_get_term_by_name($term->parent, $term->vocabulary_machine_name);
+      $parent = \taxonomy_get_term_by_name($term->parent);
       if (!empty($parent)) {
         $parent = reset($parent);
         $term->parent = $parent->tid;
@@ -340,7 +357,8 @@ class Drupal6 extends AbstractCore {
     // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
     $current_path = getcwd();
     chdir(DRUPAL_ROOT);
-    \taxonomy_term_save($term);
+    $term_array = (array) $term;
+    \taxonomy_save_term($term_array);
     chdir($current_path);
 
     // Loading a term by name returns an array of term objects, but there should
@@ -358,7 +376,7 @@ class Drupal6 extends AbstractCore {
   public function termDelete(\stdClass $term) {
     $status = 0;
     if (isset($term->tid)) {
-      $status = \taxonomy_term_delete($term->tid);
+      $status = \taxonomy_del_term($term->tid);
     }
     // Will be SAVED_DELETED (3) on success.
     return $status;
