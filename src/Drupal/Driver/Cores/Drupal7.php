@@ -34,11 +34,7 @@ class Drupal7 extends AbstractCore {
    * {@inheritDoc}
    */
   public function clearCache() {
-    // Need to change into the Drupal root directory or the registry explodes.
-    $current_path = getcwd();
-    chdir(DRUPAL_ROOT);
     drupal_flush_all_caches();
-    chdir($current_path);
   }
 
   /**
@@ -312,11 +308,7 @@ class Drupal7 extends AbstractCore {
     // Attempt to decipher any fields that may be specified.
     $this->expandEntityFields('taxonomy_term', $term);
 
-    // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
-    $current_path = getcwd();
-    chdir(DRUPAL_ROOT);
     \taxonomy_term_save($term);
-    chdir($current_path);
 
     // Loading a term by name returns an array of term objects, but there should
     // only be one matching term in a testing context, so take the first match
