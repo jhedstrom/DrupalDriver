@@ -45,10 +45,7 @@ class Drupal8 extends AbstractCore {
    */
   public function clearCache() {
     // Need to change into the Drupal root directory or the registry explodes.
-    $current_path = getcwd();
-    chdir(DRUPAL_ROOT);
     drupal_flush_all_caches();
-    chdir($current_path);
   }
 
   /**
@@ -168,10 +165,7 @@ class Drupal8 extends AbstractCore {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
-      $current_path = getcwd();
-      chdir(DRUPAL_ROOT);
       $permissions = \Drupal::service('user.permissions')->getPermissions();
-      chdir($current_path);
     }
 
     return $permissions;
