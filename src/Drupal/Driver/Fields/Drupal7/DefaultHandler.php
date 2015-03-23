@@ -18,7 +18,7 @@ class DefaultHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = array();
-    foreach ((array)$values as $value) {
+    foreach ($values as $value) {
       $return[$this->language][] = array('value' => $value);
     }
     return $return;
