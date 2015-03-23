@@ -17,12 +17,14 @@
   },
   "require-dev": {
     "phpspec/phpspec": "~2.0",
-    "phpunit/phpunit": "~4.0"
+    "phpunit/phpunit": "~4.0",
+    "mockery/mockery": "dev-master"
   },
   "autoload": {
     "psr-0": {
       "Drupal\\Component": "src/",
-      "Drupal\\Driver": "src/"
+      "Drupal\\Driver": "src/",
+      "Drupal\\Tests\\Driver" : "tests/"
     }
   },
   "extra": {
