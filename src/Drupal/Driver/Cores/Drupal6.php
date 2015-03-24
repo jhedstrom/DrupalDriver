@@ -210,13 +210,15 @@ class Drupal6 extends AbstractCore {
     // Add permissions to role.
     $rid = db_last_insert_id('role', 'rid');
     db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $permissions));
-    return $rid;
+    return $name;
   }
 
   /**
    * {@inheritDoc}
    */
-  public function roleDelete($rid) {
+  public function roleDelete($role_name) {
+    $roles = array_flip(user_roles());
+    $rid = $roles[$role_name];
     db_query('DELETE FROM {role} WHERE rid = %d', $rid);
     if (!db_affected_rows()) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $rid));
