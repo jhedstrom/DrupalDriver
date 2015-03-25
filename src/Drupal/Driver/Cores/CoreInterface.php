@@ -89,6 +89,8 @@ interface CoreInterface {
    */
   public function validateDrupalSite();
 
+  public function processBatch();
+
   /**
    * Create a taxonomy term.
    */
