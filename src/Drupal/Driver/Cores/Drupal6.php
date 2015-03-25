@@ -406,9 +406,6 @@ class Drupal6 extends AbstractCore {
   }
 
   protected function expandEntityFields($entity_type, \stdClass $entity) {
-    if (!module_exists('content')) {
-      return;
-    }
     return parent::expandEntityFields($entity_type, $entity);
   }
 
@@ -416,8 +413,9 @@ class Drupal6 extends AbstractCore {
    * {@inheritDoc}
    */
   public function getEntityFieldTypes($entity_type) {
+    $taxonomy_fields = ['taxonomy' => 'taxonomy'];
     if (!module_exists('content')) {
-      return;
+      return $taxonomy_fields;
     }
     $return = array();
     $fields = content_fields();
@@ -426,6 +424,9 @@ class Drupal6 extends AbstractCore {
         $return[$field_name] = $field['type'];
       }
     }
+
+    $return += $taxonomy_fields;
+
     return $return;
   }
 
@@ -433,10 +434,14 @@ class Drupal6 extends AbstractCore {
    * {@inheritDoc}
    */
   public function isField($entity_type, $field_name) {
+    if ($field_name === 'taxonomy') {
+      return TRUE;
+    }
     if (!module_exists('content')) {
-      return;
+      return FALSE;
     }
     $map = content_fields();
     return isset($map[$field_name]);
   }
+
 }
