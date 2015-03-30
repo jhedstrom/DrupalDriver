@@ -413,7 +413,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritDoc}
    */
   public function getEntityFieldTypes($entity_type) {
-    $taxonomy_fields = ['taxonomy' => 'taxonomy'];
+    $taxonomy_fields = array('taxonomy' => 'taxonomy');
     if (!module_exists('content')) {
       return $taxonomy_fields;
     }
