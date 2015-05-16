@@ -307,7 +307,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritDoc}
    */
   public function getModuleList() {
-    return \Drupal::moduleHandler()->getModuleList();
+    return array_keys(\Drupal::moduleHandler()->getModuleList());
   }
 
   /**
