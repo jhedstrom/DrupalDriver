@@ -120,7 +120,7 @@ class DrushDriver extends BaseDriver {
    */
   public function userCreate(\stdClass $user) {
     $arguments = array(
-      $user->name,
+      sprintf('"%s"', $user->name),
     );
     $options = array(
       'password' => $user->pass,
@@ -138,7 +138,7 @@ class DrushDriver extends BaseDriver {
    * {@inheritDoc}
    */
   public function userDelete(\stdClass $user) {
-    $arguments = array($user->name);
+    $arguments = array(sprintf('"%s"', $user->name),);
     $options = array(
       'yes' => NULL,
       'delete-content' => NULL,
@@ -152,7 +152,7 @@ class DrushDriver extends BaseDriver {
   public function userAddRole(\stdClass $user, $role) {
     $arguments = array(
       sprintf('"%s"', $role),
-      $user->name
+      sprintf('"%s"', $user->name),
     );
     $this->drush('user-add-role', $arguments);
   }
