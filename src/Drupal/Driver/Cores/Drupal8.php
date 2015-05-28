@@ -27,12 +27,12 @@ class Drupal8 extends AbstractCore {
 
     // Bootstrap Drupal.
     chdir(DRUPAL_ROOT);
-    require_once DRUPAL_ROOT . '/core/vendor/autoload.php';
+    $autoloader = DRUPAL_ROOT . '/autoload.php';
     require_once DRUPAL_ROOT . '/core/includes/bootstrap.inc';
     $this->validateDrupalSite();
 
     $request = Request::createFromGlobals();
-    $kernel = DrupalKernel::createFromRequest($request, \ComposerAutoloaderInitDrupal8::getLoader(), 'prod');
+    $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
     $kernel->prepareLegacyRequest($request);
 
@@ -307,7 +307,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritDoc}
    */
   public function getModuleList() {
-    return \Drupal::moduleHandler()->getModuleList();
+    return array_keys(\Drupal::moduleHandler()->getModuleList());
   }
 
   /**
