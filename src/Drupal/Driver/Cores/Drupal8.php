@@ -27,7 +27,7 @@ class Drupal8 extends AbstractCore {
 
     // Bootstrap Drupal.
     chdir(DRUPAL_ROOT);
-    $autoloader = DRUPAL_ROOT . '/autoload.php';
+    $autoloader = require DRUPAL_ROOT . '/autoload.php';
     require_once DRUPAL_ROOT . '/core/includes/bootstrap.inc';
     $this->validateDrupalSite();
 
