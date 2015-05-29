@@ -161,7 +161,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
         // Drupal 7.
         '/includes/bootstrap.inc',
         // Drupal 8.
-        '/core/vendor/autoload.php',
+        '/autoload.php',
         '/core/includes/bootstrap.inc',
       );
 
