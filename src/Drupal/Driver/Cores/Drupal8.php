@@ -9,6 +9,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\TermInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -70,7 +71,9 @@ class Drupal8 extends AbstractCore {
    */
   public function nodeDelete($node) {
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
-    $node->delete();
+    if ($node instanceof NodeInterface) {
+      $node->delete();
+    }
   }
 
   /**
@@ -299,8 +302,10 @@ class Drupal8 extends AbstractCore {
    * {@inheritDoc}
    */
   public function termDelete(\stdClass $term) {
-    $term = Term::load($term->tid);
-    $term->delete();
+    $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
+    if ($term instanceof TermInterface) {
+      $term->delete();
+    }
   }
 
   /**
