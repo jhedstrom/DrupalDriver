@@ -359,7 +359,7 @@ class Drupal7 extends AbstractCore {
     $return = array();
     $fields = field_info_field_map();
     foreach ($fields as $field_name => $field) {
-      if ($this->isField($entity_type, $field_name)) {
+      if (array_key_exists($entity_type, $field['bundles'])) {
         $return[$field_name] = $field['type'];
       }
     }
