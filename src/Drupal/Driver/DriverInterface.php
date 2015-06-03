@@ -133,8 +133,12 @@ interface DriverInterface {
    * Check if the specified field is an actual Drupal field.
    *
    * @param $entity_type
+   *   The entity type to which the field should belong.
    * @param $field_name
+   *   The name of the field.
+   *
    * @return boolean
+   *   TRUE if the field exists in the entity type, FALSE if not.
    */
   public function isField($entity_type, $field_name);
 }

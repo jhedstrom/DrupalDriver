@@ -371,6 +371,6 @@ class Drupal7 extends AbstractCore {
    */
   public function isField($entity_type, $field_name) {
     $map = field_info_field_map();
-    return isset($map[$field_name]);
+    return !empty($map[$field_name]) && array_key_exists($entity_type, $map[$field_name]['bundles']);
   }
 }
