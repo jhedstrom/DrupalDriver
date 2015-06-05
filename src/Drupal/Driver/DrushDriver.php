@@ -89,14 +89,14 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getRandom() {
     return $this->random;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Check that the given alias works.
@@ -109,14 +109,14 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isBootstrapped() {
     return $this->bootstrapped;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     $arguments = array(
@@ -135,7 +135,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     $arguments = array(sprintf('"%s"', $user->name),);
@@ -147,7 +147,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role) {
     $arguments = array(
@@ -158,7 +158,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     $options = array(
@@ -170,7 +170,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache($type = 'all') {
     $type = array($type);
@@ -249,14 +249,14 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function processBatch() {
     // Do nothing. Drush should internally handle any needs for processing batch ops.
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     $this->drush('cron');
