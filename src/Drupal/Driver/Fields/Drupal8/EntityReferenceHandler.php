@@ -14,7 +14,7 @@ namespace Drupal\Driver\Fields\Drupal8;
 class EntityReferenceHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
 

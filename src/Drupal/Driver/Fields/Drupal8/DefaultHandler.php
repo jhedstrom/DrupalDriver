@@ -14,7 +14,7 @@ namespace Drupal\Driver\Fields\Drupal8;
 class DefaultHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     return $values;

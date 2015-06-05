@@ -8,7 +8,7 @@ namespace Drupal\Driver;
 class BlackboxDriver extends BaseDriver {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isBootstrapped() {
     // Assume the blackbox is always bootstrapped.

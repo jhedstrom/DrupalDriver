@@ -14,7 +14,7 @@ namespace Drupal\Driver\Fields\Drupal7;
 class EntityreferenceHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $entity_type = $this->field_info['settings']['target_type'];

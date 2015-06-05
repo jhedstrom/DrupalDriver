@@ -60,14 +60,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getRandom() {
     return $this->getCore()->getRandom();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     $this->getCore()->bootstrap();
@@ -75,7 +75,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isBootstrapped() {
     // Assume the blackbox is always bootstrapped.
@@ -83,14 +83,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     $this->getCore()->userCreate($user);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     $this->getCore()->userDelete($user);
@@ -101,28 +101,28 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $this->getCore()->userAddRole($user, $role_name);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     throw new PendingException(sprintf('Currently no ability to access watchdog entries in %s', $this));
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache($type = NULL) {
     $this->getCore()->clearCache();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getSubDriverPaths() {
     // Ensure system is bootstrapped.
@@ -225,21 +225,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function createNode($node) {
     return $this->getCore()->nodeCreate($node);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     return $this->getCore()->nodeDelete($node);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     if (!$this->getCore()->runCron()) {
@@ -248,35 +248,35 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function createTerm(\stdClass $term) {
     return $this->getCore()->termCreate($term);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     return $this->getCore()->termDelete($term);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     return $this->getCore()->roleCreate($permissions);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($rid) {
     $this->getCore()->roleDelete($rid);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     return $this->getCore()->isField($entity_type, $field_name);
