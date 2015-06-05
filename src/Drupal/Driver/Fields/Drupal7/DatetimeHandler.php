@@ -14,7 +14,7 @@ namespace Drupal\Driver\Fields\Drupal7;
 class DatetimeHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $return = array();

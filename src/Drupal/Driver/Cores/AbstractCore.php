@@ -34,7 +34,7 @@ abstract class AbstractCore implements CoreInterface {
   protected $random;
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function __construct($drupalRoot, $uri = 'default', Random $random = NULL) {
     $this->drupalRoot = realpath($drupalRoot);
@@ -46,14 +46,14 @@ abstract class AbstractCore implements CoreInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getRandom() {
     return $this->random;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getFieldHandler($entity, $entity_type, $field_name) {
 

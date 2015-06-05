@@ -16,7 +16,7 @@ class Drupal6 extends AbstractCore {
   protected $availablePermissons;
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -38,7 +38,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache() {
     // Need to change into the Drupal root directory or the registry explodes.
@@ -49,7 +49,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeCreate($node) {
     $current_path = getcwd();
@@ -85,7 +85,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     node_delete($node->nid);
@@ -99,7 +99,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     // Default status to TRUE if not explicitly creating a blocked user.
@@ -125,7 +125,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     $current_path = getcwd();
@@ -140,7 +140,7 @@ class Drupal6 extends AbstractCore {
   public function processBatch() { }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $roles = array_flip(user_roles());
@@ -193,7 +193,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     // Verify permissions exist.
@@ -214,7 +214,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($role_name) {
     $roles = array_flip(user_roles());
@@ -226,7 +226,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
@@ -317,7 +317,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
     // Map vocabulary names to vid, these take precedence over machine names.
@@ -373,7 +373,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     $status = 0;
@@ -399,7 +399,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getModuleList() {
     return module_list();
@@ -410,7 +410,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type) {
     $taxonomy_fields = array('taxonomy' => 'taxonomy');
@@ -431,7 +431,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     if ($field_name === 'taxonomy') {

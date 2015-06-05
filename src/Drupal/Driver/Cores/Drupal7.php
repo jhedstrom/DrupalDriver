@@ -11,7 +11,7 @@ use Drupal\Driver\Exception\BootstrapException;
 class Drupal7 extends AbstractCore {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -31,14 +31,14 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache() {
     drupal_flush_all_caches();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeCreate($node) {
     // Set original if not set.
@@ -67,7 +67,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     node_delete($node->nid);
@@ -81,7 +81,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     // Default status to TRUE if not explicitly creating a blocked user.
@@ -103,7 +103,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
@@ -116,7 +116,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $role = user_role_load_by_name($role_name);
@@ -154,7 +154,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
 
@@ -185,7 +185,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($role_name) {
     $role = user_role_load_by_name($role_name);
@@ -193,7 +193,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
@@ -267,7 +267,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
     // Map vocabulary names to vid, these take precedence over machine names.
@@ -320,7 +320,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     $status = 0;
@@ -346,14 +346,14 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getModuleList() {
     return module_list();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
@@ -367,7 +367,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     $map = field_info_field_map();
