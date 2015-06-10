@@ -18,7 +18,11 @@ class DefaultHandler extends AbstractHandler {
   public function expand($values) {
     $return = array();
     foreach ($values as $value) {
-      $return[$this->language][] = array('value' => $value);
+      // Use the column name 'value' by default if the value is not an array.
+      if (!is_array($value)) {
+        $value = array('value' => $value);
+      }
+      $return[$this->language][] = $value;
     }
     return $return;
   }
