@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal8\TaxonomyTermReferenceHandler
+ * Contains \Drupal\Driver\Fields\Drupal8\TaxonomyTermReferenceHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Class TaxonomyTermReferenceHandler
- * @package Drupal\Driver\Fields\Drupal8
+ * Field handler for taxonomy term references in Drupal 8.
  */
 class TaxonomyTermReferenceHandler extends AbstractHandler {
 
@@ -17,7 +16,6 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-
     $return = array();
     foreach ($values as $name) {
       $terms = \Drupal::entityManager()
@@ -32,4 +30,5 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
