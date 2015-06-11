@@ -8,4 +8,4 @@ install:
 script:
   - phpunit
   - vendor/bin/phpspec run -f pretty --no-interaction
-  - ./vendor/bin/phpcs --standard=./vendor/drupal/coder/coder_sniffer/Drupal --ignore=./vendor --ignore=./doc .
+  - ./vendor/bin/phpcs --standard=./vendor/drupal/coder/coder_sniffer/Drupal --ignore=./vendor --ignore=./doc --ignore=./spec .
