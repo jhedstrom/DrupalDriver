@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\DrupalDriver.
+ */
+
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\BootstrapException;
@@ -49,11 +54,19 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
   /**
    * Set Drupal root and URI.
+   *
+   * @param string $drupal_root
+   *   The Drupal root path.
+   * @param string $uri
+   *   The URI for the Drupal installation.
+   *
+   * @throws BootstrapException
+   *   Thrown when the Drupal installation is not found in the given root path.
    */
-  public function __construct($drupalRoot, $uri) {
-    $this->drupalRoot = realpath($drupalRoot);
-    if (!$this->drupalRoot) {
-      throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupalRoot));
+  public function __construct($drupal_root, $uri) {
+    $this->drupal_root = realpath($drupal_root);
+    if (!$this->drupal_root) {
+      throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
     $this->uri = $uri;
     $this->version = $this->getDrupalVersion();
@@ -96,6 +109,9 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     $this->getCore()->userDelete($user);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     $this->getCore()->processBatch();
   }
@@ -139,8 +155,8 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
     // Themes.
     // @todo
-
-    // Active profile
+    //
+    // Active profile.
     // @todo
     return $paths;
   }
@@ -148,11 +164,15 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Determine major Drupal version.
    *
+   * @return int
+   *   The major Drupal version.
+   *
    * @throws \Drupal\Driver\Exception\BootstrapException
+   *   Thrown when the Drupal version could not be determined.
    *
    * @see drush_drupal_version()
    */
-  function getDrupalVersion() {
+  public function getDrupalVersion() {
     if (!isset($this->version)) {
       // Support 6, 7 and 8.
       $version_constant_paths = array(
@@ -199,14 +219,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Instantiate and set Drupal core class.
    *
-   * @param array $availableCores
+   * @param array $available_cores
    *   A major-version-keyed array of available core controllers.
    */
-  public function setCore($availableCores) {
-    if (!isset($availableCores[$this->version])) {
+  public function setCore(array $available_cores) {
+    if (!isset($available_cores[$this->version])) {
       throw new BootstrapException(sprintf('There is no available Drupal core controller for Drupal version %s.', $this->version));
     }
-    $this->core = $availableCores[$this->version];
+    $this->core = $available_cores[$this->version];
   }
 
   /**
