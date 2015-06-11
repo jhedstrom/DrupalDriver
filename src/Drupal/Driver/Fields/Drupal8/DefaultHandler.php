@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\DefaultFieldHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\DefaultFieldHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Class DefaultFieldHandler
- * @package Drupal\Driver\Fields\Drupal8
+ * Default field handler for Drupal 8.
  */
 class DefaultHandler extends AbstractHandler {
 
@@ -19,4 +18,5 @@ class DefaultHandler extends AbstractHandler {
   public function expand($values) {
     return $values;
   }
+
 }
