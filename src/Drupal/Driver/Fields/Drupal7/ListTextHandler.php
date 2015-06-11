@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\ListTextHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\ListTextHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class ListTextHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * ListText field handler for Drupal 7.
  */
 class ListTextHandler extends AbstractHandler {
 
@@ -24,4 +23,5 @@ class ListTextHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
