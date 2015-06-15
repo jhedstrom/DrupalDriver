@@ -1,19 +1,29 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Exception\BootstrapException.
+ */
+
 namespace Drupal\Driver\Exception;
 
 /**
  * Bootstrap exception.
  */
 class BootstrapException extends Exception {
+
   /**
    * Initializes exception.
    *
    * @param string $message
+   *   The exception message.
    * @param int $code
-   * @param \Exception|null $previous
+   *   Optional exception code. Defaults to 0.
+   * @param \Exception $previous
+   *   Optional previous exception that was thrown.
    */
-  public function __construct($message, $code = 0, \Exception $previous = null) {
-    parent::__construct($message, null, $code, $previous);
+  public function __construct($message, $code = 0, \Exception $previous = NULL) {
+    parent::__construct($message, NULL, $code, $previous);
   }
+
 }
