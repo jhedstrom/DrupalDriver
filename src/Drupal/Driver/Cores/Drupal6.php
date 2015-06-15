@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Cores\Drupal6.
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
@@ -11,6 +16,8 @@ use Drupal\Driver\Exception\BootstrapException;
 class Drupal6 extends AbstractCore {
 
   /**
+   * The available permissions.
+   *
    * @var array
    */
   protected $availablePermissons;
@@ -119,7 +126,7 @@ class Drupal6 extends AbstractCore {
       $user->roles = $roles;
     }
     $account = user_save((array) $account, (array) $account);
-    // Store the UID
+    // Store the UID.
     $user->uid = $account->uid;
     return $user;
   }
@@ -137,7 +144,8 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function processBatch() { }
+  public function processBatch() {
+  }
 
   /**
    * {@inheritdoc}
@@ -154,10 +162,10 @@ class Drupal6 extends AbstractCore {
   /**
    * Fetches a user role by role name.
    *
-   * @param $role_name
+   * @param string $role_name
    *   A string representing the role name.
    *
-   * @return
+   * @return object
    *   A fully-loaded role object if a role with the given name exists, or FALSE
    *   otherwise.
    *
@@ -175,7 +183,9 @@ class Drupal6 extends AbstractCore {
    *   Permissions to check.
    * @param bool $reset
    *   Reset cached available permissions.
-   * @return bool TRUE or FALSE depending on whether the permissions are valid.
+   *
+   * @return bool
+   *   TRUE or FALSE depending on whether the permissions are valid.
    */
   protected function checkPermissions(array $permissions, $reset = FALSE) {
 
@@ -281,10 +291,14 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * Given an entity object, expand any property fields to the expected structure.
+   * Expands properties on the given entity object to the expected structure.
+   *
+   * @param \stdClass $entity
+   *   The entity object.
    */
   protected function expandEntityProperties(\stdClass $entity) {
-    // The created field may come in as a readable date, rather than a timestamp.
+    // The created field may come in as a readable date, rather than a
+    // timestamp.
     if (isset($entity->created) && !is_numeric($entity->created)) {
       $entity->created = strtotime($entity->created);
     }
@@ -303,7 +317,7 @@ class Drupal6 extends AbstractCore {
    * Load vocabularies, optional by VIDs.
    *
    * @param array $vids
-   *   The vids to load
+   *   The vids to load.
    *
    * @return array
    *   An array of vocabulary objects
@@ -388,7 +402,8 @@ class Drupal6 extends AbstractCore {
    * Helper function to get all permissions.
    *
    * @return array
-   *   Array keyed by permission name, with the human-readable title as the value.
+   *   Array keyed by permission name, with the human-readable title as the
+   *   value.
    */
   protected function getAllPermissions() {
     $permissions = array();
@@ -405,6 +420,9 @@ class Drupal6 extends AbstractCore {
     return module_list();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
     return parent::expandEntityFields($entity_type, $entity);
   }
