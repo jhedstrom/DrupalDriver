@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Exception\UnsupportedDriverActionException.
+ */
+
 namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
@@ -15,14 +20,15 @@ class UnsupportedDriverActionException extends Exception {
    *   What is unsupported?
    * @param DriverInterface $driver
    *   Driver instance.
-   * @param integer $code
+   * @param int $code
    *   The exception code.
    * @param \Exception $previous
    *   Previous exception.
    */
-  public function __construct($template, DriverInterface $driver, $code = 0, \Exception $previous = null) {
+  public function __construct($template, DriverInterface $driver, $code = 0, \Exception $previous = NULL) {
     $message = sprintf($template, get_class($driver));
 
     parent::__construct($message, $driver, $code, $previous);
   }
+
 }
