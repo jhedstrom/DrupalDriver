@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\DatetimeHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\DatetimeHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class DatetimeHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Datetime field handler for Drupal 7.
  */
 class DatetimeHandler extends AbstractHandler {
 
@@ -33,4 +32,5 @@ class DatetimeHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
