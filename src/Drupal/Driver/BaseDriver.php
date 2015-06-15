@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\BaseDriver.
+ */
+
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\UnsupportedDriverActionException;
@@ -42,6 +47,9 @@ abstract class BaseDriver implements DriverInterface {
     throw new UnsupportedDriverActionException($this->errorString('delete users'), $this);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     throw new UnsupportedDriverActionException($this->errorString('process batch actions'), $this);
   }
@@ -124,15 +132,16 @@ abstract class BaseDriver implements DriverInterface {
   }
 
   /**
-   * Error printing exception
+   * Error printing exception.
    *
    * @param string $error
    *   The term, node, user or permission.
    *
-   * @return String
-   *   A formatted string reminding people to use an api driver.
+   * @return string
+   *   A formatted string reminding people to use an API driver.
    */
   private function errorString($error) {
-    return sprintf('No ability to %s in %%s. Put `@api` into your feature and add an api driver (ex: `api_driver: drupal`) in behat.yml.', $error);
+    return sprintf('No ability to %s in %%s. Put `@api` into your feature and add an API driver (ex: `api_driver: drupal`) in behat.yml.', $error);
   }
+
 }
