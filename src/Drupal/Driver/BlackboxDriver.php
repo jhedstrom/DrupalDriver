@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\BlackboxDriver.
+ */
+
 namespace Drupal\Driver;
 
 /**
