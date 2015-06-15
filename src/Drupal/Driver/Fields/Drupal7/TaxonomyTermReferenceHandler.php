@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\TaxonomyTermReferenceHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\TaxonomyTermReferenceHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class TaxonomyTermReferenceHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Taxonomy term reference field handler for Drupal 7.
  */
 class TaxonomyTermReferenceHandler extends AbstractHandler {
 
@@ -27,4 +26,5 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
