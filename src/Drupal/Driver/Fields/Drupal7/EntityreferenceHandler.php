@@ -16,7 +16,7 @@ class EntityreferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $entity_type = $this->field_info['settings']['target_type'];
+    $entity_type = $this->fieldInfo['settings']['target_type'];
     $entity_info = entity_get_info($entity_type);
     // For users set label to username.
     if ($entity_type == 'user') {
