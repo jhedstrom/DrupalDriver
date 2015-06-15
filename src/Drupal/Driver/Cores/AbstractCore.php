@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Cores\AbstractCore
+ * Contains \Drupal\Driver\Cores\AbstractCore.
  */
 
 namespace Drupal\Driver\Cores;
@@ -10,6 +10,9 @@ namespace Drupal\Driver\Cores;
 use Drupal\Component\Utility\Random;
 use Symfony\Component\DependencyInjection\Container;
 
+/**
+ * Base class for core drivers.
+ */
 abstract class AbstractCore implements CoreInterface {
 
   /**
@@ -36,8 +39,8 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function __construct($drupalRoot, $uri = 'default', Random $random = NULL) {
-    $this->drupalRoot = realpath($drupalRoot);
+  public function __construct($drupal_root, $uri = 'default', Random $random = NULL) {
+    $this->drupalRoot = realpath($drupal_root);
     $this->uri = $uri;
     if (!isset($random)) {
       $random = new Random();
@@ -56,7 +59,6 @@ abstract class AbstractCore implements CoreInterface {
    * {@inheritdoc}
    */
   public function getFieldHandler($entity, $entity_type, $field_name) {
-
     $reflection = new \ReflectionClass($this);
     $core_namespace = $reflection->getShortName();
     $field_types = $this->getEntityFieldTypes($entity_type);
@@ -70,11 +72,9 @@ abstract class AbstractCore implements CoreInterface {
   }
 
   /**
-   * Given a entity, expand fields to match the format expected by entity_save().
+   * Expands properties on the given entity object to the expected structure.
    *
    * @param \stdClass $entity
-   *   Entity object.
-   * @return \stdClass
    *   Entity object.
    */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
