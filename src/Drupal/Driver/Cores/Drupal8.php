@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Cores\Drupal8.
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
@@ -151,6 +156,9 @@ class Drupal8 extends AbstractCore {
     $role->delete();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     $this->validateDrupalSite();
     $batch =& batch_get();
@@ -164,7 +172,7 @@ class Drupal8 extends AbstractCore {
    * @return array
    *   Array of all defined permissions.
    */
-  function getAllPermissions() {
+  protected function getAllPermissions() {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
@@ -180,10 +188,10 @@ class Drupal8 extends AbstractCore {
    * @param array &$permissions
    *   Array of permission names.
    */
-  protected function convertPermissions(&$permissions) {
-    $allPermissions = $this->getAllPermissions();
+  protected function convertPermissions(array &$permissions) {
+    $all_permissions = $this->getAllPermissions();
 
-    foreach ($allPermissions as $name => $definition) {
+    foreach ($all_permissions as $name => $definition) {
       $key = array_search($definition['title'], $permissions);
       if (FALSE !== $key) {
         $permissions[$key] = $name;
