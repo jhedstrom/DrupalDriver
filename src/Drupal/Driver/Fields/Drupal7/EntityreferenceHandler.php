@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\EntityreferenceHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\EntityreferenceHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class EntityreferenceHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Entityreference field handler for Drupal 7.
  */
 class EntityreferenceHandler extends AbstractHandler {
 
@@ -36,4 +35,5 @@ class EntityreferenceHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
