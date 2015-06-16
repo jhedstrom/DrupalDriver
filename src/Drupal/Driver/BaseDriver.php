@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\BaseDriver.
+ */
+
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\UnsupportedDriverActionException;
@@ -10,129 +15,133 @@ use Drupal\Driver\Exception\UnsupportedDriverActionException;
 abstract class BaseDriver implements DriverInterface {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getRandom() {
     throw new UnsupportedDriverActionException($this->errorString('generate random'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isBootstrapped() {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('create users'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('delete users'), $this);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     throw new UnsupportedDriverActionException($this->errorString('process batch actions'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role) {
     throw new UnsupportedDriverActionException($this->errorString('add roles'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     throw new UnsupportedDriverActionException($this->errorString('access watchdog entries'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache($type = NULL) {
     throw new UnsupportedDriverActionException($this->errorString('clear Drupal caches'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function createNode($node) {
     throw new UnsupportedDriverActionException($this->errorString('create nodes'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     throw new UnsupportedDriverActionException($this->errorString('delete nodes'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     throw new UnsupportedDriverActionException($this->errorString('run cron'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function createTerm(\stdClass $term) {
     throw new UnsupportedDriverActionException($this->errorString('create terms'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     throw new UnsupportedDriverActionException($this->errorString('delete terms'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     throw new UnsupportedDriverActionException($this->errorString('create roles'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($rid) {
     throw new UnsupportedDriverActionException($this->errorString('delete roles'), $this);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     return FALSE;
   }
 
   /**
-   * Error printing exception
+   * Error printing exception.
    *
    * @param string $error
    *   The term, node, user or permission.
    *
-   * @return String
-   *   A formatted string reminding people to use an api driver.
+   * @return string
+   *   A formatted string reminding people to use an API driver.
    */
   private function errorString($error) {
-    return sprintf('No ability to %s in %%s. Put `@api` into your feature and add an api driver (ex: `api_driver: drupal`) in behat.yml.', $error);
+    return sprintf('No ability to %s in %%s. Put `@api` into your feature and add an API driver (ex: `api_driver: drupal`) in behat.yml.', $error);
   }
+
 }

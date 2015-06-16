@@ -16,6 +16,7 @@
     "symfony/dependency-injection": "~2.6"
   },
   "require-dev": {
+    "drupal/coder": "~8.2.0",
     "phpspec/phpspec": "~2.0",
     "phpunit/phpunit": "~4.0",
     "mockery/mockery": "dev-master"

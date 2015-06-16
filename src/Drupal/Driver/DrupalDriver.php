@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\DrupalDriver.
+ */
+
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\BootstrapException;
@@ -49,25 +54,33 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
   /**
    * Set Drupal root and URI.
+   *
+   * @param string $drupal_root
+   *   The Drupal root path.
+   * @param string $uri
+   *   The URI for the Drupal installation.
+   *
+   * @throws BootstrapException
+   *   Thrown when the Drupal installation is not found in the given root path.
    */
-  public function __construct($drupalRoot, $uri) {
-    $this->drupalRoot = realpath($drupalRoot);
-    if (!$this->drupalRoot) {
-      throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupalRoot));
+  public function __construct($drupal_root, $uri) {
+    $this->drupal_root = realpath($drupal_root);
+    if (!$this->drupal_root) {
+      throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
     $this->uri = $uri;
     $this->version = $this->getDrupalVersion();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getRandom() {
     return $this->getCore()->getRandom();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     $this->getCore()->bootstrap();
@@ -75,7 +88,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isBootstrapped() {
     // Assume the blackbox is always bootstrapped.
@@ -83,46 +96,49 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     $this->getCore()->userCreate($user);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     $this->getCore()->userDelete($user);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     $this->getCore()->processBatch();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $this->getCore()->userAddRole($user, $role_name);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     throw new PendingException(sprintf('Currently no ability to access watchdog entries in %s', $this));
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache($type = NULL) {
     $this->getCore()->clearCache();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getSubDriverPaths() {
     // Ensure system is bootstrapped.
@@ -139,8 +155,8 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
 
     // Themes.
     // @todo
-
-    // Active profile
+    //
+    // Active profile.
     // @todo
     return $paths;
   }
@@ -148,11 +164,15 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Determine major Drupal version.
    *
+   * @return int
+   *   The major Drupal version.
+   *
    * @throws \Drupal\Driver\Exception\BootstrapException
+   *   Thrown when the Drupal version could not be determined.
    *
    * @see drush_drupal_version()
    */
-  function getDrupalVersion() {
+  public function getDrupalVersion() {
     if (!isset($this->version)) {
       // Support 6, 7 and 8.
       $version_constant_paths = array(
@@ -199,14 +219,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Instantiate and set Drupal core class.
    *
-   * @param array $availableCores
+   * @param array $available_cores
    *   A major-version-keyed array of available core controllers.
    */
-  public function setCore($availableCores) {
-    if (!isset($availableCores[$this->version])) {
+  public function setCore(array $available_cores) {
+    if (!isset($available_cores[$this->version])) {
       throw new BootstrapException(sprintf('There is no available Drupal core controller for Drupal version %s.', $this->version));
     }
-    $this->core = $availableCores[$this->version];
+    $this->core = $available_cores[$this->version];
   }
 
   /**
@@ -225,21 +245,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function createNode($node) {
     return $this->getCore()->nodeCreate($node);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     return $this->getCore()->nodeDelete($node);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     if (!$this->getCore()->runCron()) {
@@ -248,35 +268,35 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function createTerm(\stdClass $term) {
     return $this->getCore()->termCreate($term);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     return $this->getCore()->termDelete($term);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     return $this->getCore()->roleCreate($permissions);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($rid) {
     $this->getCore()->roleDelete($rid);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     return $this->getCore()->isField($entity_type, $field_name);

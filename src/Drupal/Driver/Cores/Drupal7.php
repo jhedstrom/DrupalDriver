@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Cores\Drupal7.
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
@@ -11,7 +16,7 @@ use Drupal\Driver\Exception\BootstrapException;
 class Drupal7 extends AbstractCore {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -31,14 +36,14 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache() {
     drupal_flush_all_caches();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeCreate($node) {
     // Set original if not set.
@@ -67,7 +72,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     node_delete($node->nid);
@@ -81,7 +86,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     // Default status to TRUE if not explicitly creating a blocked user.
@@ -103,20 +108,23 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     $batch =& batch_get();
     $batch['progressive'] = FALSE;
-     batch_process();
+    batch_process();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $role = user_role_load_by_name($role_name);
@@ -135,7 +143,9 @@ class Drupal7 extends AbstractCore {
    *   Permissions to check.
    * @param bool $reset
    *   Reset cached available permissions.
-   * @return bool TRUE or FALSE depending on whether the permissions are valid.
+   *
+   * @return bool
+   *   TRUE or FALSE depending on whether the permissions are valid.
    */
   protected function checkPermissions(array $permissions, $reset = FALSE) {
     $available = &drupal_static(__FUNCTION__);
@@ -154,7 +164,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
 
@@ -185,7 +195,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($role_name) {
     $role = user_role_load_by_name($role_name);
@@ -193,7 +203,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
@@ -248,10 +258,14 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * Given an entity object, expand any property fields to the expected structure.
+   * Expands properties on the given entity object to the expected structure.
+   *
+   * @param \stdClass $entity
+   *   The entity object.
    */
   protected function expandEntityProperties(\stdClass $entity) {
-    // The created field may come in as a readable date, rather than a timestamp.
+    // The created field may come in as a readable date, rather than a
+    // timestamp.
     if (isset($entity->created) && !is_numeric($entity->created)) {
       $entity->created = strtotime($entity->created);
     }
@@ -267,7 +281,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
     // Map vocabulary names to vid, these take precedence over machine names.
@@ -284,7 +298,7 @@ class Drupal7 extends AbstractCore {
 
       // Try to load vocabulary by machine name.
       $vocabularies = \taxonomy_vocabulary_load_multiple(FALSE, array(
-        'machine_name' => $term->vocabulary_machine_name
+        'machine_name' => $term->vocabulary_machine_name,
       ));
       if (!empty($vocabularies)) {
         $vids = array_keys($vocabularies);
@@ -320,7 +334,7 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     $status = 0;
@@ -335,7 +349,8 @@ class Drupal7 extends AbstractCore {
    * Helper function to get all permissions.
    *
    * @return array
-   *   Array keyed by permission name, with the human-readable title as the value.
+   *   Array keyed by permission name, with the human-readable title as the
+   *   value.
    */
   protected function getAllPermissions() {
     $permissions = array();
@@ -346,14 +361,14 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getModuleList() {
     return module_list();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
@@ -367,10 +382,11 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     $map = field_info_field_map();
     return !empty($map[$field_name]) && array_key_exists($entity_type, $map[$field_name]['bundles']);
   }
+
 }

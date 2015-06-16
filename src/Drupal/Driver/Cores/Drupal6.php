@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Cores\Drupal6.
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
@@ -11,12 +16,14 @@ use Drupal\Driver\Exception\BootstrapException;
 class Drupal6 extends AbstractCore {
 
   /**
+   * The available permissions.
+   *
    * @var array
    */
   protected $availablePermissons;
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -38,7 +45,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache() {
     // Need to change into the Drupal root directory or the registry explodes.
@@ -49,7 +56,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeCreate($node) {
     $current_path = getcwd();
@@ -85,7 +92,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     node_delete($node->nid);
@@ -99,7 +106,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     // Default status to TRUE if not explicitly creating a blocked user.
@@ -119,13 +126,13 @@ class Drupal6 extends AbstractCore {
       $user->roles = $roles;
     }
     $account = user_save((array) $account, (array) $account);
-    // Store the UID
+    // Store the UID.
     $user->uid = $account->uid;
     return $user;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     $current_path = getcwd();
@@ -137,10 +144,11 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function processBatch() { }
+  public function processBatch() {
+  }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     $roles = array_flip(user_roles());
@@ -154,10 +162,10 @@ class Drupal6 extends AbstractCore {
   /**
    * Fetches a user role by role name.
    *
-   * @param $role_name
+   * @param string $role_name
    *   A string representing the role name.
    *
-   * @return
+   * @return object
    *   A fully-loaded role object if a role with the given name exists, or FALSE
    *   otherwise.
    *
@@ -175,7 +183,9 @@ class Drupal6 extends AbstractCore {
    *   Permissions to check.
    * @param bool $reset
    *   Reset cached available permissions.
-   * @return bool TRUE or FALSE depending on whether the permissions are valid.
+   *
+   * @return bool
+   *   TRUE or FALSE depending on whether the permissions are valid.
    */
   protected function checkPermissions(array $permissions, $reset = FALSE) {
 
@@ -193,7 +203,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     // Verify permissions exist.
@@ -214,7 +224,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($role_name) {
     $roles = array_flip(user_roles());
@@ -226,7 +236,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
@@ -281,10 +291,14 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * Given an entity object, expand any property fields to the expected structure.
+   * Expands properties on the given entity object to the expected structure.
+   *
+   * @param \stdClass $entity
+   *   The entity object.
    */
   protected function expandEntityProperties(\stdClass $entity) {
-    // The created field may come in as a readable date, rather than a timestamp.
+    // The created field may come in as a readable date, rather than a
+    // timestamp.
     if (isset($entity->created) && !is_numeric($entity->created)) {
       $entity->created = strtotime($entity->created);
     }
@@ -303,7 +317,7 @@ class Drupal6 extends AbstractCore {
    * Load vocabularies, optional by VIDs.
    *
    * @param array $vids
-   *   The vids to load
+   *   The vids to load.
    *
    * @return array
    *   An array of vocabulary objects
@@ -317,7 +331,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
     // Map vocabulary names to vid, these take precedence over machine names.
@@ -373,7 +387,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     $status = 0;
@@ -388,7 +402,8 @@ class Drupal6 extends AbstractCore {
    * Helper function to get all permissions.
    *
    * @return array
-   *   Array keyed by permission name, with the human-readable title as the value.
+   *   Array keyed by permission name, with the human-readable title as the
+   *   value.
    */
   protected function getAllPermissions() {
     $permissions = array();
@@ -399,18 +414,21 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getModuleList() {
     return module_list();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
     return parent::expandEntityFields($entity_type, $entity);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type) {
     $taxonomy_fields = array('taxonomy' => 'taxonomy');
@@ -431,7 +449,7 @@ class Drupal6 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     if ($field_name === 'taxonomy') {

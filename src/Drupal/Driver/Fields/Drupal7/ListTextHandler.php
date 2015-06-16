@@ -2,26 +2,26 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\ListTextHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\ListTextHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class ListTextHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * ListText field handler for Drupal 7.
  */
 class ListTextHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $return = array();
-    $allowed_values = array_flip($this->field_info['settings']['allowed_values']);
+    $allowed_values = array_flip($this->fieldInfo['settings']['allowed_values']);
     foreach ($values as $value) {
       $return[$this->language][] = array('value' => $allowed_values[$value]);
     }
     return $return;
   }
+
 }

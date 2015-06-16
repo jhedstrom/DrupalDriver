@@ -1,24 +1,33 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: ademarco
- * Date: 2/8/15
- * Time: 11:24 AM
+ * @file
+ * Contains \Drupal\Driver\Fields\FieldHandlerInterface.
  */
 
 namespace Drupal\Driver\Fields;
 
 /**
- * Interface FieldHandlerInterface
- * @package Drupal\Driver\Fields
+ * Interface for handling fields.
+ *
+ * Saving fields on entities is handled differently depending on the Drupal
+ * version. This interface translates abstract field data into the format that
+ * is expected by the different storage handlers.
  */
 interface FieldHandlerInterface {
 
   /**
-   * Expand field values ready to be processed by entity_save().
+   * Expand abstract field values so they can be saved on the entity.
    *
-   * @param $values
+   * This method takes care of the different ways that field data is saved on
+   * entities in different versions of Drupal.
+   *
+   * @param mixed $values
+   *   A single value or an array of field values to save on the entity.
+   *
    * @return array
+   *   An array of field values in the format expected by the entity storage
+   *   handlers in the driver's version of Drupal.
    */
   public function expand($values);
+
 }

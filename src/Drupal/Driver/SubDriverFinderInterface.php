@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\SubDriverFinderInterface.
+ */
+
 namespace Drupal\Driver;
 
 /**
@@ -14,4 +19,5 @@ interface SubDriverFinderInterface {
    *   An array of paths in which to find sub-drivers.
    */
   public function getSubDriverPaths();
+
 }

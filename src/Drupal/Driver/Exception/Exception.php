@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Exception\Exception.
+ */
+
 namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
@@ -14,11 +19,15 @@ abstract class Exception extends \Exception {
    * Initializes Drupal driver manager exception.
    *
    * @param string $message
+   *   The exception message.
    * @param DriverInterface $driver
-   * @param integer $code
+   *   The driver where the exception occurred.
+   * @param int $code
+   *   Optional exception code. Defaults to 0.
    * @param \Exception $previous
+   *   Optional previous exception that was thrown.
    */
-  public function __construct($message, DriverInterface $driver = null, $code = 0, \Exception $previous = null) {
+  public function __construct($message, DriverInterface $driver = NULL, $code = 0, \Exception $previous = NULL) {
     $this->driver = $driver;
 
     parent::__construct($message, $code, $previous);
@@ -28,8 +37,10 @@ abstract class Exception extends \Exception {
    * Returns exception session.
    *
    * @return Session
+   *   The exception session.
    */
   public function getDriver() {
     return $this->driver;
   }
+
 }

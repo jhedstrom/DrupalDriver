@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Cores\Drupal8.
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
@@ -18,7 +23,7 @@ use Symfony\Component\HttpFoundation\Request;
 class Drupal8 extends AbstractCore {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -42,7 +47,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache() {
     // Need to change into the Drupal root directory or the registry explodes.
@@ -50,7 +55,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeCreate($node) {
     // Default status to 1 if not set.
@@ -67,7 +72,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
@@ -77,14 +82,14 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     return \Drupal::service('cron')->run();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     $this->validateDrupalSite();
@@ -105,7 +110,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     // Generate a random, lowercase machine name.
@@ -139,7 +144,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($role_name) {
     $role = user_role_load($role_name);
@@ -151,6 +156,9 @@ class Drupal8 extends AbstractCore {
     $role->delete();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     $this->validateDrupalSite();
     $batch =& batch_get();
@@ -164,7 +172,7 @@ class Drupal8 extends AbstractCore {
    * @return array
    *   Array of all defined permissions.
    */
-  function getAllPermissions() {
+  protected function getAllPermissions() {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
@@ -180,10 +188,10 @@ class Drupal8 extends AbstractCore {
    * @param array &$permissions
    *   Array of permission names.
    */
-  protected function convertPermissions(&$permissions) {
-    $allPermissions = $this->getAllPermissions();
+  protected function convertPermissions(array &$permissions) {
+    $all_permissions = $this->getAllPermissions();
 
-    foreach ($allPermissions as $name => $definition) {
+    foreach ($all_permissions as $name => $definition) {
       $key = array_search($definition['title'], $permissions);
       if (FALSE !== $key) {
         $permissions[$key] = $name;
@@ -208,14 +216,14 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     // Allow both machine and human role names.
@@ -235,7 +243,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
@@ -286,7 +294,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
@@ -299,7 +307,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
     $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
@@ -309,14 +317,14 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getModuleList() {
     return array_keys(\Drupal::moduleHandler()->getModuleList());
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
@@ -330,7 +338,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
