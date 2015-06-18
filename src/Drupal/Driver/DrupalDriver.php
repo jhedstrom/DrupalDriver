@@ -64,8 +64,8 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    *   Thrown when the Drupal installation is not found in the given root path.
    */
   public function __construct($drupal_root, $uri) {
-    $this->drupal_root = realpath($drupal_root);
-    if (!$this->drupal_root) {
+    $this->drupalRoot = realpath($drupal_root);
+    if (!$this->drupalRoot) {
       throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
     $this->uri = $uri;
