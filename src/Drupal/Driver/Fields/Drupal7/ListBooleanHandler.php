@@ -2,15 +2,15 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\ListBooleanHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\ListBooleanHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class ListBooleanHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * ListBoolean field handler for Drupal 7.
  */
 class ListBooleanHandler extends ListTextHandler {
-    // Nothing to do here, standard ListTextHandler methods are used.
+  // Nothing to do here, standard ListTextHandler methods are used.
+
 }
