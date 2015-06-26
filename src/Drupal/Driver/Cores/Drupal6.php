@@ -475,4 +475,5 @@ class Drupal6 extends AbstractCore {
   public function languageDelete(\stdClass $language) {
     throw new \Exception('Deleting languages is not yet implemented for Drupal 6.');
   }
+
 }
