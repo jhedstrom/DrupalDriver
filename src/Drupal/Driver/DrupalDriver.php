@@ -302,4 +302,18 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     return $this->getCore()->isField($entity_type, $field_name);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate($language) {
+    return $this->getCore()->languageCreate($language);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete($language) {
+    $this->getCore()->languageDelete($language);
+  }
+
 }

@@ -462,4 +462,18 @@ class Drupal6 extends AbstractCore {
     return isset($map[$field_name]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate(\stdClass $language) {
+    throw new \Exception('Creating languages is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete(\stdClass $language) {
+    throw new \Exception('Deleting languages is not yet implemented for Drupal 6.');
+  }
+
 }
