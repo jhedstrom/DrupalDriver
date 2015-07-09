@@ -111,6 +111,29 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
           ),
         ),
       ),
+
+      // Test list boolean field with blank 'On' and 'Off' values.
+      array(
+        'ListBooleanHandler',
+        (object) array('field_list_boolean' => array(0)),
+        'node',
+        array(
+          'field_name' => 'field_list_boolean',
+          'settings' => array(
+            'allowed_values' => array(
+              0 => '',
+              1 => '',
+            ),
+          ),
+        ),
+        array(
+          'en' => array(
+            array(
+              'value' => 0,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
