@@ -19,3 +19,6 @@ script:
   - phpunit
   - vendor/bin/phpspec run -f pretty --no-interaction
   - ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml --ignore=./vendor --ignore=./doc --ignore=./spec .
+
+# Enable Travis containers.
+sudo: false
