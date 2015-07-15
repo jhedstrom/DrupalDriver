@@ -328,6 +328,20 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    foreach (\Drupal::moduleHandler()->getModuleList() as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . $module->getPath();
+    }
+
+    return $paths;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);

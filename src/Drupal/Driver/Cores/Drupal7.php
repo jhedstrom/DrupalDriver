@@ -433,6 +433,21 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    $modules = $this->getModuleList();
+    foreach ($modules as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . \drupal_get_path('module', $module);
+    }
+
+    return $paths;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
     $fields = field_info_field_map();
