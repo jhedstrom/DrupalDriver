@@ -42,6 +42,14 @@ interface CoreInterface {
   public function getModuleList();
 
   /**
+   * Returns a list of all extension absolute paths.
+   *
+   * @return array
+   *   An array of absolute paths to enabled extensions.
+   */
+  public function getExtensionPathList();
+
+  /**
    * Clear caches.
    */
   public function clearCache();

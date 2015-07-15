@@ -423,6 +423,21 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    $modules = $this->getModuleList();
+    foreach ($modules as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . \drupal_get_path('module', $module);
+    }
+
+    return $paths;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
     return parent::expandEntityFields($entity_type, $entity);
   }
