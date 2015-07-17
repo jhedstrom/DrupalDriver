@@ -30,7 +30,9 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
   /**
    * Attempt to determine the vocabulary for which the field is configured.
    *
-   * @return string|NULL
+   * @return mixed
+   *   Returns a string containing the vocabulary in which the term must be
+   *   found or NULL if unable to determine.
    */
   protected function getVocab() {
     if (!empty($this->field_info['settings']['allowed_values'][0]['vocabulary'])) {
