@@ -29,7 +29,7 @@ class EntityReferenceHandler extends AbstractHandler {
 
     foreach ($values as $value) {
       $query = \Drupal::entityQuery($entity_type_id)->condition($label_key, $value);
-      if (isset($target_bundles)) {
+      if ($target_bundles && $target_bundle_key) {
         $query->condition($target_bundle_key, $target_bundles, 'IN');
       }
       if ($entities = $query->execute()) {
