@@ -304,4 +304,11 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     $this->getCore()->languageDelete($language);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    $this->getCore()->clearStaticCaches();
+  }
+
 }

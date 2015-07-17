@@ -191,4 +191,9 @@ interface CoreInterface {
    */
   public function languageDelete(\stdClass $language);
 
+  /**
+   * Clears the static caches.
+   */
+  public function clearStaticCaches();
+
 }

@@ -388,4 +388,12 @@ class Drupal8 extends AbstractCore {
     $configurable_language->delete();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    drupal_static_reset();
+    \Drupal::service('cache_tags.invalidator')->resetChecksums();
+  }
+
 }
