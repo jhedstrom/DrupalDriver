@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\DrushDriver.
+ */
+
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
@@ -19,8 +24,9 @@ class DrushDriver extends BaseDriver {
   public $alias;
 
   /**
-   * Store the root path to a Drupal installation. This is an alternative to
-   * using drush aliases.
+   * Stores the root path to a Drupal installation.
+   *
+   * This is an alternative to using drush aliases.
    *
    * @var string
    */
@@ -56,15 +62,17 @@ class DrushDriver extends BaseDriver {
    * Set drush alias or root path.
    *
    * @param string $alias
-   *   A drush alias
+   *   A drush alias.
    * @param string $root_path
-   *   The root path of the Drupal install. This is an alternative to using aliases.
+   *   The root path of the Drupal install. This is an alternative to using
+   *   aliases.
    * @param string $binary
    *   The path to the drush binary.
    * @param \Drupal\Component\Utility\Random $random
    *   Random generator.
    *
    * @throws \Drupal\Driver\Exception\BootstrapException
+   *   Thrown when a required parameter is missing.
    */
   public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
     if (!empty($alias)) {
@@ -89,14 +97,14 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getRandom() {
     return $this->random;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Check that the given alias works.
@@ -109,18 +117,18 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isBootstrapped() {
     return $this->bootstrapped;
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     $arguments = array(
-      $user->name,
+      sprintf('"%s"', $user->name),
     );
     $options = array(
       'password' => $user->pass,
@@ -135,10 +143,10 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
-    $arguments = array($user->name);
+    $arguments = array(sprintf('"%s"', $user->name));
     $options = array(
       'yes' => NULL,
       'delete-content' => NULL,
@@ -147,18 +155,18 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role) {
     $arguments = array(
       sprintf('"%s"', $role),
-      $user->name
+      sprintf('"%s"', $user->name),
     );
     $this->drush('user-add-role', $arguments);
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
     $options = array(
@@ -170,7 +178,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache($type = 'all') {
     $type = array($type);
@@ -201,6 +209,7 @@ class DrushDriver extends BaseDriver {
    *   An array of argument/option names to values.
    *
    * @return string
+   *   The parsed arguments.
    */
   protected static function parseArguments(array $arguments) {
     $string = '';
@@ -237,8 +246,8 @@ class DrushDriver extends BaseDriver {
     }
 
     // Some drush commands write to standard error output (for example enable
-    // use drush_log which default to _drush_print_log) instead of returning a string
-    // (drush status use drush_print_pipe).
+    // use drush_log which default to _drush_print_log) instead of returning a
+    // string (drush status use drush_print_pipe).
     if (!$process->getOutput()) {
       return $process->getErrorOutput();
     }
@@ -249,14 +258,15 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function processBatch() {
-    // Do nothing. Drush should internally handle any needs for processing batch ops.
+    // Do nothing. Drush should internally handle any needs for processing
+    // batch ops.
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     $this->drush('cron');

@@ -2,22 +2,19 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal8\LinkHandler
+ * Contains \Drupal\Driver\Fields\Drupal8\LinkHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Class LinkFieldHandler
- * @package Drupal\Driver\Fields\Drupal8
+ * Link field handler for Drupal 8.
  */
 class LinkHandler extends AbstractHandler {
-
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
-
     $return = array();
     foreach ($values as $value) {
       $return[] = array(
@@ -30,4 +27,5 @@ class LinkHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }

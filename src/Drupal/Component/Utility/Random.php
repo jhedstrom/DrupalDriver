@@ -56,7 +56,7 @@ class Random {
    *
    * @see \Drupal\Component\Utility\Random::name()
    */
-  public function string($length = 8, $unique = FALSE, $validator = NULL) {
+  public function string($length = 8, $unique = FALSE, callable $validator = NULL) {
     $counter = 0;
 
     // Continue to loop if $unique is TRUE and the generated string is not

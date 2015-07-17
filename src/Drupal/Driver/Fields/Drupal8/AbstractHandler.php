@@ -2,31 +2,37 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal8\AbstractFieldHandler
+ * Contains \Drupal\Driver\Fields\Drupal8\AbstractFieldHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
 use Drupal\Driver\Fields\FieldHandlerInterface;
 
+/**
+ * Base class for field handlers in Drupal 7.
+ */
 abstract class AbstractHandler implements FieldHandlerInterface {
-
   /**
-   * @var
-   */
-  protected $field_info = array();
-
-  /**
-   * Get field instance information.
+   * Field storage definition.
    *
-   * @param $entity
-   * @param $entity_type
-   * @param $field_name
-   * @return mixed
+   * @var array
    */
-  public function __construct($entity, $entity_type, $field_name) {
+  protected $fieldInfo = array();
+
+  /**
+   * Constructs an AbstractHandler object.
+   *
+   * @param \stdClass $entity
+   *   The simulated entity object containing field information.
+   * @param string $entity_type
+   *   The entity type.
+   * @param string $field_name
+   *   The field name.
+   */
+  public function __construct(\stdClass $entity, $entity_type, $field_name) {
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
-    $this->field_info = $fields[$field_name];
+    $this->fieldInfo = $fields[$field_name];
   }
 
 }

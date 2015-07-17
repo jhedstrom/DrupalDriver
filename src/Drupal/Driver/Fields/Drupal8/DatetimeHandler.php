@@ -2,19 +2,17 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal8\DatetimeHandler
+ * Contains \Drupal\Driver\Fields\Drupal8\DatetimeHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Class DatetimeHandler
- * @package Drupal\Driver\Fields\Drupal8
+ * Datetime field handler for Drupal 8.
  */
 class DatetimeHandler extends AbstractHandler {
-
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     foreach ($values as $key => $value) {
@@ -22,4 +20,5 @@ class DatetimeHandler extends AbstractHandler {
     }
     return $values;
   }
+
 }

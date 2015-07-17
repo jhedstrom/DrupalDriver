@@ -2,24 +2,22 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal8\EntityReferenceHandler
+ * Contains \Drupal\Driver\Fields\Drupal8\EntityReferenceHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Class EntityReferenceHandler
- * @package Drupal\Driver\Fields\Drupal8
+ * Entity Reference field handler for Drupal 8.
  */
 class EntityReferenceHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
-
     $return = array();
-    $entity_type_id = $this->field_info->getSetting('target_type');
+    $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityManager()->getDefinition($entity_type_id);
     $label = $entity_definition->getKey('label');
     foreach ($values as $value) {
@@ -35,4 +33,5 @@ class EntityReferenceHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }

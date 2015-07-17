@@ -1,14 +1,22 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\Cores\Drupal8.
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\Language\Language;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\TermInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -17,7 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 class Drupal8 extends AbstractCore {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function bootstrap() {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -27,12 +35,12 @@ class Drupal8 extends AbstractCore {
 
     // Bootstrap Drupal.
     chdir(DRUPAL_ROOT);
-    require_once DRUPAL_ROOT . '/core/vendor/autoload.php';
+    $autoloader = require DRUPAL_ROOT . '/autoload.php';
     require_once DRUPAL_ROOT . '/core/includes/bootstrap.inc';
     $this->validateDrupalSite();
 
     $request = Request::createFromGlobals();
-    $kernel = DrupalKernel::createFromRequest($request, \ComposerAutoloaderInitDrupal8::getLoader(), 'prod');
+    $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
     $kernel->prepareLegacyRequest($request);
 
@@ -41,7 +49,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function clearCache() {
     // Need to change into the Drupal root directory or the registry explodes.
@@ -49,7 +57,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeCreate($node) {
     // Default status to 1 if not set.
@@ -66,22 +74,24 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function nodeDelete($node) {
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
-    $node->delete();
+    if ($node instanceof NodeInterface) {
+      $node->delete();
+    }
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function runCron() {
     return \Drupal::service('cron')->run();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
     $this->validateDrupalSite();
@@ -102,7 +112,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
     // Generate a random, lowercase machine name.
@@ -136,7 +146,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function roleDelete($role_name) {
     $role = user_role_load($role_name);
@@ -148,6 +158,9 @@ class Drupal8 extends AbstractCore {
     $role->delete();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     $this->validateDrupalSite();
     $batch =& batch_get();
@@ -161,7 +174,7 @@ class Drupal8 extends AbstractCore {
    * @return array
    *   Array of all defined permissions.
    */
-  function getAllPermissions() {
+  protected function getAllPermissions() {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
@@ -177,10 +190,10 @@ class Drupal8 extends AbstractCore {
    * @param array &$permissions
    *   Array of permission names.
    */
-  protected function convertPermissions(&$permissions) {
-    $allPermissions = $this->getAllPermissions();
+  protected function convertPermissions(array &$permissions) {
+    $all_permissions = $this->getAllPermissions();
 
-    foreach ($allPermissions as $name => $definition) {
+    foreach ($all_permissions as $name => $definition) {
       $key = array_search($definition['title'], $permissions);
       if (FALSE !== $key) {
         $permissions[$key] = $name;
@@ -205,14 +218,14 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
     // Allow both machine and human role names.
@@ -232,7 +245,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
@@ -283,7 +296,7 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
@@ -296,22 +309,38 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
-    $term = Term::load($term->tid);
-    $term->delete();
+    $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
+    if ($term instanceof TermInterface) {
+      $term->delete();
+    }
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getModuleList() {
-    return \Drupal::moduleHandler()->getModuleList();
+    return array_keys(\Drupal::moduleHandler()->getModuleList());
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
+   */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    foreach (\Drupal::moduleHandler()->getModuleList() as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . $module->getPath();
+    }
+
+    return $paths;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
@@ -325,11 +354,38 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate(\stdClass $language) {
+    $langcode = $language->langcode;
+
+    // Enable a language only if it has not been enabled already.
+    if (!ConfigurableLanguage::load($langcode)) {
+      $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
+      if (!$created_language) {
+        throw new InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
+      }
+      $created_language->save();
+      return $language;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete(\stdClass $language) {
+    $configurable_language = ConfigurableLanguage::load($language->langcode);
+    $configurable_language->delete();
   }
 
 }

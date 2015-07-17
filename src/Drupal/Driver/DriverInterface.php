@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Driver\DriverInterface.
+ */
+
 namespace Drupal\Driver;
 
 /**
@@ -13,31 +18,34 @@ interface DriverInterface {
   public function getRandom();
 
   /**
-   * Bootstrap operations, as needed.
+   * Bootstraps operations, as needed.
    */
   public function bootstrap();
 
   /**
-   * Determine if the driver has been bootstrapped.
+   * Determines if the driver has been bootstrapped.
    */
   public function isBootstrapped();
 
   /**
-   * Create a user.
+   * Creates a user.
    */
   public function userCreate(\stdClass $user);
 
   /**
-   * Delete a user.
+   * Deletes a user.
    */
   public function userDelete(\stdClass $user);
 
+  /**
+   * Processes a batch of actions.
+   */
   public function processBatch();
 
   /**
-   * Add a role for a user.
+   * Adds a role for a user.
    *
-   * @param stdClass $user
+   * @param \stdClass $user
    *   A user object.
    * @param string $role
    *   The role name to assign.
@@ -45,9 +53,9 @@ interface DriverInterface {
   public function userAddRole(\stdClass $user, $role);
 
   /**
-   * Retrieve watchdog entries.
+   * Retrieves watchdog entries.
    *
-   * @param integer $count
+   * @param int $count
    *   Number of entries to retrieve.
    * @param string $type
    *   Filter by watchdog type.
@@ -60,7 +68,7 @@ interface DriverInterface {
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL);
 
   /**
-   * Clear Drupal caches.
+   * Clears Drupal caches.
    *
    * @param string $type
    *   Type of cache to clear defaults to all.
@@ -68,17 +76,18 @@ interface DriverInterface {
   public function clearCache($type = NULL);
 
   /**
-   * Create a node.
+   * Creates a node.
    *
    * @param object $node
    *   Fully loaded node object.
+   *
    * @return object
    *   The node object including the node ID in the case of new nodes.
    */
   public function createNode($node);
 
   /**
-   * Delete a node.
+   * Deletes a node.
    *
    * @param object $node
    *   Fully loaded node object.
@@ -86,32 +95,34 @@ interface DriverInterface {
   public function nodeDelete($node);
 
   /**
-   * Run cron.
+   * Runs cron.
    */
   public function runCron();
 
   /**
-   * Create a taxonomy term.
+   * Creates a taxonomy term.
    *
-   * @param object $term
+   * @param \stdClass $term
    *   Term object.
+   *
    * @return object
    *   The term object including the term ID in the case of new terms.
    */
   public function createTerm(\stdClass $term);
 
   /**
-   * Delete a taxonomy term.
+   * Deletes a taxonomy term.
    *
-   * @param object $term.
-   *    Term object to delete.
-   * @return
-   *    Status constant indicating deletion.
+   * @param \stdClass $term
+   *   Term object to delete.
+   *
+   * @return bool
+   *   Status constant indicating deletion.
    */
   public function termDelete(\stdClass $term);
 
   /**
-   * Create a role
+   * Creates a role.
    *
    * @param array $permissions
    *   An array of permissions to create the role with.
@@ -122,9 +133,9 @@ interface DriverInterface {
   public function roleCreate(array $permissions);
 
   /**
-   * Delete a role
+   * Deletes a role.
    *
-   * @param $rid
+   * @param string $rid
    *   A role name to delete.
    */
   public function roleDelete($rid);
@@ -132,9 +143,14 @@ interface DriverInterface {
   /**
    * Check if the specified field is an actual Drupal field.
    *
-   * @param $entity_type
-   * @param $field_name
-   * @return boolean
+   * @param string $entity_type
+   *   The entity type to which the field should belong.
+   * @param string $field_name
+   *   The name of the field.
+   *
+   * @return bool
+   *   TRUE if the field exists in the entity type, FALSE if not.
    */
   public function isField($entity_type, $field_name);
+
 }

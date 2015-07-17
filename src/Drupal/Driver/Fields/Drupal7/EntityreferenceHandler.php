@@ -2,22 +2,21 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\EntityreferenceHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\EntityreferenceHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class EntityreferenceHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Entityreference field handler for Drupal 7.
  */
 class EntityreferenceHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
-    $entity_type = $this->field_info['settings']['target_type'];
+    $entity_type = $this->fieldInfo['settings']['target_type'];
     $entity_info = entity_get_info($entity_type);
     // For users set label to username.
     if ($entity_type == 'user') {
@@ -36,4 +35,5 @@ class EntityreferenceHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }

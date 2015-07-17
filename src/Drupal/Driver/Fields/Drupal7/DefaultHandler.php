@@ -2,19 +2,18 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\DefaultFieldHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\DefaultFieldHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class DefaultFieldHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Default field handler for Drupal 7.
  */
 class DefaultHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $return = array();
@@ -23,4 +22,5 @@ class DefaultHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }

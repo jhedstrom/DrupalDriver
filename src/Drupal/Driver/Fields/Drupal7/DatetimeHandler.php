@@ -2,23 +2,22 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\DatetimeHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\DatetimeHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class DatetimeHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Datetime field handler for Drupal 7.
  */
 class DatetimeHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $return = array();
-    if (isset($this->field_info['columns']['value2'])) {
+    if (isset($this->fieldInfo['columns']['value2'])) {
       foreach ($values as $value) {
         $return[$this->language][] = array(
           'value' => $value[0],
@@ -33,4 +32,5 @@ class DatetimeHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }

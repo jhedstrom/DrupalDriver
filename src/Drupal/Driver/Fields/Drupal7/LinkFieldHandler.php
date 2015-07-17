@@ -2,19 +2,18 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\LinkFieldHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\LinkFieldHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class LinkFieldHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Link field handler for Drupal 7.
  */
 class LinkFieldHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $return = array();
@@ -26,4 +25,5 @@ class LinkFieldHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
