@@ -22,10 +22,9 @@ class EntityReferenceHandler extends AbstractHandler {
     $label_key = $entity_definition->getKey('label');
 
     // Determine target bundle restrictions.
-    $settings = $this->fieldConfig->getSettings();
-    if (!empty($settings['handler_settings']['target_bundles'])) {
+    $target_bundle_key = NULL;
+    if (!$target_bundles = $this->getTargetBundles()) {
       $target_bundle_key = $entity_definition->getKey('bundle');
-      $target_bundles = $settings['handler_settings']['target_bundles'];
     }
 
     foreach ($values as $value) {
@@ -41,6 +40,19 @@ class EntityReferenceHandler extends AbstractHandler {
       }
     }
     return $return;
+  }
+
+  /**
+   * Retrieves bundles for which the field is configured to reference.
+   *
+   * @return mixed
+   *   Array of bundle names, or NULL if not able to determine bundles.
+   */
+  protected function getTargetBundles() {
+    $settings = $this->fieldConfig->getSettings();
+    if (!empty($settings['handler_settings']['target_bundles'])) {
+      return $settings['handler_settings']['target_bundles'];
+    }
   }
 
 }
