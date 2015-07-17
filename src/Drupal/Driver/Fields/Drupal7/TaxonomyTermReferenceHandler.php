@@ -37,4 +37,5 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
       return $this->field_info['settings']['allowed_values'][0]['vocabulary'];
     }
   }
+
 }

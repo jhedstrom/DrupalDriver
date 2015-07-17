@@ -38,6 +38,8 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *   The field name.
    *
    * @throws \Exception
+   *   Missing or invalid bundle property for entity type, or invalid field_name
+   *   for entity and bundle.
    */
   public function __construct(\stdClass $entity, $entity_type, $field_name) {
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
