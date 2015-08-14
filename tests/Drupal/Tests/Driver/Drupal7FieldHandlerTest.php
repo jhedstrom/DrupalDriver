@@ -134,6 +134,33 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
           ),
         ),
       ),
+
+      // Test image field provided as array.
+      array(
+        'ImageHandler',
+        (object) array(
+          'field_image' => array(
+            array(
+              'test.png',
+              'public://images/test.png',
+              1,
+              1,
+            ),
+          ),
+        ),
+        'node',
+        array('field_name' => 'field_image'),
+        array(
+          'en' => array(
+            array(
+              'filename' => 'test.png',
+              'uri' => 'public://images/test.png',
+              'fid' => 1,
+              'display' => 1,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
