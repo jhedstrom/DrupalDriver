@@ -324,13 +324,7 @@ class Drupal7 extends AbstractCore {
 
     \taxonomy_term_save($term);
 
-    // Loading a term by name returns an array of term objects, but there should
-    // only be one matching term in a testing context, so take the first match
-    // by reset()'ing $matches.
-    $matches = \taxonomy_get_term_by_name($term->name);
-    $saved_term = reset($matches);
-
-    return $saved_term;
+    return $term;
   }
 
   /**
