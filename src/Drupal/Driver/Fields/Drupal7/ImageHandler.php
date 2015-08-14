@@ -2,19 +2,18 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\ImageHandler
+ * Contains \Drupal\Driver\Fields\Drupal7\ImageHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**
- * Class ImageHandler
- * @package Drupal\Driver\Fields\Drupal7
+ * Image field handler for Drupal 7.
  */
 class ImageHandler extends AbstractHandler {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function expand($values) {
     $return = array();
@@ -28,4 +27,5 @@ class ImageHandler extends AbstractHandler {
     }
     return $return;
   }
+
 }
