@@ -38,22 +38,19 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *   The field name.
    *
    * @throws \Exception
-   *   Missing or invalid bundle property for entity type, or invalid field_name
-   *   for entity and bundle.
+   *   Thrown when the given field name does not exist on the entity.
    */
   public function __construct(\stdClass $entity, $entity_type, $field_name) {
-    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    $entity_manager = \Drupal::entityManager();
+    $fields = $entity_manager->getFieldStorageDefinitions($entity_type);
     $this->fieldInfo = $fields[$field_name];
 
-    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
-    if (empty($entity->{$bundle_key})) {
-      throw new \Exception(sprintf('Invalid %s entity bundle key "%s" not set.', $entity_type, $bundle_key));
-    }
-    $bundle = $entity->{$bundle_key};
+    $bundle_key = $entity_manager->getDefinition($entity_type)->getKey('bundle');
+    $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : $entity_type;
 
-    $fields = \Drupal::entityManager()->getFieldDefinitions($entity_type, $bundle);
+    $fields = $entity_manager->getFieldDefinitions($entity_type, $bundle);
     if (empty($fields[$field_name])) {
-      throw new \Exception(sprintf('Invalid bundle "%s" on entity type "%s".', $bundle_key, $entity_type));
+      throw new \Exception(sprintf('The field "%s" does not exist on entity type "%s".', $field_name, $entity_type));
     }
     $this->fieldConfig = $fields[$field_name];
   }
