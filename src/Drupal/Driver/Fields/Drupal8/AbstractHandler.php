@@ -18,14 +18,14 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *
    * @var \Drupal\field\Entity\FieldStorageConfig
    */
-  protected $fieldInfo = array();
+  protected $fieldInfo = NULL;
 
   /**
    * Field configuration definition.
    *
    * @var \Drupal\field\Entity\FieldConfig
    */
-  protected $fieldConfig = array();
+  protected $fieldConfig = NULL;
 
   /**
    * Constructs an AbstractHandler object.
