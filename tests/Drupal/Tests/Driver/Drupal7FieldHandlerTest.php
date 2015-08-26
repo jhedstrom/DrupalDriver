@@ -66,6 +66,33 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
         array('en' => array(array('value' => 'Text'))),
       ),
 
+      // Test default field handler using custom field columns.
+      array(
+        'DefaultHandler',
+        (object) array(
+          'field_addressfield' => array(
+            array(
+              'country' => 'BE',
+              'locality' => 'Brussels',
+              'thoroughfare' => 'Grote Markt 1',
+              'postal_code' => '1000',
+            ),
+          ),
+        ),
+        'node',
+        array('field_name' => 'field_addressfield'),
+        array(
+          'en' => array(
+            array(
+              'country' => 'BE',
+              'locality' => 'Brussels',
+              'thoroughfare' => 'Grote Markt 1',
+              'postal_code' => '1000',
+            ),
+          ),
+        ),
+      ),
+
       // Test single-value date field provided as simple text.
       array(
         'DatetimeHandler',

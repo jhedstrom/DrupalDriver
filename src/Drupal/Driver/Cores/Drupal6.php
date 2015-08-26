@@ -491,4 +491,11 @@ class Drupal6 extends AbstractCore {
     throw new \Exception('Deleting languages is not yet implemented for Drupal 6.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    // Drupal 6 doesn't have a way of clearing all static caches.
+  }
+
 }

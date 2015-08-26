@@ -78,6 +78,13 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function clearStaticCaches() {
+    throw new UnsupportedDriverActionException($this->errorString('clear static caches'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function createNode($node) {
     throw new UnsupportedDriverActionException($this->errorString('create nodes'), $this);
   }
