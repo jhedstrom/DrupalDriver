@@ -162,6 +162,49 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
         ),
       ),
 
+      // Test list text field with allowed values.
+      array(
+        'ListTextHandler',
+        (object) array('field_list_text_allowed_values' => array('one')),
+        'node',
+        array(
+          'field_name' => 'field_list_text_allowed_values',
+          'settings' => array(
+            'allowed_values' => array(
+              'zero' => 'zero',
+              'one' => 'one',
+            ),
+          ),
+        ),
+        array(
+          'en' => array(
+            array(
+              'value' => 'one',
+            ),
+          ),
+        ),
+      ),
+
+      // Test list text field with allowed values.
+      array(
+        'ListTextHandler',
+        (object) array('field_list_text_allowed_values_function' => array('system')),
+        'node',
+        array(
+          'field_name' => 'field_list_text_allowed_values_function',
+          'settings' => array(
+            'allowed_values_function' => 'module_list',
+          ),
+        ),
+        array(
+          'en' => array(
+            array(
+              'value' => 'system',
+            ),
+          ),
+        ),
+      ),
+
       // Test image field provided as array.
       array(
         'ImageHandler',
