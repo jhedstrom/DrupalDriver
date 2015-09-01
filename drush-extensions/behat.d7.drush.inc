@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Contains Behat Drush command file, for use by the Behat Drush Extension.
+ */
+
+/**
  * Implements hook_drush_command().
  */
 function behat_drush_command() {
@@ -15,9 +20,9 @@ function behat_drush_command() {
       'data' => 'Operation data in json format.',
     ),
     // Command options.
-    'options' => array(
-    ),
-    // Give one or more example commandline usages for this command
+    'options' => array(),
+
+    // Give one or more example commandline usages for this command.
     'examples' => array(
       "drush behat create-node '{\"title\":\"Example page\",\"type\":\"page\"}'" => 'Create a page with the title "Example page".',
     ),
@@ -33,12 +38,6 @@ function behat_drush_command() {
 
 /**
  * Implements hook_drush_help().
- *
- * @param
- *   A string with the help section (prepend with 'drush:')
- *
- * @return
- *   A string with the help text for your command.
  */
 function behat_drush_help($section) {
   switch ($section) {
@@ -48,14 +47,12 @@ function behat_drush_help($section) {
 }
 
 /**
- * Implementation of drush_hook_COMMAND().
- *
- * Main command implementation goes here.
+ * Implements drush_hook_COMMAND().
  */
 function drush_behat($operation, $json_data) {
   $data = json_decode($json_data);
 
-  // Dispatch if the operation exists
+  // Dispatch if the operation exists.
   $fn = 'drush_behat_op_' . strtr($operation, '-', '_');
   if (function_exists($fn)) {
     return $fn($data);
@@ -80,10 +77,10 @@ function drush_behat_op_create_node($node) {
   }
 
   // Convert properties to expected structure.
-  _drush_behat_expandEntityProperties($node);
+  _drush_behat_expand_entity_properties($node);
 
   // Attempt to decipher any fields that may be specified.
-  _drush_behat_expandEntityFields('node', $node);
+  _drush_behat_expand_entity_fields('node', $node);
 
   // Set defaults that haven't already been set.
   $defaults = clone $node;
@@ -91,7 +88,7 @@ function drush_behat_op_create_node($node) {
   $node = (object) array_merge((array) $defaults, (array) $node);
 
   node_save($node);
-  return (array)$node;
+  return (array) $node;
 }
 
 /**
@@ -102,7 +99,7 @@ function drush_behat_op_delete_node($node) {
 }
 
 /**
- * Create a taxonomy term
+ * Create a taxonomy term.
  */
 function drush_behat_op_create_term($term) {
   // Map vocabulary names to vid, these take precedence over machine names.
@@ -140,7 +137,7 @@ function drush_behat_op_create_term($term) {
   }
 
   // Attempt to decipher any fields that may be specified.
-  _drush_behat_expandEntityFields('taxonomy_term', $term);
+  _drush_behat_expand_entity_fields('taxonomy_term', $term);
 
   \taxonomy_term_save($term);
 
@@ -148,7 +145,7 @@ function drush_behat_op_create_term($term) {
 }
 
 /**
- * Delete a taxonomy term
+ * Delete a taxonomy term.
  */
 function drush_behat_op_delete_term(\stdClass $term) {
   $status = 0;
@@ -162,12 +159,12 @@ function drush_behat_op_delete_term(\stdClass $term) {
 /**
  * Expands properties on the given entity object to the expected structure.
  *
- * @see Drupal\Driver\Cores\Drupal7\expandEntityProperties in Behat
- *
  * @param \stdClass $entity
  *   The entity object.
+ *
+ * @see Drupal\Driver\Cores\Drupal7\expandEntityProperties
  */
-function _drush_behat_expandEntityProperties(\stdClass $entity) {
+function _drush_behat_expand_entity_properties(\stdClass $entity) {
   // The created field may come in as a readable date, rather than a
   // timestamp.
   if (isset($entity->created) && !is_numeric($entity->created)) {
@@ -187,22 +184,24 @@ function _drush_behat_expandEntityProperties(\stdClass $entity) {
 /**
  * Expands properties on the given entity object to the expected structure.
  *
- * @see Drupal\Driver\Cores\AbstractCore\expandEntityFields in Behat
- *
  * @param \stdClass $entity
  *   Entity object.
+ *
+ * @see Drupal\Driver\Cores\AbstractCore\expandEntityFields
  */
-function _drush_behat_expandEntityFields($entity_type, \stdClass $entity) {
-  $field_types = _drush_behat_getEntityFieldTypes($entity_type);
+function _drush_behat_expand_entity_fields($entity_type, \stdClass $entity) {
+  $field_types = _drush_behat_get_entity_field_types($entity_type);
   foreach ($field_types as $field_name => $type) {
     if (isset($entity->$field_name)) {
-      $entity->$field_name = _drush_behat_getFieldHandler($entity, $entity_type, $field_name)
+      $entity->$field_name = _drush_behat_get_field_handler($entity, $entity_type, $field_name)
         ->expand($entity->$field_name);
     }
   }
 }
 
 /**
+ * Converts a seried of words into camel case.
+ *
  * @see Symfony\Component\DependencyInjection\Container\camelize
  */
 function _drush_behat_camelize($id) {
@@ -210,11 +209,19 @@ function _drush_behat_camelize($id) {
 }
 
 /**
- * @see Drupal\Driver\Cores\AbstractCore\getFieldHandler in Behat
+ * Get the field handler for the specified field of the specified entity.
+ *
+ * Note that this function instantiates a field handler class that is
+ * provided by the Behat Drush Driver.  In order for this to work, an
+ * appropriate autoload.inc file must be included.  This will be done
+ * automatically if the Drupal site is managed by Composer, and requires
+ * the Behat Drush Driver in its composer.json file.
+ *
+ * @see Drupal\Driver\Cores\AbstractCore\getFieldHandler
  */
-function _drush_behat_getFieldHandler($entity, $entity_type, $field_name) {
+function _drush_behat_get_field_handler($entity, $entity_type, $field_name) {
   $core_namespace = "Drupal7";
-  $field_types = _drush_behat_getEntityFieldTypes($entity_type);
+  $field_types = _drush_behat_get_entity_field_types($entity_type);
   $camelized_type = _drush_behat_camelize($field_types[$field_name]);
   $default_class = sprintf('\Drupal\Driver\Fields\%s\DefaultHandler', $core_namespace);
   $class_name = sprintf('\Drupal\Driver\Fields\%s\%sHandler', $core_namespace, $camelized_type);
@@ -225,9 +232,11 @@ function _drush_behat_getFieldHandler($entity, $entity_type, $field_name) {
 }
 
 /**
+ * Get all of the field attached to the specified entity type.
+ *
  * @see Drupal\Driver\Cores\Drupal7\getEntityFieldTypes in Behat
  */
-function _drush_behat_getEntityFieldTypes($entity_type) {
+function _drush_behat_get_entity_field_types($entity_type) {
   $return = array();
   $fields = field_info_field_map();
   foreach ($fields as $field_name => $field) {
