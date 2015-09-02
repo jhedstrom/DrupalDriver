@@ -16,6 +16,7 @@ install:
   - composer install --dev --prefer-source
 
 script:
+  - find ./src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
   - phpunit
   - vendor/bin/phpspec run -f pretty --no-interaction
   - ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml --ignore=./vendor --ignore=./doc --ignore=./spec .
