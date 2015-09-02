@@ -18,7 +18,7 @@ class TaxonomyHandler implements FieldHandlerInterface {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $result = [];
+    $result = array();
     $values = (array) $values;
     foreach ($values as $entry) {
       $terms = explode(',', $entry);
