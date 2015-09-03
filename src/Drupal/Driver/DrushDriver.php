@@ -251,6 +251,13 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritDoc}
    */
+  public function clearStaticCaches() {
+    // Be very very quiet.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function processBatch() {
     // Do nothing. Drush should internally handle any needs for processing batch ops.
   }
