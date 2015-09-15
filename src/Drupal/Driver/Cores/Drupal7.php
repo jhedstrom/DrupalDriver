@@ -134,6 +134,9 @@ class Drupal7 extends AbstractCore {
     }
 
     user_multiple_role_edit(array($user->uid), 'add_role', $role->rid);
+    $account = user_load($user->uid);
+    $user->roles = $account->roles;
+
   }
 
   /**
