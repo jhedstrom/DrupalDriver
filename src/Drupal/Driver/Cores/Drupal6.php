@@ -2,7 +2,6 @@
 
 namespace Drupal\Driver\Cores;
 
-use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
