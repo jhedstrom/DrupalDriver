@@ -7,7 +7,6 @@
 
 namespace Drupal\Driver\Cores;
 
-use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Language\Language;
 use Drupal\Driver\Exception\BootstrapException;
