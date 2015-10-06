@@ -8,7 +8,6 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
-use Drupal\Core\Language\Language;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
