@@ -288,7 +288,7 @@ class Drupal8 extends AbstractCore {
     $_SERVER['SERVER_SOFTWARE'] = NULL;
     $_SERVER['HTTP_USER_AGENT'] = NULL;
 
-    $conf_path = conf_path(TRUE, TRUE);
+    $conf_path = DrupalKernel::findSitePath(Request::createFromGlobals());
     $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
     if (!file_exists($conf_file)) {
       throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
