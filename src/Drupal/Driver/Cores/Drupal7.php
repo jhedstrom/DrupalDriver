@@ -190,7 +190,7 @@ class Drupal7 extends AbstractCore {
     user_role_grant_permissions($role->rid, $permissions);
 
     if ($role && !empty($role->rid)) {
-      return $role->name;
+      return $role->rid;
     }
 
     throw new \RuntimeException(sprintf('Failed to create a role with "" permission(s).', implode(', ', $permissions)));
