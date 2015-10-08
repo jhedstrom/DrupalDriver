@@ -7,10 +7,10 @@
 
 namespace Drupal\Driver\Cores;
 
-use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
@@ -286,7 +286,7 @@ class Drupal8 extends AbstractCore {
     $_SERVER['SERVER_SOFTWARE'] = NULL;
     $_SERVER['HTTP_USER_AGENT'] = NULL;
 
-    $conf_path = conf_path(TRUE, TRUE);
+    $conf_path = DrupalKernel::findSitePath(Request::createFromGlobals());
     $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
     if (!file_exists($conf_file)) {
       throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
@@ -326,6 +326,20 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    foreach (\Drupal::moduleHandler()->getModuleList() as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . $module->getPath();
+    }
+
+    return $paths;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getEntityFieldTypes($entity_type) {
     $return = array();
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
@@ -343,6 +357,41 @@ class Drupal8 extends AbstractCore {
   public function isField($entity_type, $field_name) {
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate(\stdClass $language) {
+    $langcode = $language->langcode;
+
+    // Enable a language only if it has not been enabled already.
+    if (!ConfigurableLanguage::load($langcode)) {
+      $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
+      if (!$created_language) {
+        throw new InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
+      }
+      $created_language->save();
+      return $language;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete(\stdClass $language) {
+    $configurable_language = ConfigurableLanguage::load($language->langcode);
+    $configurable_language->delete();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    drupal_static_reset();
+    \Drupal::service('cache_tags.invalidator')->resetChecksums();
   }
 
 }

@@ -154,19 +154,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
       $this->bootstrap();
     }
 
-    // Get enabled modules.
-    $modules = $this->getCore()->getModuleList();
-    $paths = array();
-    foreach ($modules as $module) {
-      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . \drupal_get_path('module', $module);
-    }
-
-    // Themes.
-    // @todo
-    //
-    // Active profile.
-    // @todo
-    return $paths;
+    return $this->getCore()->getExtensionPathList();
   }
 
   /**
@@ -308,6 +296,27 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function isField($entity_type, $field_name) {
     return $this->getCore()->isField($entity_type, $field_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate($language) {
+    return $this->getCore()->languageCreate($language);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete($language) {
+    $this->getCore()->languageDelete($language);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    $this->getCore()->clearStaticCaches();
   }
 
 }

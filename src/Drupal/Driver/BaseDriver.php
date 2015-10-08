@@ -79,6 +79,7 @@ abstract class BaseDriver implements DriverInterface {
    * {@inheritdoc}
    */
   public function clearStaticCaches() {
+    throw new UnsupportedDriverActionException($this->errorString('clear static caches'), $this);
   }
 
   /**

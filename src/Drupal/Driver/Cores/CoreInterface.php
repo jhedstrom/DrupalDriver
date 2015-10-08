@@ -42,6 +42,14 @@ interface CoreInterface {
   public function getModuleList();
 
   /**
+   * Returns a list of all extension absolute paths.
+   *
+   * @return array
+   *   An array of absolute paths to enabled extensions.
+   */
+  public function getExtensionPathList();
+
+  /**
    * Clear caches.
    */
   public function clearCache();
@@ -169,5 +177,28 @@ interface CoreInterface {
    *   An associative array of field types, keyed by field name.
    */
   public function getEntityFieldTypes($entity_type);
+
+  /**
+   * Creates a language.
+   *
+   * @param \stdClass $language
+   *   An object with the following properties:
+   *   - langcode: the langcode of the language to create.
+   */
+  public function languageCreate(\stdClass $language);
+
+  /**
+   * Deletes a language.
+   *
+   * @param \stdClass $language
+   *   An object with the following properties:
+   *   - langcode: the langcode of the language to delete.
+   */
+  public function languageDelete(\stdClass $language);
+
+  /**
+   * Clears the static caches.
+   */
+  public function clearStaticCaches();
 
 }

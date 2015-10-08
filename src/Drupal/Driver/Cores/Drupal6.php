@@ -7,7 +7,6 @@
 
 namespace Drupal\Driver\Cores;
 
-use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
@@ -423,6 +422,21 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    $modules = $this->getModuleList();
+    foreach ($modules as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . \drupal_get_path('module', $module);
+    }
+
+    return $paths;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
     return parent::expandEntityFields($entity_type, $entity);
   }
@@ -460,6 +474,27 @@ class Drupal6 extends AbstractCore {
     }
     $map = content_fields();
     return isset($map[$field_name]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate(\stdClass $language) {
+    throw new \Exception('Creating languages is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete(\stdClass $language) {
+    throw new \Exception('Deleting languages is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    // Drupal 6 doesn't have a way of clearing all static caches.
   }
 
 }

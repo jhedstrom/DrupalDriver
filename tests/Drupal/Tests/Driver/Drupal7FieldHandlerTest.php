@@ -66,6 +66,33 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
         array('en' => array(array('value' => 'Text'))),
       ),
 
+      // Test default field handler using custom field columns.
+      array(
+        'DefaultHandler',
+        (object) array(
+          'field_addressfield' => array(
+            array(
+              'country' => 'BE',
+              'locality' => 'Brussels',
+              'thoroughfare' => 'Grote Markt 1',
+              'postal_code' => '1000',
+            ),
+          ),
+        ),
+        'node',
+        array('field_name' => 'field_addressfield'),
+        array(
+          'en' => array(
+            array(
+              'country' => 'BE',
+              'locality' => 'Brussels',
+              'thoroughfare' => 'Grote Markt 1',
+              'postal_code' => '1000',
+            ),
+          ),
+        ),
+      ),
+
       // Test single-value date field provided as simple text.
       array(
         'DatetimeHandler',
@@ -107,6 +134,56 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
             array(
               'value' => '2015-01-01 00:00:00',
               'value2' => '2015-01-02 00:00:00',
+            ),
+          ),
+        ),
+      ),
+
+      // Test list boolean field with blank 'On' and 'Off' values.
+      array(
+        'ListBooleanHandler',
+        (object) array('field_list_boolean' => array(0)),
+        'node',
+        array(
+          'field_name' => 'field_list_boolean',
+          'settings' => array(
+            'allowed_values' => array(
+              0 => '',
+              1 => '',
+            ),
+          ),
+        ),
+        array(
+          'en' => array(
+            array(
+              'value' => 0,
+            ),
+          ),
+        ),
+      ),
+
+      // Test image field provided as array.
+      array(
+        'ImageHandler',
+        (object) array(
+          'field_image' => array(
+            array(
+              'test.png',
+              'public://images/test.png',
+              1,
+              1,
+            ),
+          ),
+        ),
+        'node',
+        array('field_name' => 'field_image'),
+        array(
+          'en' => array(
+            array(
+              'filename' => 'test.png',
+              'uri' => 'public://images/test.png',
+              'fid' => 1,
+              'display' => 1,
             ),
           ),
         ),

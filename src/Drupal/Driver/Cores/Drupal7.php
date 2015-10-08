@@ -7,7 +7,6 @@
 
 namespace Drupal\Driver\Cores;
 
-use Drupal\Component\Utility\Random;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
@@ -134,6 +133,9 @@ class Drupal7 extends AbstractCore {
     }
 
     user_multiple_role_edit(array($user->uid), 'add_role', $role->rid);
+    $account = user_load($user->uid);
+    $user->roles = $account->roles;
+
   }
 
   /**
@@ -324,13 +326,7 @@ class Drupal7 extends AbstractCore {
 
     \taxonomy_term_save($term);
 
-    // Loading a term by name returns an array of term objects, but there should
-    // only be one matching term in a testing context, so take the first match
-    // by reset()'ing $matches.
-    $matches = \taxonomy_get_term_by_name($term->name);
-    $saved_term = reset($matches);
-
-    return $saved_term;
+    return $term;
   }
 
   /**
@@ -343,6 +339,69 @@ class Drupal7 extends AbstractCore {
     }
     // Will be SAVED_DELETED (3) on success.
     return $status;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate(\stdClass $language) {
+    include_once DRUPAL_ROOT . '/includes/iso.inc';
+    include_once DRUPAL_ROOT . '/includes/locale.inc';
+
+    // Get all predefined languages, regardless if they are enabled or not.
+    $predefined_languages = _locale_get_predefined_list();
+
+    // If the language code is not valid then throw an InvalidArgumentException.
+    if (!isset($predefined_languages[$language->langcode])) {
+      throw new InvalidArgumentException("There is no predefined language with langcode '{$language->langcode}'.");
+    }
+
+    // Enable a language only if it has not been enabled already.
+    $enabled_languages = locale_language_list();
+    if (!isset($enabled_languages[$language->langcode])) {
+      locale_add_language($language->langcode);
+      return $language;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete(\stdClass $language) {
+    $langcode = $language->langcode;
+    // Do not remove English or the default language.
+    if (!in_array($langcode, array(language_default('language'), 'en'))) {
+      // @see locale_languages_delete_form_submit().
+      $languages = language_list();
+      if (isset($languages[$langcode])) {
+        // Remove translations first.
+        db_delete('locales_target')
+          ->condition('language', $langcode)
+          ->execute();
+        cache_clear_all('locale:' . $langcode, 'cache');
+        // With no translations, this removes existing JavaScript translations
+        // file.
+        _locale_rebuild_js($langcode);
+        // Remove the language.
+        db_delete('languages')
+          ->condition('language', $langcode)
+          ->execute();
+        db_update('node')
+          ->fields(array('language' => ''))
+          ->condition('language', $langcode)
+          ->execute();
+        if ($languages[$langcode]->enabled) {
+          variable_set('language_count', variable_get('language_count', 1) - 1);
+        }
+        module_invoke_all('multilingual_settings_changed');
+        drupal_static_reset('language_list');
+      }
+
+      // Changing the language settings impacts the interface:
+      cache_clear_all('*', 'cache_page', TRUE);
+    }
   }
 
   /**
@@ -365,6 +424,21 @@ class Drupal7 extends AbstractCore {
    */
   public function getModuleList() {
     return module_list();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExtensionPathList() {
+    $paths = array();
+
+    // Get enabled modules.
+    $modules = $this->getModuleList();
+    foreach ($modules as $module) {
+      $paths[] = $this->drupalRoot . DIRECTORY_SEPARATOR . \drupal_get_path('module', $module);
+    }
+
+    return $paths;
   }
 
   /**
