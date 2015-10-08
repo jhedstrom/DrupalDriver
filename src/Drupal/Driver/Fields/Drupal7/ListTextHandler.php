@@ -17,12 +17,7 @@ class ListTextHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = array();
-    if (!empty($this->fieldInfo['settings']['allowed_values_function'])) {
-      $allowed_values = $this->fieldInfo['settings']['allowed_values_function']();
-    }
-    else {
-      $allowed_values = $this->fieldInfo['settings']['allowed_values'];
-    }
+    $allowed_values = array_flip($this->fieldInfo['settings']['allowed_values']);
     foreach ($values as $value) {
       $return[$this->language][] = array('value' => $allowed_values[$value]);
     }
