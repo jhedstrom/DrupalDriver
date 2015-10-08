@@ -17,7 +17,12 @@ class ListBooleanHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = array();
-    $allowed_values = $this->fieldInfo['settings']['allowed_values'];
+    if (!empty($this->fieldInfo['settings']['allowed_values_function'])) {
+      $allowed_values = $this->fieldInfo['settings']['allowed_values_function']();
+    }
+    else {
+      $allowed_values = $this->fieldInfo['settings']['allowed_values'];
+    }
     // If values are blank then use keys as value.
     foreach ($allowed_values as $key => $value) {
       if ($value == '') {
