@@ -389,4 +389,11 @@ class Drupal7 extends AbstractCore {
     return !empty($map[$field_name]) && array_key_exists($entity_type, $map[$field_name]['bundles']);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCache() {
+    drupal_static_reset();
+  }
+
 }
