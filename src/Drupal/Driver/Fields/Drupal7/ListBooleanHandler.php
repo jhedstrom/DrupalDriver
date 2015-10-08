@@ -29,9 +29,14 @@ class ListBooleanHandler extends AbstractHandler {
         $allowed_values[$key] = $key;
       }
     }
-    $allowed_values = array_flip($allowed_values);
+    $allowed_values_flip = array_flip($allowed_values);
     foreach ($values as $value) {
-      $return[$this->language][] = array('value' => $allowed_values[$value]);
+      if (isset($allowed_values_flip[$value])) {
+        $return[$this->language][] = array('value' => $allowed_values_flip[$value]);
+      }
+      else {
+        $return[$this->language][] = array('value' => $value);
+      }
     }
     return $return;
   }
