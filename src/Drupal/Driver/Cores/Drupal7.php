@@ -466,7 +466,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCache() {
+  public function clearStaticCaches() {
     drupal_static_reset();
   }
 

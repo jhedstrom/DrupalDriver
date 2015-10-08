@@ -57,7 +57,7 @@ interface CoreInterface {
   /**
    * Clears static caches.
    */
-  public function clearStaticCache();
+  public function clearStaticCaches();
 
   /**
    * Run cron.

@@ -141,7 +141,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    * {@inheritdoc}
    */
   public function clearStaticCaches() {
-    $this->getCore()->clearStaticCache();
+    $this->getCore()->clearStaticCaches();
   }
 
 
