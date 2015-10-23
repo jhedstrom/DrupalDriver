@@ -19,7 +19,8 @@
     "drupal/coder": "~8.2.0",
     "phpspec/phpspec": "~2.0",
     "phpunit/phpunit": "~4.0",
-    "mockery/mockery": "0.9.4"
+    "mockery/mockery": "0.9.4",
+    "pantheon-systems/behat-drush-endpoint": "*"
   },
   "autoload": {
     "psr-0": {
