@@ -13,7 +13,17 @@ and then install and run composer
 
 .. _composer: https://getcomposer.org/
 
-If you plan on using the Drush driver, then you should also copy
-behat.d7.drush.inc or behat.d8.drush.inc, as appropriate, to the
-`drush` directory in your target Drupal site.  These files may be
-found in the `drush-extensions` directory of this project.
+If you plan on using the Drush driver, then you need to ensure
+that the behat-drush-endpoint is available in the target Drupal
+site.  There are two ways to do this:
+
+1. Copy the files manually.  The project can be found at:
+
+https://github.com/pantheon-systems/behat-drush-endpoint
+
+2. Use Composer.
+
+If you are using Composer to manage your Drupal site, then
+you only need to require drupal/drupal-driver and
+composer/installers, and the behat-drush-endpoint files
+will be copied to the correct location.

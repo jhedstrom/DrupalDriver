@@ -17,15 +17,6 @@ Drush driver
    :linenos:
    :emphasize-lines: 7-8
 
-In order for the Drush driver to create content, it needs
-to have the behat-drush-endpoint installed on the target
-Drupal site.  Place it in the 'drush' folder at the Drupal
-root.  If you use Composer to require the DrupalDriver in
-your Drupal site, then the behat-drush-endpoint will be
-placed in the right location automatically.
-
-https://github.com/pantheon-systems/behat-drush-endpoint
-
 Blackbox
 --------
 
