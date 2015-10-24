@@ -19,7 +19,7 @@ site.  There are two ways to do this:
 
 1. Copy the files manually.  The project can be found at:
 
-https://github.com/pantheon-systems/behat-drush-endpoint
+https://github.com/drush-ops/behat-drush-endpoint
 
 2. Use Composer.
 
