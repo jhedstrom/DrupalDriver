@@ -186,6 +186,44 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+    // The drush driver does each operation as a separate request;
+    // therefore, 'clearStaticCaches' can be a no-op.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createNode($node) {
+    $result = $this->drush('behat', array('create-node', escapeshellarg(json_encode($node))), array());
+    return json_decode($result);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDelete($node) {
+    $this->drush('behat', array('delete-node', escapeshellarg(json_encode($node))), array());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createTerm(\stdClass $term) {
+    $result = $this->drush('behat', array('create-term', escapeshellarg(json_encode($term))), array());
+    return json_decode($result);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function termDelete(\stdClass $term) {
+    $this->drush('behat', array('delete-term', escapeshellarg(json_encode($term))), array());
+  }
+
+  /**
    * Sets common drush arguments or options.
    *
    * @param string $arguments
@@ -255,13 +293,6 @@ class DrushDriver extends BaseDriver {
       return $process->getOutput();
     }
 
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function clearStaticCaches() {
-    // Be very very quiet.
   }
 
   /**
