@@ -87,4 +87,10 @@ abstract class AbstractCore implements CoreInterface {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function clearStaticCaches() {
+  }
+
 }

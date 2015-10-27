@@ -76,6 +76,11 @@ interface DriverInterface {
   public function clearCache($type = NULL);
 
   /**
+   * Clears static Drupal caches.
+   */
+  public function clearStaticCaches();
+
+  /**
    * Creates a node.
    *
    * @param object $node
