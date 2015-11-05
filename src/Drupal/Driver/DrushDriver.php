@@ -224,6 +224,14 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function isField($entity_type, $field_name) {
+    $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
+    return json_decode($result);
+  }
+
+  /**
    * Sets common drush arguments or options.
    *
    * @param string $arguments
