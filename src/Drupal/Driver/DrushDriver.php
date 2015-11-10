@@ -227,8 +227,18 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
-    $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
-    return json_decode($result);
+    // If the Behat Drush Endpoint is not installed on the site-under-test,
+    // then the drush() method will throw an exception. In this instance, we
+    // want to treat all potential fields as non-fields.  This allows the
+    // Drush Driver to work with certain built-in Drush capabilities (e.g.
+    // creating users) even if the Behat Drush Endpoint is not available.
+    try {
+      $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
+      return json_decode($result);
+    }
+    catch (\Exception $e) {
+      return FALSE;
+    }
   }
 
   /**
