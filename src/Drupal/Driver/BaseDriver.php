@@ -153,6 +153,13 @@ abstract class BaseDriver implements DriverInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getModuleList() {
+    throw new UnsupportedDriverActionException($this->errorString('get module list'), $this);
+  }
+
+  /**
    * Error printing exception.
    *
    * @param string $error

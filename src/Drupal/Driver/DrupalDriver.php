@@ -321,6 +321,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
+  public function getModuleList() {
+    return $this->getCore()->getModuleList();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function clearStaticCaches() {
     $this->getCore()->clearStaticCaches();
   }

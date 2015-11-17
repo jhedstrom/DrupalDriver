@@ -174,4 +174,12 @@ interface DriverInterface {
    */
   public function uninstallModules(array $modules);
 
+  /**
+   * Returns a list of active modules.
+   *
+   * @return array
+   *   A list of machine names of active modules.
+   */
+  public function getModuleList();
+
 }
