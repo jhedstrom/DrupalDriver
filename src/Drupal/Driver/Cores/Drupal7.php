@@ -441,12 +441,12 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function uninstallModules(array $modules, $uninstall_dependents = TRUE) {
+  public function uninstallModules(array $modules) {
     // In Drupal 7 modules first need to be disabled before they can be
     // uninstalled.
-    module_disable($modules, $uninstall_dependents);
-    if (!drupal_uninstall_modules($modules, $uninstall_dependents)) {
-      throw new ModuleUninstallException('The modules could not be uninstalled because it is required by one or more modules.');
+    module_disable($modules);
+    if (!drupal_uninstall_modules($modules)) {
+      throw new ModuleUninstallException('The modules could not be uninstalled. They are required by one or more dependant modules.');
     }
   }
 

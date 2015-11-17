@@ -347,9 +347,9 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function uninstallModules(array $modules, $uninstall_dependents = TRUE) {
+  public function uninstallModules(array $modules) {
     try {
-      \Drupal::service('module_installer')->uninstall($modules, $uninstall_dependents);
+      \Drupal::service('module_installer')->uninstall($modules);
     }
     catch (\Exception $e) {
       throw new ModuleUninstallException('The modules could not be uninstalled because an error occurred.', 0, $e);

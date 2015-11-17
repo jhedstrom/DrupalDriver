@@ -432,10 +432,10 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function uninstallModules(array $modules, $uninstall_dependents = TRUE) {
-    // Drupal 6 does not support the optional uninstallation of dependents. It
-    // also doesn't actually uninstall modules, they can only be disabled. Since
-    // no value is returned we cannot know if the uninstallation was successful.
+  public function uninstallModules(array $modules) {
+    // Drupal 6 doesn't actually uninstall modules, they can only be disabled.
+    // Since no value is returned we cannot know if the uninstallation was
+    // successful.
     module_disable($modules);
   }
 

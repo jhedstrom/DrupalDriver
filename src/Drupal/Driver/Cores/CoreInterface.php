@@ -63,17 +63,12 @@ interface CoreInterface {
    *
    * @param array $modules
    *   A list of modules to uninstall.
-   * @param bool $uninstall_dependents
-   *   Whether or not to uninstall the dependents of each module in the list.
-   *   This incurs a performance cost, so set this to FALSE if you know that
-   *   the list of modules already contains all dependents in the correct order.
-   *   Defaults to TRUE.
    *
    * @throws \Drupal\Driver\Exception\ModuleUninstallException
    *   Thrown when the modules could not be uninstalled, for example because a
-   *   dependent module is still installed and $uninstall_dependents is FALSE.
+   *   dependent module is still installed.
    */
-  public function uninstallModules(array $modules, $uninstall_dependents = TRUE);
+  public function uninstallModules(array $modules);
 
   /**
    * Returns a list of all extension absolute paths.
