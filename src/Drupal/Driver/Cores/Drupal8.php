@@ -9,6 +9,8 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Exception\ModuleInstallException;
+use Drupal\Driver\Exception\ModuleUninstallException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\node\Entity\Node;
@@ -328,6 +330,30 @@ class Drupal8 extends AbstractCore {
    */
   public function getModuleList() {
     return array_keys(\Drupal::moduleHandler()->getModuleList());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function installModules(array $modules, $install_dependencies = TRUE) {
+    try {
+      \Drupal::service('module_installer')->install($modules, $install_dependencies);
+    }
+    catch (\Exception $e) {
+      throw new ModuleInstallException('The modules could not be installed because an error occurred.', 0, $e);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function uninstallModules(array $modules, $uninstall_dependents = TRUE) {
+    try {
+      \Drupal::service('module_installer')->uninstall($modules, $uninstall_dependents);
+    }
+    catch (\Exception $e) {
+      throw new ModuleUninstallException('The modules could not be uninstalled because an error occurred.', 0, $e);
+    }
   }
 
   /**
