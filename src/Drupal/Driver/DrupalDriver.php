@@ -307,6 +307,20 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
+  public function installModules(array $modules) {
+    $this->getCore()->installModules($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function uninstallModules(array $modules) {
+    $this->getCore()->uninstallModules($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function clearStaticCaches() {
     $this->getCore()->clearStaticCaches();
   }

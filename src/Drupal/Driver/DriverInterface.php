@@ -158,4 +158,20 @@ interface DriverInterface {
    */
   public function isField($entity_type, $field_name);
 
+  /**
+   * Installs the given modules.
+   *
+   * @param array $modules
+   *   A list of machine names of modules to install.
+   */
+  public function installModules(array $modules);
+
+  /**
+   * Uninstalls the given modules.
+   *
+   * @param array $modules
+   *   A list of machine names of modules to uninstall.
+   */
+  public function uninstallModules(array $modules);
+
 }
