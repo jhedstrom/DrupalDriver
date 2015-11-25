@@ -41,6 +41,9 @@ class FileHandler extends AbstractHandler {
           'display' => 1,
         );
       }
+      else {
+        throw new \Exception(sprintf('File with filename "%s" not found.', $value));
+      }
     }
 
     return $return;
