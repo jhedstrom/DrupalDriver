@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal7\DefaultFieldHandler.
+ * Contains \Drupal\Driver\Fields\Drupal8\DefaultFieldHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
