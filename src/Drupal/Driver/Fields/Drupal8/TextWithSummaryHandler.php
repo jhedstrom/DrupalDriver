@@ -2,15 +2,17 @@
 
 /**
  * @file
- * Contains \Drupal\Driver\Fields\Drupal8\DefaultFieldHandler.
+ * Contains \Drupal\Driver\Fields\Drupal8\TextWithSummaryHandler.
  */
 
 namespace Drupal\Driver\Fields\Drupal8;
 
+use Drupal\Driver\Fields\FieldHandlerInterface;
+
 /**
  * Default field handler for Drupal 8.
  */
-class DefaultHandler extends AbstractHandler {
+class TextWithSummaryHandler implements FieldHandlerInterface {
 
   /**
    * {@inheritdoc}

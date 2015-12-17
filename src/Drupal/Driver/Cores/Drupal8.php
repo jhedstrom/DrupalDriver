@@ -62,6 +62,13 @@ class Drupal8 extends AbstractCore {
     if (!isset($node->status)) {
       $node->status = 1;
     }
+    // If 'author' is set, remap it to 'uid'.
+    if (isset($node->author)) {
+      $user = user_load_by_name($node->author);
+      if ($user) {
+        $node->uid = $user->id();
+      }
+    }
     $this->expandEntityFields('node', $node);
     $entity = entity_create('node', (array) $node);
     $entity->save();
