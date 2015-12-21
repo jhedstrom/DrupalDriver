@@ -42,6 +42,35 @@ interface CoreInterface {
   public function getModuleList();
 
   /**
+   * Installs the given modules.
+   *
+   * @param array $modules
+   *   A list of modules to install.
+   * @param bool $install_dependencies
+   *   Whether or not to install the dependencies of each module in the list.
+   *   This incurs a performance cost, so set this to FALSE if you know that
+   *   the list of modules already contains all dependencies in the correct
+   *   order. Defaults to TRUE.
+   *
+   * @throws \Drupal\Driver\Exception\ModuleInstallException
+   *   Thrown when the modules could not be installed, for example because a
+   *   dependency is missing.
+   */
+  public function installModules(array $modules, $install_dependencies = TRUE);
+
+  /**
+   * Uninstalls the given modules.
+   *
+   * @param array $modules
+   *   A list of modules to uninstall.
+   *
+   * @throws \Drupal\Driver\Exception\ModuleUninstallException
+   *   Thrown when the modules could not be uninstalled, for example because a
+   *   dependent module is still installed.
+   */
+  public function uninstallModules(array $modules);
+
+  /**
    * Returns a list of all extension absolute paths.
    *
    * @return array

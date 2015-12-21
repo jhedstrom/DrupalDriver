@@ -8,6 +8,8 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Exception\ModuleInstallException;
+use Drupal\Driver\Exception\ModuleUninstallException;
 
 /**
  * Drupal 7 core.
@@ -424,6 +426,28 @@ class Drupal7 extends AbstractCore {
    */
   public function getModuleList() {
     return module_list();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function installModules(array $modules, $install_dependencies = TRUE) {
+    // In Drupal 7 you still "enable" modules. This also installs them.
+    if (!module_enable($modules, $install_dependencies)) {
+      throw new ModuleInstallException('The modules could not be installed because one or more dependencies are missing.');
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function uninstallModules(array $modules) {
+    // In Drupal 7 modules first need to be disabled before they can be
+    // uninstalled.
+    module_disable($modules);
+    if (!drupal_uninstall_modules($modules)) {
+      throw new ModuleUninstallException('The modules could not be uninstalled. They are required by one or more dependant modules.');
+    }
   }
 
   /**

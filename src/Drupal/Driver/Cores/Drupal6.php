@@ -422,6 +422,26 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function installModules(array $modules, $install_dependencies = TRUE) {
+    // Drupal 6 does not support the optional installation of dependencies. This
+    // does not have a return value so we cannot detect if the installation was
+    // successful.
+    module_enable($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function uninstallModules(array $modules) {
+    // Drupal 6 doesn't actually uninstall modules, they can only be disabled.
+    // Since no value is returned we cannot know if the uninstallation was
+    // successful.
+    module_disable($modules);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getExtensionPathList() {
     $paths = array();
 
