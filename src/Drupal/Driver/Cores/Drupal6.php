@@ -510,4 +510,5 @@ class Drupal6 extends AbstractCore {
   public function clearStaticCaches() {
     // Drupal 6 doesn't have a way of clearing all static caches.
   }
+
 }
