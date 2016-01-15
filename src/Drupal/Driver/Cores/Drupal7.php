@@ -404,6 +404,21 @@ class Drupal7 extends AbstractCore {
     }
   }
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configGet($name, $key = '') {
+    throw new \Exception('Getting config is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet($name, $key, $value) {
+    throw new \Exception('Setting config is not yet implemented for Drupal 7.');
+  }
+
   /**
    * Helper function to get all permissions.
    *
