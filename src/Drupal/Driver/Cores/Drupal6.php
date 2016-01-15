@@ -493,8 +493,21 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function configGet($name, $key = '') {
+    throw new \Exception('Getting config is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet($name, $key, $value) {
+    throw new \Exception('Setting config is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function clearStaticCaches() {
     // Drupal 6 doesn't have a way of clearing all static caches.
   }
-
 }
