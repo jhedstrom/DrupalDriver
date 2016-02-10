@@ -401,4 +401,20 @@ class Drupal8 extends AbstractCore {
     \Drupal::service('cache_tags.invalidator')->resetChecksums();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function configGet($name, $key = '') {
+    return \Drupal::config($name)->get($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet($name, $key, $value) {
+    \Drupal::configFactory()->getEditable($name)
+      ->set($key, $value)
+      ->save();
+  }
+
 }
