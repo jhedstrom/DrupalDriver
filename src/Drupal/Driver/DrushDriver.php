@@ -285,7 +285,9 @@ class DrushDriver extends BaseDriver {
    */
   public function drush($command, array $arguments = array(), array $options = array()) {
     $arguments = implode(' ', $arguments);
-    $options['nocolor'] = '';
+
+    // Disable colored output from drush
+    $options['nocolor'] = TRUE;
     $string_options = $this->parseArguments($options);
 
     $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;
@@ -293,7 +295,7 @@ class DrushDriver extends BaseDriver {
     // Add any global arguments.
     $global = $this->getArguments();
 
-    $process = new Process("{$this->binary} {$alias} {$global} {$command} {$string_options} {$arguments}");
+    $process = new Process("{$this->binary} {$alias} {$string_options} {$global} {$command} {$arguments}");
     $process->setTimeout(3600);
     $process->run();
 
