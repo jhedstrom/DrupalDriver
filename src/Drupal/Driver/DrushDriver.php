@@ -286,7 +286,7 @@ class DrushDriver extends BaseDriver {
   public function drush($command, array $arguments = array(), array $options = array()) {
     $arguments = implode(' ', $arguments);
 
-    // Disable colored output from drush
+    // Disable colored output from drush.
     $options['nocolor'] = TRUE;
     $string_options = $this->parseArguments($options);
 
