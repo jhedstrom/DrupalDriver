@@ -307,15 +307,15 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
-  public function configSet($name, $key, $value) {
-    $this->getCore()->configSet($name, $key, $value);
+  public function configGet($name, $key) {
+    return $this->getCore()->configGet($name, $key);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configGet($name, $key) {
-    return $this->getCore()->configGet($name, $key);
+  public function configSet($name, $key, $value) {
+    $this->getCore()->configSet($name, $key, $value);
   }
 
   /**
