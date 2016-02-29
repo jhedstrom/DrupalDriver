@@ -139,6 +139,20 @@ abstract class BaseDriver implements DriverInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function configGet($name, $key) {
+    throw new UnsupportedDriverActionException($this->errorString('config get'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet($name, $key, $value) {
+    throw new UnsupportedDriverActionException($this->errorString('config set'), $this);
+  }
+
+  /**
    * Error printing exception.
    *
    * @param string $error

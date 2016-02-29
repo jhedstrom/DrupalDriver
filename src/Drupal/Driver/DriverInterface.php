@@ -158,4 +158,29 @@ interface DriverInterface {
    */
   public function isField($entity_type, $field_name);
 
+  /**
+   * Returns a configuration item.
+   *
+   * @param string $name
+   *   The name of the configuration object to retrieve.
+   * @param string $key
+   *   A string that maps to a key within the configuration data.
+   *
+   * @return mixed
+   *   The data that was requested.
+   */
+  public function configGet($name, $key);
+
+  /**
+   * Sets a value in a configuration object.
+   *
+   * @param string $name
+   *   The name of the configuration object.
+   * @param string $key
+   *   Identifier to store value in configuration.
+   * @param mixed $value
+   *   Value to associate with identifier.
+   */
+  public function configSet($name, $key, $value);
+
 }
