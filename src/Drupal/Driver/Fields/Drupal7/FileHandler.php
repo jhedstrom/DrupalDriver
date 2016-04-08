@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Fields\Drupal7\FileHandler.
- */
-
 namespace Drupal\Driver\Fields\Drupal7;
 
 /**

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Cores\Drupal7.
- */
-
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
@@ -403,7 +398,6 @@ class Drupal7 extends AbstractCore {
       cache_clear_all('*', 'cache_page', TRUE);
     }
   }
-
 
   /**
    * {@inheritdoc}

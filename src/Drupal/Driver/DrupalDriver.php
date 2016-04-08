@@ -1,14 +1,8 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\DrupalDriver.
- */
-
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\Driver\SubDriverFinderInterface;
 
 use Behat\Behat\Tester\Exception\PendingException;
 

@@ -1,16 +1,12 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Fields\Drupal8\DatetimeHandler.
- */
-
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
  * Datetime field handler for Drupal 8.
  */
 class DatetimeHandler extends AbstractHandler {
+
   /**
    * {@inheritdoc}
    */

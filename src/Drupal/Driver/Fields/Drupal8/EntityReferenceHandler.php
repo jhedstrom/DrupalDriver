@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Fields\Drupal8\EntityReferenceHandler.
- */
-
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**

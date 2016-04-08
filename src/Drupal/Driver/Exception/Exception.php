@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Exception\Exception.
- */
-
 namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\Driver\Fields\FieldHandlerInterface.
- */
 
 namespace Drupal\Driver\Fields;
 
