@@ -29,9 +29,9 @@ class GeneralTest extends BrowserTestCase
     );
 
      public static function setUpBeforeClass() {
-        $this->driver = new DrupalDriver(static::$drupalRoot, static::$uri);
-        $this->driver->setCoreFromVersion();
-        $this->driver->bootstrap();
+        self::$driver = new DrupalDriver(static::$drupalRoot, static::$uri);
+        self::$driver->setCoreFromVersion();
+        self::$driver->bootstrap();
     }
 
     public function testUsingSession()
@@ -56,11 +56,12 @@ class GeneralTest extends BrowserTestCase
     }
 
     public function testNodeCreate() {
+        $drupal = self::$driver;
         $node = (object) [
-            'title' => $this->driver->getRandom()->string(),
+            'title' => $drupal->getRandom()->string(),
             'type' => 'article',
         ];
-        $this->driver->createNode($node);
+        $drupal->createNode($node);
 
         $session = $this->getSession();
         $session->visit(static::$uri . '/node/' . $node->nid);
