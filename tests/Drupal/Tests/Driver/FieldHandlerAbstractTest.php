@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\Driver\FieldHandlerAbstractTest.
- */
-
 namespace Drupal\Tests\Driver;
 
 /**

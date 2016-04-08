@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\SubDriverFinderInterface.
- */
-
 namespace Drupal\Driver;
 
 /**

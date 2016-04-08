@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\DrushDriver.
- */
-
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;

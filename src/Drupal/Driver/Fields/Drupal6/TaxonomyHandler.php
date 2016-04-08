@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Fields\Drupal6\TaxonomyHandler.
- */
-
 namespace Drupal\Driver\Fields\Drupal6;
 
 use Drupal\Driver\Fields\FieldHandlerInterface;
