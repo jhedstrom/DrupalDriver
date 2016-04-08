@@ -10,7 +10,7 @@ class GeneralTest extends BrowserTestCase
     /**
      * @var \Drupal\Driver\DriverInterface
      */
-    protected $driver;
+     protected static $driver;
 
     // Path to a Drupal install. This example assumes the directory is in the same one as the `composer.json` file.
     protected static $drupalRoot = './drupal';
@@ -28,7 +28,7 @@ class GeneralTest extends BrowserTestCase
         ),
     );
 
-    public function setUp() {
+     public static function setUpBeforeClass() {
         $this->driver = new DrupalDriver(static::$drupalRoot, static::$uri);
         $this->driver->setCoreFromVersion();
         $this->driver->bootstrap();
