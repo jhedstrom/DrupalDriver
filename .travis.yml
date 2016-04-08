@@ -15,7 +15,8 @@ script:
   - find ./src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
   - phpunit
   - vendor/bin/phpspec run -f pretty --no-interaction
-  - ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml --ignore=./vendor --ignore=./doc --ignore=./spec --ignore=./drush .
+  # Don't test coding on php 5.3.
+  - test ${TRAVIS_PHP_VERSION} == "5.3" || ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml --ignore=./vendor --ignore=./doc --ignore=./spec --ignore=./drush .
 
 # Enable Travis containers.
 sudo: false
