@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\BaseDriver.
- */
-
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\UnsupportedDriverActionException;

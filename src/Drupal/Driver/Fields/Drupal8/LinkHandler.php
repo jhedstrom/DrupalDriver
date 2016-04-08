@@ -1,16 +1,12 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Fields\Drupal8\LinkHandler.
- */
-
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
  * Link field handler for Drupal 8.
  */
 class LinkHandler extends AbstractHandler {
+
   /**
    * {@inheritdoc}
    */

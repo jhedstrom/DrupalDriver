@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Cores\Drupal8.
- */
-
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;

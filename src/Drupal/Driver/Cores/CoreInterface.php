@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Cores\CoreInterface.
- */
-
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
