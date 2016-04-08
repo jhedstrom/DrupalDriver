@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Cores\Drupal7.
- */
-
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;

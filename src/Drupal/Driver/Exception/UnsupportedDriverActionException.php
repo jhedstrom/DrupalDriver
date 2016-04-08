@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Exception\UnsupportedDriverActionException.
- */
-
 namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
@@ -13,6 +8,7 @@ use Drupal\Driver\DriverInterface;
  * Unsupported driver action.
  */
 class UnsupportedDriverActionException extends Exception {
+
   /**
    * Initializes exception.
    *

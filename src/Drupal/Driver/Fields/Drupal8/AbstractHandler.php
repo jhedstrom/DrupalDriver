@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Driver\Fields\Drupal8\AbstractFieldHandler.
- */
-
 namespace Drupal\Driver\Fields\Drupal8;
 
 use Drupal\Driver\Fields\FieldHandlerInterface;
