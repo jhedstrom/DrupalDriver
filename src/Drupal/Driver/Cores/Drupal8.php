@@ -53,6 +53,14 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeCreate($node) {
+    // Throw an exception if the node type is missing or does not exist.
+    if (!isset($node->type) || !$node->type) {
+      throw new \Exception("Cannot create content because it is missing the required property 'type'.");
+    }
+    $bundles = \Drupal::entityManager()->getBundleInfo('node');
+    if (!in_array($node->type, array_keys($bundles))) {
+      throw new \Exception("Cannot create content because provided content type '$node->type' does not exist.");
+    }
     // Default status to 1 if not set.
     if (!isset($node->status)) {
       $node->status = 1;
