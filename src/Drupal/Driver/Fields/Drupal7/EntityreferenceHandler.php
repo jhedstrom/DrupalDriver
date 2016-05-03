@@ -20,10 +20,15 @@ class EntityreferenceHandler extends AbstractHandler {
 
     $return = array();
     foreach ($values as $value) {
-      $target_id = db_select($entity_info['base table'], 't')
-        ->fields('t', array($entity_info['entity keys']['id']))
-        ->condition('t.' . $entity_info['entity keys']['label'], $value)
-        ->execute()->fetchField();
+      $query = db_select($entity_info['base table'], 't')
+        ->fields('t', array($entity_info['entity keys']['id']));
+      if(is_numeric($value)){
+        $query->condition('t.' . $entity_info['entity keys']['id'], $value);
+      }
+      else{
+        $query->condition('t.' . $entity_info['entity keys']['label'], $value);
+      }
+      $target_id = $query->execute()->fetchField();
       if ($target_id) {
         $return[$this->language][] = array('target_id' => $target_id);
       }
