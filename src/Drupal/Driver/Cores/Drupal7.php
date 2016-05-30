@@ -104,8 +104,6 @@ class Drupal7 extends AbstractCore {
       if(!property_exists($node, $k)){
         throw new \Exception(sprintf("%s::%s line %s: Attempt to modify an invalid field: %s", get_class($this), __LINE__, __FUNCTION__, $k));
       }
-      $old_value = (is_scalar($node->{$k})) ? $node->{$k} : print_r($node->{$k}, TRUE);
-      $new_value = (is_scalar($v)) ? $v : print_r($v, TRUE);
       $node->{$k} = $v;
     }
     node_save($node);
@@ -155,22 +153,13 @@ class Drupal7 extends AbstractCore {
    *          error will be in the exception.
    */
   public function userAlter($user, $values) {
-    //throw new \Exception(sprintf("%s::%s line %s: function is not yet implemented", get_class($this), __FUNCTION__, __LINE__));
     if (empty($user) || !isset($user->uid)) {
       var_dump(array_keys(get_object_vars($user)));
       throw new \Exception(sprintf("%s::%s: User was empty or had no id", get_class($this), __FUNCTION__));
     }
     // Attempt to decipher any fields that may be specified.
     $this->expandEntityFields('user', $values);
-    //$node_wrapper = entity_metadata_wrapper('node', $node);
-    //print sprintf("%s::%s line %s: Updated values: %s\n", get_class($this), __FUNCTION__, __LINE__, print_r($values, TRUE));
-    //var_dump($node);
     foreach ($values as $k => $v) {
-      $old_value = (is_scalar($user->{$k})) ? $user->{$k} : print_r($user->{$k}, TRUE);
-      $new_value = (is_scalar($v)) ? $v : print_r($v, TRUE);
-      //print sprintf("%s::%s line %s: Updating the value of field %s.  Current value: %s, New value: %s\n", get_class($this), __FUNCTION__, __LINE__, $k, $old_value, $new_value);
-      // if the field is multi-value, transform non-array arguments into an
-      // array for the update process.
       $user->{$k} = $v;
     }
     user_save($user);
