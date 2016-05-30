@@ -31,6 +31,13 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function userAlter($user, $values) {
+    throw new UnsupportedDriverActionException($this->errorString('alter users'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userCreate(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('create users'), $this);
   }
@@ -75,6 +82,13 @@ abstract class BaseDriver implements DriverInterface {
    */
   public function clearStaticCaches() {
     throw new UnsupportedDriverActionException($this->errorString('clear static caches'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeAlter($node, $values) {
+    throw new UnsupportedDriverActionException($this->errorString('alter nodes'), $this);
   }
 
   /**

@@ -99,6 +99,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
+  public function userAlter($user, $values) {
+    return $this->getCore()->userAlter($user, $values);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userDelete(\stdClass $user) {
     $this->getCore()->userDelete($user);
   }
@@ -231,6 +238,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function createNode($node) {
     return $this->getCore()->nodeCreate($node);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeAlter($node, $values) {
+    return $this->getCore()->nodeAlter($node, $values);
   }
 
   /**

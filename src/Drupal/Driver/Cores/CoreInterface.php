@@ -58,6 +58,17 @@ interface CoreInterface {
   public function runCron();
 
   /**
+   * Deletes a node.
+   *
+   * @param object $node
+   *   Fully loaded node object.
+   * @param object $values
+   *   a plain object with field names as properties, and
+   *                        field values as property values.
+   */
+  public function nodeAlter($node, $values);
+
+  /**
    * Create a node.
    */
   public function nodeCreate($node);
@@ -66,6 +77,17 @@ interface CoreInterface {
    * Delete a node.
    */
   public function nodeDelete($node);
+
+  /**
+   * Alters an existing user.
+   *
+   * @param object $user
+   *   Fully loaded drupal user object.
+   * @param object $values
+   *   a plain object with field names as properties, and
+   *   field values as property values.
+   */
+  public function userAlter($user, $values);
 
   /**
    * Create a user.

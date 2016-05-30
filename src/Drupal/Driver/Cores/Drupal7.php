@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ */
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
@@ -71,7 +75,41 @@ class Drupal7 extends AbstractCore {
   public function nodeDelete($node) {
     node_delete($node->nid);
   }
+  /**
+   * {@inheritdoc}
+   *
+   * @param object $node
+   *   A drupal node object
+   * @param object $values
+   *   An object with field/value parameters
+   *
+   * @return NULL
+   *
+   * @throws \Exception If anything goes wrong with the alteration. Details of
+   *          error will be in the exception.
+   */
+  public function nodeAlter($node, $values) {
+    if (empty($node) || !isset($node->nid)) {
+      var_dump(array_keys(get_object_vars($node)));
+      throw new \Exception(sprintf("%s::%s: Node was empty or had no id", get_class($this), __FUNCTION__));
+    }
+    //assign type (really, bundle) to values so that expansion functions will
+    //work properly.
+    $values->type = $node->type;
+    $this->expandEntityProperties($values);
 
+    // Attempt to decipher any fields that may be specified.
+    $this->expandEntityFields('node', $values);
+    foreach ($values as $k => $v) {
+      if(!property_exists($node, $k)){
+        throw new \Exception(sprintf("%s::%s line %s: Attempt to modify an invalid field: %s", get_class($this), __LINE__, __FUNCTION__, $k));
+      }
+      $old_value = (is_scalar($node->{$k})) ? $node->{$k} : print_r($node->{$k}, TRUE);
+      $new_value = (is_scalar($v)) ? $v : print_r($v, TRUE);
+      $node->{$k} = $v;
+    }
+    node_save($node);
+  }
   /**
    * Implements CoreInterface::runCron().
    */
@@ -87,7 +125,9 @@ class Drupal7 extends AbstractCore {
     if (!isset($user->status)) {
       $user->status = 1;
     }
-
+    if(isset($user->roles) && is_string($user->roles)){
+      $user->roles = array_map('trim', explode(',', $user->roles));
+    }
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
     $account = clone $user;
@@ -102,6 +142,40 @@ class Drupal7 extends AbstractCore {
   }
 
   /**
+   * {@inheritdoc}
+   *
+   * @param object $user
+   *   A drupal user object
+   * @param object $values
+   *   An object with field/value parameters
+   *
+   * @return NULL
+   *
+   * @throws \Exception If anything goes wrong with the alteration. Details of
+   *          error will be in the exception.
+   */
+  public function userAlter($user, $values) {
+    //throw new \Exception(sprintf("%s::%s line %s: function is not yet implemented", get_class($this), __FUNCTION__, __LINE__));
+    if (empty($user) || !isset($user->uid)) {
+      var_dump(array_keys(get_object_vars($user)));
+      throw new \Exception(sprintf("%s::%s: User was empty or had no id", get_class($this), __FUNCTION__));
+    }
+    // Attempt to decipher any fields that may be specified.
+    $this->expandEntityFields('user', $values);
+    //$node_wrapper = entity_metadata_wrapper('node', $node);
+    //print sprintf("%s::%s line %s: Updated values: %s\n", get_class($this), __FUNCTION__, __LINE__, print_r($values, TRUE));
+    //var_dump($node);
+    foreach ($values as $k => $v) {
+      $old_value = (is_scalar($user->{$k})) ? $user->{$k} : print_r($user->{$k}, TRUE);
+      $new_value = (is_scalar($v)) ? $v : print_r($v, TRUE);
+      //print sprintf("%s::%s line %s: Updating the value of field %s.  Current value: %s, New value: %s\n", get_class($this), __FUNCTION__, __LINE__, $k, $old_value, $new_value);
+      // if the field is multi-value, transform non-array arguments into an
+      // array for the update process.
+      $user->{$k} = $v;
+    }
+    user_save($user);
+  }
+  /*
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
