@@ -22,10 +22,10 @@ class EntityreferenceHandler extends AbstractHandler {
     foreach ($values as $value) {
       $query = db_select($entity_info['base table'], 't')
         ->fields('t', array($entity_info['entity keys']['id']));
-      if(is_numeric($value)){
+      if (is_numeric($value)) {
         $query->condition('t.' . $entity_info['entity keys']['id'], $value);
       }
-      else{
+      else {
         $query->condition('t.' . $entity_info['entity keys']['label'], $value);
       }
       $str_query = (string) $query;

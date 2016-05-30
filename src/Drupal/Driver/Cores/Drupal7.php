@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @file
- */
-
 namespace Drupal\Driver\Cores;
 
 use Drupal\Driver\Exception\BootstrapException;
@@ -93,15 +89,15 @@ class Drupal7 extends AbstractCore {
       var_dump(array_keys(get_object_vars($node)));
       throw new \Exception(sprintf("%s::%s: Node was empty or had no id", get_class($this), __FUNCTION__));
     }
-    //assign type (really, bundle) to values so that expansion functions will
-    //work properly.
+    // Assign type (really, bundle) to values so that expansion functions will
+    // work properly.
     $values->type = $node->type;
     $this->expandEntityProperties($values);
 
     // Attempt to decipher any fields that may be specified.
     $this->expandEntityFields('node', $values);
     foreach ($values as $k => $v) {
-      if(!property_exists($node, $k)){
+      if (!property_exists($node, $k)) {
         throw new \Exception(sprintf("%s::%s line %s: Attempt to modify an invalid field: %s", get_class($this), __LINE__, __FUNCTION__, $k));
       }
       $node->{$k} = $v;
@@ -123,7 +119,7 @@ class Drupal7 extends AbstractCore {
     if (!isset($user->status)) {
       $user->status = 1;
     }
-    if(isset($user->roles) && is_string($user->roles)){
+    if (isset($user->roles) && is_string($user->roles)) {
       $user->roles = array_map('trim', explode(',', $user->roles));
     }
     // Clone user object, otherwise user_save() changes the password to the
@@ -164,7 +160,7 @@ class Drupal7 extends AbstractCore {
     }
     user_save($user);
   }
-  /*
+  /**
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
