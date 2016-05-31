@@ -69,7 +69,10 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDelete($node) {
-    node_delete($node->nid);
+    if(is_numeric($node)){
+      return node_delete($node);
+    }
+    return node_delete($node->nid);
   }
   /**
    * {@inheritdoc}

@@ -111,8 +111,8 @@ interface DriverInterface {
   /**
    * Deletes a node.
    *
-   * @param object $node
-   *   Fully loaded node object.
+   * @param object/int $node
+   *   Fully loaded node object, or the nid of a drupal node
    */
   public function nodeDelete($node);
 
