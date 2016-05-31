@@ -89,6 +89,13 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
+  public function clearStaticCaches() {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function nodeAlter($node, $values) {
 
     throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
@@ -100,13 +107,6 @@ abstract class AbstractCore implements CoreInterface {
   public function userAlter($user, $values) {
 
     throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function clearStaticCaches() {
-
   }
 
   /**
