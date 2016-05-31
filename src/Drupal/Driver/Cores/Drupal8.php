@@ -85,9 +85,6 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDelete($node) {
-    if(is_numeric($node)){
-      $node = Node::load($node);
-    }
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
     if ($node instanceof NodeInterface) {
       $node->delete();

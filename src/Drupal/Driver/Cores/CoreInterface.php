@@ -75,7 +75,7 @@ interface CoreInterface {
 
   /**
    * Delete a node.
-   * @param  object/int $node A fully loaded drupal node, or the node id of one.
+   * @param  object $node A fully loaded drupal node.
    */
   public function nodeDelete($node);
 
