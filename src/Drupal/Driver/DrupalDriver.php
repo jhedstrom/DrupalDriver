@@ -333,4 +333,17 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     $this->getCore()->clearStaticCaches();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids){
+    $this->getCore()->nodeDeleteMultiple($nids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids){
+    $this->getCore()->userDeleteMultiple($uids);
+  }
 }

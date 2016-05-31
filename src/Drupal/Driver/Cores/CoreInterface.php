@@ -238,5 +238,18 @@ interface CoreInterface {
    *   Value to associate with identifier.
    */
   public function configSet($name, $key, $value);
-
+  /**
+   * Deletes multiple nodes
+   * @param  array  $nids An array of node ids (integers or numeric strings)
+   *                      to delete
+   * @return NULL
+   */
+  public function nodeDeleteMultiple(array $nids);
+  /**
+   * Deletes multiple users
+   * @param  array  $uids An array of user ids (integers or numeric strings)
+   *                      to delete
+   * @return NULL
+   */
+  public function userDeleteMultiple(array $uids);
 }

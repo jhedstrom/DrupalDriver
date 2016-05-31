@@ -99,4 +99,17 @@ abstract class AbstractCore implements CoreInterface {
   public function clearStaticCaches() {
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids){
+    throw new UnsupportedDriverActionException(sprintf("%s::%s line %s: functionality not yet supported for this Drupal Driver.", get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids){
+    throw new UnsupportedDriverActionException(sprintf("%s::%s line %s: functionality not yet supported for this Drupal Driver.", get_class($this), __FUNCTION__, __LINE__));
+  }
 }

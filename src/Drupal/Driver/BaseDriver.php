@@ -45,6 +45,20 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function nodeDeleteMultiple(array $nids){
+    throw new UnsupportedDriverActionException($this->errorString('node delete multiple'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids){
+    throw new UnsupportedDriverActionException($this->errorString('user delete multiple'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userDelete(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('delete users'), $this);
   }

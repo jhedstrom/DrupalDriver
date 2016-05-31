@@ -73,6 +73,12 @@ class Drupal7 extends AbstractCore {
   }
   /**
    * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids){
+    return node_delete_multiple($nids);
+  }
+  /**
+   * {@inheritdoc}
    *
    * @param object $node
    *   A drupal node object
@@ -166,7 +172,12 @@ class Drupal7 extends AbstractCore {
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
   }
-
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids){
+    return user_delete_multiple($uids);
+  }
   /**
    * {@inheritdoc}
    */
