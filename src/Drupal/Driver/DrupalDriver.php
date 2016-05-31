@@ -336,14 +336,15 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeDeleteMultiple(array $nids){
+  public function nodeDeleteMultiple(array $nids) {
     $this->getCore()->nodeDeleteMultiple($nids);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userDeleteMultiple(array $uids){
+  public function userDeleteMultiple(array $uids) {
     $this->getCore()->userDeleteMultiple($uids);
   }
+
 }

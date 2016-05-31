@@ -9,7 +9,6 @@ use Symfony\Component\DependencyInjection\Container;
  * Base class for core drivers.
  */
 abstract class AbstractCore implements CoreInterface {
-
   /**
    * System path to the Drupal installation.
    *
@@ -35,6 +34,7 @@ abstract class AbstractCore implements CoreInterface {
    * {@inheritdoc}
    */
   public function __construct($drupal_root, $uri = 'default', Random $random = NULL) {
+
     $this->drupalRoot = realpath($drupal_root);
     $this->uri = $uri;
     if (!isset($random)) {
@@ -47,6 +47,7 @@ abstract class AbstractCore implements CoreInterface {
    * {@inheritdoc}
    */
   public function getRandom() {
+
     return $this->random;
   }
 
@@ -54,6 +55,7 @@ abstract class AbstractCore implements CoreInterface {
    * {@inheritdoc}
    */
   public function getFieldHandler($entity, $entity_type, $field_name) {
+
     $reflection = new \ReflectionClass($this);
     $core_namespace = $reflection->getShortName();
     $field_types = $this->getEntityFieldTypes($entity_type);
@@ -63,6 +65,7 @@ abstract class AbstractCore implements CoreInterface {
     if (class_exists($class_name)) {
       return new $class_name($entity, $entity_type, $field_name);
     }
+
     return new $default_class($entity, $entity_type, $field_name);
   }
 
@@ -73,6 +76,7 @@ abstract class AbstractCore implements CoreInterface {
    *   Entity object.
    */
   protected function expandEntityFields($entity_type, \stdClass $entity) {
+
     $field_types = $this->getEntityFieldTypes($entity_type);
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {
@@ -81,35 +85,44 @@ abstract class AbstractCore implements CoreInterface {
       }
     }
   }
+
   /**
    * {@inheritdoc}
    */
   public function nodeAlter($node, $values) {
-    throw new UnsupportedDriverActionException(sprintf("%s::%s line %s: functionality not yet supported for this Drupal Driver.", get_class($this), __FUNCTION__, __LINE__));
+
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
   }
+
   /**
    * {@inheritdoc}
    */
   public function userAlter($user, $values) {
-    throw new UnsupportedDriverActionException(sprintf("%s::%s line %s: functionality not yet supported for this Drupal Driver.", get_class($this), __FUNCTION__, __LINE__));
+
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
   }
+
   /**
    * {@inheritdoc}
    */
   public function clearStaticCaches() {
+
   }
 
   /**
    * {@inheritdoc}
    */
-  public function nodeDeleteMultiple(array $nids){
-    throw new UnsupportedDriverActionException(sprintf("%s::%s line %s: functionality not yet supported for this Drupal Driver.", get_class($this), __FUNCTION__, __LINE__));
+  public function nodeDeleteMultiple(array $nids) {
+
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userDeleteMultiple(array $uids){
-    throw new UnsupportedDriverActionException(sprintf("%s::%s line %s: functionality not yet supported for this Drupal Driver.", get_class($this), __FUNCTION__, __LINE__));
+  public function userDeleteMultiple(array $uids) {
+
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
   }
+
 }

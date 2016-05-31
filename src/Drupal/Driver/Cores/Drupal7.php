@@ -71,24 +71,21 @@ class Drupal7 extends AbstractCore {
   public function nodeDelete($node) {
     return node_delete($node->nid);
   }
+
   /**
    * {@inheritdoc}
    */
-  public function nodeDeleteMultiple(array $nids){
+  public function nodeDeleteMultiple(array $nids) {
     return node_delete_multiple($nids);
   }
+
   /**
    * {@inheritdoc}
    *
    * @param object $node
-   *   A drupal node object
+   *   A drupal node object.
    * @param object $values
-   *   An object with field/value parameters
-   *
-   * @return NULL
-   *
-   * @throws \Exception If anything goes wrong with the alteration. Details of
-   *          error will be in the exception.
+   *   An object with field/value parameters.
    */
   public function nodeAlter($node, $values) {
     if (empty($node) || !isset($node->nid)) {
@@ -110,6 +107,7 @@ class Drupal7 extends AbstractCore {
     }
     node_save($node);
   }
+
   /**
    * Implements CoreInterface::runCron().
    */
@@ -145,14 +143,9 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    *
    * @param object $user
-   *   A drupal user object
+   *   A drupal user object.
    * @param object $values
-   *   An object with field/value parameters
-   *
-   * @return NULL
-   *
-   * @throws \Exception If anything goes wrong with the alteration. Details of
-   *          error will be in the exception.
+   *   An object with field/value parameters.
    */
   public function userAlter($user, $values) {
     if (empty($user) || !isset($user->uid)) {
@@ -166,18 +159,21 @@ class Drupal7 extends AbstractCore {
     }
     user_save($user);
   }
+
   /**
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
   }
+
   /**
    * {@inheritdoc}
    */
-  public function userDeleteMultiple(array $uids){
+  public function userDeleteMultiple(array $uids) {
     return user_delete_multiple($uids);
   }
+
   /**
    * {@inheritdoc}
    */
