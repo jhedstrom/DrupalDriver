@@ -382,7 +382,7 @@ class Drupal7 extends AbstractCore {
     }
 
     if (empty($term->vid)) {
-      throw new \Exception(sprintf('No "%s" vocabulary found.'));
+      throw new \Exception(sprintf('%s::%s line %s: Could not load term.', get_class($this), __FUNCTION__, __LINE__));
     }
 
     // Attempt to decipher any fields that may be specified.
