@@ -4,6 +4,7 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 use Symfony\Component\DependencyInjection\Container;
+use Drupal\Driver\DriverInterface\UnsupportedDriverActionException;
 
 /**
  * Base class for core drivers.
