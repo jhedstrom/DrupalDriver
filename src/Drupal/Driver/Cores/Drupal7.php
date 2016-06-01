@@ -327,6 +327,9 @@ class Drupal7 extends AbstractCore {
    *   The entity object.
    */
   protected function expandEntityProperties(\stdClass $entity) {
+    if (!isset($entity->type)) {
+      throw new \Exception(sprintf("%s::%s line %s: Entity argument is missing a value for the key 'type'", get_class($this), __FUNCTION__, __LINE__))
+    }
     // The created field may come in as a readable date, rather than a
     // timestamp.
     if (isset($entity->created) && !is_numeric($entity->created)) {
