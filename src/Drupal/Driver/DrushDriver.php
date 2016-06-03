@@ -228,7 +228,12 @@ class DrushDriver extends BaseDriver {
     // Drush Driver to work with certain built-in Drush capabilities (e.g.
     // creating users) even if the Behat Drush Endpoint is not available.
     try {
-      $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
+      $result = $this->drush('behat', array(
+        'is-field',
+        escapeshellarg(json_encode(array($entity_type, $field_name))),
+      ),
+        array()
+      );
       return json_decode($result);
     }
     catch (\Exception $e) {

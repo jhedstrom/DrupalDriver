@@ -95,7 +95,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDeleteMultiple(array $nids) {
-    foreach($nids as $nid){
+    foreach ($nids as $nid) {
       $node = Node::load($node->nid);
       $node->delete();
     }
@@ -246,7 +246,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function userDeleteMultiple(array $uids) {
-    foreach($uids as $uid){
+    foreach ($uids as $uid) {
       $user = new \stdClass();
       $user->uid = $uid;
       $this->userDelete($user);

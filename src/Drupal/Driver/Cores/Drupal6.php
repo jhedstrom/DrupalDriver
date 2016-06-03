@@ -99,7 +99,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDeleteMultiple(array $nids) {
-    foreach($nids as $nid){
+    foreach ($nids as $nid) {
       node_delete($nid);
     }
   }
@@ -153,7 +153,7 @@ class Drupal6 extends AbstractCore {
   public function userDeleteMultiple(array $uids) {
     $current_path = getcwd();
     chdir(DRUPAL_ROOT);
-    foreach($uids as $uid){
+    foreach ($uids as $uid) {
       user_delete(array(), $uid);
     }
     chdir($current_path);
