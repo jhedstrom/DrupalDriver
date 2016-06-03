@@ -39,6 +39,13 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function nodeLoad($nid) {
+    return node_load($nid);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function nodeCreate($node) {
     // Set original if not set.
     if (!isset($node->original)) {
@@ -113,6 +120,13 @@ class Drupal7 extends AbstractCore {
    */
   public function runCron() {
     return drupal_cron_run();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userLoad($uid) {
+    return user_load($uid);
   }
 
   /**
@@ -344,6 +358,16 @@ class Drupal7 extends AbstractCore {
         continue;
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function termLoad($tid, $vocabulary = NULL) {
+    if (is_numeric($tid)) {
+      return taxonomy_term_load($tid);
+    }
+    return taxonomy_get_term_by_name($tid, $vocabulary);
   }
 
   /**

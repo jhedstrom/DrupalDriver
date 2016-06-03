@@ -97,6 +97,14 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
+  public function nodeLoad($nid) {
+
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function nodeAlter($node, $values) {
 
     throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
@@ -105,8 +113,78 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
+  public function userLoad($uid) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userAlter($user, $values) {
 
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function termLoad($tid, $vocabulary = NULL) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function termCreate(\stdClass $term) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function termDelete(\stdClass $term) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function roleLoad($role_name) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function roleCreate(array $permissions) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function roleDelete($role_name) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageLoad($language_name) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageCreate(\stdClass $language) {
+    throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function languageDelete(\stdClass $language) {
     throw new UnsupportedDriverActionException(sprintf('%s::%s line %s: functionality not yet supported for this Drupal Driver.', get_class($this), __FUNCTION__, __LINE__));
   }
 

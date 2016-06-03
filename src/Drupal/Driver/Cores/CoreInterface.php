@@ -58,6 +58,17 @@ interface CoreInterface {
   public function runCron();
 
   /**
+   * Loads a node.
+   *
+   * @param int $nid
+   *   The int or string node id of the node to load.
+   *
+   * @return object
+   *   The fully loaded drupal node.
+   */
+  public function nodeLoad($nid);
+
+  /**
    * Deletes a node.
    *
    * @param object $node
@@ -80,6 +91,17 @@ interface CoreInterface {
    *   A fully loaded drupal node.
    */
   public function nodeDelete($node);
+
+  /**
+   * Loads a user.
+   *
+   * @param int $uid
+   *   The int or string user id of the user to load.
+   *
+   * @return object
+   *   The fully loaded drupal user.
+   */
+  public function userLoad($uid);
 
   /**
    * Alters an existing user.
@@ -128,6 +150,17 @@ interface CoreInterface {
   public function processBatch();
 
   /**
+   * Loads a term.
+   *
+   * @param int $tid
+   *   The int or string term id of the term to load.
+   *
+   * @return object
+   *   The fully loaded drupal taxonomy term.
+   */
+  public function termLoad($tid);
+
+  /**
    * Create a taxonomy term.
    */
   public function termCreate(\stdClass $term);
@@ -136,6 +169,17 @@ interface CoreInterface {
    * Deletes a taxonomy term.
    */
   public function termDelete(\stdClass $term);
+
+  /**
+   * Loads a role.
+   *
+   * @param string $role_name
+   *   The role name of the role to load.
+   *
+   * @return object
+   *   The fully loaded drupal taxonomy role.
+   */
+  public function roleLoad($role_name);
 
   /**
    * Creates a role.
