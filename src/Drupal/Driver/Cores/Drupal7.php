@@ -339,7 +339,10 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function languageCreate(\stdClass $language) {
+  public function languageCreate(\stdClass $language) {    
+    if (!module_exists('locale')) {
+      throw new \Exception(sprintf("%s::%s line %s: This driver requires the 'locale' module be enabled in order to create languages", get_class($this), __FUNCTION__, __LINE__));
+    }
     include_once DRUPAL_ROOT . '/includes/iso.inc';
     include_once DRUPAL_ROOT . '/includes/locale.inc';
 
