@@ -94,6 +94,16 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function nodeDeleteMultiple(array $nids) {
+    foreach($nids as $nid){
+      $node = Node::load($node->nid);
+      $node->delete();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function runCron() {
     return \Drupal::service('cron')->run();
   }
@@ -230,6 +240,17 @@ class Drupal8 extends AbstractCore {
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids) {
+    foreach($uids as $uid){
+      $user = new \stdClass();
+      $user->uid = $uid;
+      $this->userDelete($user);
+    }
   }
 
   /**
