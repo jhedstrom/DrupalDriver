@@ -185,7 +185,7 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function userDeleteMultiple(array $uids) {
-    return user_delete_multiple($uids);
+    user_delete_multiple($uids);
   }
 
   /**
@@ -438,7 +438,6 @@ class Drupal7 extends AbstractCore {
     }
     include_once DRUPAL_ROOT . '/includes/iso.inc';
     include_once DRUPAL_ROOT . '/includes/locale.inc';
-
     // Get all predefined languages, regardless if they are enabled or not.
     $predefined_languages = _locale_get_predefined_list();
 

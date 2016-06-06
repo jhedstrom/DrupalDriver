@@ -246,7 +246,8 @@ class DrushDriver extends BaseDriver {
         'is-field',
         escapeshellarg(json_encode(array($entity_type, $field_name))),
       ),
-      array());
+        array()
+      );
       return json_decode($result);
     }
     catch (\Exception $e) {
