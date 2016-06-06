@@ -152,6 +152,13 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
+  public function userDeleteMultiple(array $uids) {
+    $this->getCore()->userDeleteMultiple($uids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userAddRole(\stdClass $user, $role) {
     $arguments = array(
       sprintf('"%s"', $role),
@@ -206,6 +213,13 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
+  public function nodeDeleteMultiple(array $nids) {
+    $this->getCore()->nodeDeleteMultiple($nids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function createTerm(\stdClass $term) {
     $result = $this->drush('behat', array('create-term', escapeshellarg(json_encode($term))), array());
     return json_decode($result);
@@ -228,7 +242,11 @@ class DrushDriver extends BaseDriver {
     // Drush Driver to work with certain built-in Drush capabilities (e.g.
     // creating users) even if the Behat Drush Endpoint is not available.
     try {
-      $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
+      $result = $this->drush('behat', array(
+        'is-field',
+        escapeshellarg(json_encode(array($entity_type, $field_name))),
+      ),
+      array());
       return json_decode($result);
     }
     catch (\Exception $e) {
