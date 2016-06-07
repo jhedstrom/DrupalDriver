@@ -102,6 +102,8 @@ class Drupal7 extends AbstractCore {
     // Assign type (really, bundle) to values so that expansion functions will
     // work properly.
     $values->type = $node->type;
+    //Reload node object to ensure only passed values get overwritten.
+    //$node = node_load($node->nid, TRUE);
     $this->expandEntityProperties($values);
 
     // Attempt to decipher any fields that may be specified.
