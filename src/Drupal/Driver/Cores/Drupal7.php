@@ -166,7 +166,10 @@ class Drupal7 extends AbstractCore {
       var_dump(array_keys(get_object_vars($user)));
       throw new \Exception(sprintf("%s::%s: User was empty or had no id", get_class($this), __FUNCTION__));
     }
-    // Attempt to decipher any fields that may be specified.
+    // Reload user from the db so we ensure we're dealing with an unmodified
+    // version of the user.  Reset flag is critical here.
+    $user = user_load($user->uid, TRUE);
+    // Attempt to decipher any fields that may be specified in values.
     $this->expandEntityFields('user', $values);
     foreach ($values as $k => $v) {
       $user->{$k} = $v;
