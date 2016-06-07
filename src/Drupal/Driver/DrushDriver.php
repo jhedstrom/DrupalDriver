@@ -152,6 +152,13 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
+  public function userDeleteMultiple(array $uids) {
+    $this->getCore()->userDeleteMultiple($uids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userAddRole(\stdClass $user, $role) {
     $arguments = array(
       sprintf('"%s"', $role),
@@ -201,6 +208,13 @@ class DrushDriver extends BaseDriver {
    */
   public function nodeDelete($node) {
     $this->drush('behat', array('delete-node', escapeshellarg(json_encode($node))), array());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids) {
+    $this->getCore()->nodeDeleteMultiple($nids);
   }
 
   /**
