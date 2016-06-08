@@ -174,6 +174,9 @@ class Drupal7 extends AbstractCore {
     // Attempt to decipher any fields that may be specified in values.
     $this->expandEntityFields('user', $values);
     foreach ($values as $k => $v) {
+      if (!property_exists($user, $k)) {
+        throw new \Exception(sprintf("%s::%s line %s: Attempt to modify an invalid field: %s", get_class($this), __LINE__, __FUNCTION__, $k));
+      }
       $user->{$k} = $v;
     }
     user_save($user);
