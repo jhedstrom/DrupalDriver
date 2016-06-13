@@ -191,7 +191,8 @@ class DrushDriver extends BaseDriver {
   /**
    * Decodes JSON output returned by Drush.
    *
-   * It will clean up any junk that may have appeared before the JSON.
+   * It will clean up any junk that may have appeared before or after the
+   * JSON object. This can happen with remote Drush aliases.
    *
    * @param string $output
    *   The output from Drush.
@@ -201,6 +202,8 @@ class DrushDriver extends BaseDriver {
   protected function decodeJsonOutput($output) {
     // Remove anything before the first '{'.
     $output = preg_replace('/^[^\{]*/', '', $output);
+    // Remove anything after the last '{'.
+    $output = preg_replace('/[^\}]*$/s', '', $output);
     return json_decode($output);
   }
 
