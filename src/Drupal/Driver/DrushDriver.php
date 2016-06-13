@@ -202,7 +202,7 @@ class DrushDriver extends BaseDriver {
   protected function decodeJsonOutput($output) {
     // Remove anything before the first '{'.
     $output = preg_replace('/^[^\{]*/', '', $output);
-    // Remove anything after the last '{'.
+    // Remove anything after the last '}'.
     $output = preg_replace('/[^\}]*$/s', '', $output);
     return json_decode($output);
   }
