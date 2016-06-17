@@ -189,7 +189,7 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
-   * Decodes JSON output returned by Drush.
+   * Decodes JSON object returned by Drush.
    *
    * It will clean up any junk that may have appeared before or after the
    * JSON object. This can happen with remote Drush aliases.
@@ -199,7 +199,7 @@ class DrushDriver extends BaseDriver {
    * @return object
    *   The decoded JSON object.
    */
-  protected function decodeJsonOutput($output) {
+  protected function decodeJsonObject($output) {
     // Remove anything before the first '{'.
     $output = preg_replace('/^[^\{]*/', '', $output);
     // Remove anything after the last '}'.
@@ -212,7 +212,7 @@ class DrushDriver extends BaseDriver {
    */
   public function createNode($node) {
     $result = $this->drush('behat', array('create-node', escapeshellarg(json_encode($node))), array());
-    return $this->decodeJsonOutput($result);
+    return $this->decodeJsonObject($result);
   }
 
   /**
@@ -227,7 +227,7 @@ class DrushDriver extends BaseDriver {
    */
   public function createTerm(\stdClass $term) {
     $result = $this->drush('behat', array('create-term', escapeshellarg(json_encode($term))), array());
-    return $this->decodeJsonOutput($result);
+    return $this->decodeJsonObject($result);
   }
 
   /**
@@ -248,7 +248,7 @@ class DrushDriver extends BaseDriver {
     // creating users) even if the Behat Drush Endpoint is not available.
     try {
       $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
-      return $this->decodeJsonOutput($result);
+      return strpos($result, "true\n") !== FALSE;
     }
     catch (\Exception $e) {
       return FALSE;
