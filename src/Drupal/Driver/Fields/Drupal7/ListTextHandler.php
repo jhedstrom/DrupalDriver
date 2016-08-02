@@ -15,18 +15,18 @@ class ListTextHandler extends AbstractHandler {
     if (!empty($this->fieldInfo['settings']['allowed_values_function'])) {
       $cacheable = TRUE;
       $callback = $this->fieldInfo['settings']['allowed_values_function'];
-      $allowed_values = call_user_func($callback, $this->fieldInfo, $this, $this->entityType, $this->entity, $cacheable);
+      $options = call_user_func($callback, $this->fieldInfo, $this, $this->entityType, $this->entity, $cacheable);
     }
     else {
-      $allowed_values = array();
-      $options = array_flip($this->fieldInfo['settings']['allowed_values']);
-      foreach ($values as $value) {
-        if (array_key_exists($value, $options)) {
-          $allowed_values[$value] = $options[$value];
-        }
-        else {
-          $allowed_values[$value] = $value;
-        }
+      $options = $this->fieldInfo['settings']['allowed_values'];
+    }
+    $allowed_values = array();
+    foreach ($values as $value) {
+      if (array_key_exists($value, $options)) {
+        $allowed_values[$value] = $value;
+      }
+      else if ($key = array_search($value, $options)) {
+        $allowed_values[$value] = $key;
       }
     }
     foreach ($values as $value) {
