@@ -482,4 +482,18 @@ class Drupal7 extends AbstractCore {
     drupal_static_reset();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function entityCreate($entity_type, $entity) {
+  // @todo: create a D7 version of this function
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, $entity) {
+    // @todo: create a D7 version of this function
+  }
+
 }

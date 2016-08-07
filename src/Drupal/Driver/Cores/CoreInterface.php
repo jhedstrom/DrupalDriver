@@ -216,4 +216,14 @@ interface CoreInterface {
    */
   public function configSet($name, $key, $value);
 
+  /**
+   * Create an entity.
+   */
+  public function entityCreate($entity_type, $entity);
+
+  /**
+   * Delete an entity.
+   */
+  public function entityDelete($entity_type, $entity);
+
 }
