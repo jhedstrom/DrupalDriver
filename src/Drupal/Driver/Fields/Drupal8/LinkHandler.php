@@ -17,8 +17,8 @@ class LinkHandler extends AbstractHandler {
         // 'options' is required to be an array, otherwise the utility class
         // Drupal\Core\Utility\UnroutedUrlAssembler::assemble() will complain.
         'options' => array(),
-        'title' => $value[0],
-        'uri' => $value[1],
+        'title' => isset($value['title']) ? $value['title'] : $value[0],
+        'uri' => isset($value['uri']) ? $value['uri'] : $value[1],
       );
     }
     return $return;
