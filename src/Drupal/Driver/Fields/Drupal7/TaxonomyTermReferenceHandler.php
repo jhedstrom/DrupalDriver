@@ -30,8 +30,8 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
    *   found or NULL if unable to determine.
    */
   protected function getVocab() {
-    if (!empty($this->field_info['settings']['allowed_values'][0]['vocabulary'])) {
-      return $this->field_info['settings']['allowed_values'][0]['vocabulary'];
+    if (!empty($this->fieldInfo['settings']['allowed_values'][0]['vocabulary'])) {
+      return $this->fieldInfo['settings']['allowed_values'][0]['vocabulary'];
     }
   }
 
