@@ -96,7 +96,6 @@ class Drupal7 extends AbstractCore {
    */
   public function nodeAlter($node, $values) {
     if (empty($node) || !isset($node->nid)) {
-      var_dump(array_keys(get_object_vars($node)));
       throw new \Exception(sprintf("%s::%s: Node was empty or had no id", get_class($this), __FUNCTION__));
     }
     // Assign type (really, bundle) to values so that expansion functions will
