@@ -425,10 +425,12 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityCreate($entity_type, $entity) {
-	// If the bundle field is empty, put the inferred bundle value in it
-	$bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
-	if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) $entity->$bundle_key = $entity->step_bundle;
-	
+    // If the bundle field is empty, put the inferred bundle value in it.
+    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
+    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
+      $entity->$bundle_key = $entity->step_bundle;
+    }
+
     // Throw an exception if a bundle is specified but does not exist.
     if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
       $bundles = \Drupal::entityManager()->getBundleInfo($entity_type);
@@ -436,10 +438,10 @@ class Drupal8 extends AbstractCore {
         throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
       }
     }
-	if (empty($entity_type)) {
-	        throw new \Exception("You must specify an entity type to create an entity.");
-	}
-	
+    if (empty($entity_type)) {
+      throw new \Exception("You must specify an entity type to create an entity.");
+    }
+
     $this->expandEntityFields($entity_type, $entity);
     $createdEntity = entity_create($entity_type, (array) $entity);
     $createdEntity->save();

@@ -486,7 +486,7 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityCreate($entity_type, $entity) {
-  // @todo: create a D7 version of this function
+    // @todo: create a D7 version of this function
   }
 
   /**
