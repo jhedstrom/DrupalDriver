@@ -42,7 +42,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Drupal core version.
    *
-   * @var integer
+   * @var int
    */
   public $version;
 
