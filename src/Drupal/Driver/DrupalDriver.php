@@ -99,6 +99,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
+  public function userAlter($user, $values) {
+    return $this->getCore()->userAlter($user, $values);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userDelete(\stdClass $user) {
     $this->getCore()->userDelete($user);
   }
@@ -236,6 +243,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
+  public function nodeAlter($node, $values) {
+    return $this->getCore()->nodeAlter($node, $values);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function nodeDelete($node) {
     return $this->getCore()->nodeDelete($node);
   }
@@ -317,6 +331,20 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function clearStaticCaches() {
     $this->getCore()->clearStaticCaches();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids) {
+    $this->getCore()->nodeDeleteMultiple($nids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids) {
+    $this->getCore()->userDeleteMultiple($uids);
   }
 
 }

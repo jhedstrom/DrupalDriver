@@ -39,6 +39,13 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function nodeLoad($nid) {
+    return node_load($nid);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function nodeCreate($node) {
     // Set original if not set.
     if (!isset($node->original)) {
@@ -69,7 +76,44 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDelete($node) {
-    node_delete($node->nid);
+    return node_delete($node->nid);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids) {
+    return node_delete_multiple($nids);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @param object $node
+   *   A drupal node object.
+   * @param object $values
+   *   An object with field/value parameters.
+   */
+  public function nodeAlter($node, $values) {
+    if (empty($node) || !isset($node->nid)) {
+      throw new \Exception(sprintf("%s::%s: Node was empty or had no id", get_class($this), __FUNCTION__));
+    }
+    // Assign type (really, bundle) to values so that expansion functions will
+    // work properly.
+    $values->type = $node->type;
+    // Reload node object to ensure only passed values get overwritten.
+    // $node = node_load($node->nid, TRUE);.
+    $this->expandEntityProperties($values);
+
+    // Attempt to decipher any fields that may be specified.
+    $this->expandEntityFields('node', $values);
+    foreach ($values as $k => $v) {
+      if (!property_exists($node, $k)) {
+        throw new \Exception(sprintf("%s::%s line %s: Attempt to modify an invalid field: %s", get_class($this), __LINE__, __FUNCTION__, $k));
+      }
+      $node->{$k} = $v;
+    }
+    node_save($node);
   }
 
   /**
@@ -82,12 +126,21 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function userLoad($uid) {
+    return user_load($uid);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userCreate(\stdClass $user) {
     // Default status to TRUE if not explicitly creating a blocked user.
     if (!isset($user->status)) {
       $user->status = 1;
     }
-
+    if (isset($user->roles) && is_string($user->roles)) {
+      $user->roles = array_map('trim', explode(',', $user->roles));
+    }
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
     $account = clone $user;
@@ -103,9 +156,43 @@ class Drupal7 extends AbstractCore {
 
   /**
    * {@inheritdoc}
+   *
+   * @param object $user
+   *   A drupal user object.
+   * @param object $values
+   *   An object with field/value parameters.
+   */
+  public function userAlter($user, $values) {
+    if (empty($user) || !isset($user->uid)) {
+      var_dump(array_keys(get_object_vars($user)));
+      throw new \Exception(sprintf("%s::%s: User was empty or had no id", get_class($this), __FUNCTION__));
+    }
+    // Reload user from the db so we ensure we're dealing with an unmodified
+    // version of the user.  Reset flag is critical here.
+    $user = user_load($user->uid, TRUE);
+    // Attempt to decipher any fields that may be specified in values.
+    $this->expandEntityFields('user', $values);
+    foreach ($values as $k => $v) {
+      if (!property_exists($user, $k)) {
+        throw new \Exception(sprintf("%s::%s line %s: Attempt to modify an invalid field: %s", get_class($this), __LINE__, __FUNCTION__, $k));
+      }
+      $user->{$k} = $v;
+    }
+    user_save($user);
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
     user_cancel(array(), $user->uid, 'user_cancel_delete');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids) {
+    user_delete_multiple($uids);
   }
 
   /**
@@ -261,6 +348,9 @@ class Drupal7 extends AbstractCore {
    *   The entity object.
    */
   protected function expandEntityProperties(\stdClass $entity) {
+    if (!isset($entity->type)) {
+      throw new \Exception(sprintf("%s::%s line %s: Entity argument is missing a value for the key 'type'", get_class($this), __FUNCTION__, __LINE__));
+    }
     // The created field may come in as a readable date, rather than a
     // timestamp.
     if (isset($entity->created) && !is_numeric($entity->created)) {
@@ -275,6 +365,16 @@ class Drupal7 extends AbstractCore {
         continue;
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function termLoad($tid, $vocabulary = NULL) {
+    if (is_numeric($tid)) {
+      return taxonomy_term_load($tid);
+    }
+    return taxonomy_get_term_by_name($tid, $vocabulary);
   }
 
   /**
@@ -313,7 +413,7 @@ class Drupal7 extends AbstractCore {
     }
 
     if (empty($term->vid)) {
-      throw new \Exception(sprintf('No "%s" vocabulary found.'));
+      throw new \Exception(sprintf('%s::%s line %s: Could not load term.', get_class($this), __FUNCTION__, __LINE__));
     }
 
     // Attempt to decipher any fields that may be specified.
@@ -345,7 +445,6 @@ class Drupal7 extends AbstractCore {
     }
     include_once DRUPAL_ROOT . '/includes/iso.inc';
     include_once DRUPAL_ROOT . '/includes/locale.inc';
-
     // Get all predefined languages, regardless if they are enabled or not.
     $predefined_languages = _locale_get_predefined_list();
 

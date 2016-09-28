@@ -31,8 +31,29 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function userAlter($user, $values) {
+    throw new UnsupportedDriverActionException($this->errorString('alter users'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function userCreate(\stdClass $user) {
     throw new UnsupportedDriverActionException($this->errorString('create users'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids) {
+    throw new UnsupportedDriverActionException($this->errorString('node delete multiple'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids) {
+    throw new UnsupportedDriverActionException($this->errorString('user delete multiple'), $this);
   }
 
   /**
@@ -75,6 +96,13 @@ abstract class BaseDriver implements DriverInterface {
    */
   public function clearStaticCaches() {
     throw new UnsupportedDriverActionException($this->errorString('clear static caches'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeAlter($node, $values) {
+    throw new UnsupportedDriverActionException($this->errorString('alter nodes'), $this);
   }
 
   /**

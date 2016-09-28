@@ -28,6 +28,17 @@ interface DriverInterface {
   public function userCreate(\stdClass $user);
 
   /**
+   * Alters an existing user.
+   *
+   * @param object $user
+   *   Fully loaded drupal user object.
+   * @param object $values
+   *   A plain object with field names as properties, and
+   *   field values as property values.
+   */
+  public function userAlter($user, $values);
+
+  /**
    * Deletes a user.
    */
   public function userDelete(\stdClass $user);
@@ -85,6 +96,17 @@ interface DriverInterface {
    *   The node object including the node ID in the case of new nodes.
    */
   public function createNode($node);
+
+  /**
+   * Deletes a node.
+   *
+   * @param object $node
+   *   Fully loaded node object.
+   * @param object $values
+   *   A plain object with field names as properties, and
+   *                        field values as property values.
+   */
+  public function nodeAlter($node, $values);
 
   /**
    * Deletes a node.
@@ -177,5 +199,23 @@ interface DriverInterface {
    *   Value to associate with identifier.
    */
   public function configSet($name, $key, $value);
+
+  /**
+   * Deletes multiple nodes.
+   *
+   * @param array $nids
+   *   An array of node ids (integers or numeric strings)
+   *   to delete.
+   */
+  public function nodeDeleteMultiple(array $nids);
+
+  /**
+   * Deletes multiple users.
+   *
+   * @param array $uids
+   *   An array of user ids (integers or numeric strings) to
+   *   delete.
+   */
+  public function userDeleteMultiple(array $uids);
 
 }

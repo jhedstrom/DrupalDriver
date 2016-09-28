@@ -89,7 +89,19 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDelete($node) {
-    node_delete($node->nid);
+    if (is_numeric($node)) {
+      return node_delete($node);
+    }
+    return node_delete($node->nid);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function nodeDeleteMultiple(array $nids) {
+    foreach ($nids as $nid) {
+      node_delete($nid);
+    }
   }
 
   /**
@@ -131,7 +143,19 @@ class Drupal6 extends AbstractCore {
   public function userDelete(\stdClass $user) {
     $current_path = getcwd();
     chdir(DRUPAL_ROOT);
-    user_delete((array) $user, $user->uid);
+    user_delete(array(), $user->uid);
+    chdir($current_path);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDeleteMultiple(array $uids) {
+    $current_path = getcwd();
+    chdir(DRUPAL_ROOT);
+    foreach ($uids as $uid) {
+      user_delete(array(), $uid);
+    }
     chdir($current_path);
   }
 
