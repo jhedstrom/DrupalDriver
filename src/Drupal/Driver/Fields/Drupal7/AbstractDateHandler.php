@@ -23,7 +23,7 @@ abstract class AbstractDateHandler extends AbstractHandler {
    */
   protected function formatDateValue($value) {
 
-    $date = new DateTime($value);
+    $date = new \DateTime($value);
     return $date->format($this->getDateFormat());
   }
 
