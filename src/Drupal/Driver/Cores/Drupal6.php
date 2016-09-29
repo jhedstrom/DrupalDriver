@@ -506,4 +506,18 @@ class Drupal6 extends AbstractCore {
     // Drupal 6 doesn't have a way of clearing all static caches.
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function entityCreate($entity_type, $entity) {
+    throw new \Exception('Drupal 6 does not have a generic Entity API, so creation of entities is not possible in this way.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, $entity) {
+    throw new \Exception('Drupal 6 does not have a generic Entity API, so deletion of entities is not possible in this way.');
+  }
+
 }

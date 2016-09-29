@@ -482,4 +482,20 @@ class Drupal7 extends AbstractCore {
     drupal_static_reset();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function entityCreate($entity_type, $entity) {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Creation of entities via the generic Entity API is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, $entity) {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Deletion of entities via the generic Entity API is not yet implemented for Drupal 7.');
+  }
+
 }
