@@ -218,11 +218,24 @@ interface CoreInterface {
 
   /**
    * Create an entity.
+   *
+   * @param string $entity_type
+   *   Entity type machine name.
+   * @param array $entity
+   *   The field values and properties desired for the new entity.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   A new entity object.
    */
   public function entityCreate($entity_type, $entity);
 
   /**
    * Delete an entity.
+   *
+   * @param string $entity_type
+   *   Entity type machine name.
+   * @param $entity
+   *   The entity to delete, as an object with a property 'id' or a true entity.
    */
   public function entityDelete($entity_type, $entity);
 

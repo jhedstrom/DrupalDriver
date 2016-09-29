@@ -510,14 +510,14 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityCreate($entity_type, $entity) {
-    // Drupal 6 doesn't have an entity API.
+    throw new \Exception('Drupal 6 does not have a generic Entity API, so creation of entities is not possible in this way.');
   }
 
   /**
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    // Drupal 6 doesn't have an entity API.
+    throw new \Exception('Drupal 6 does not have a generic Entity API, so deletion of entities is not possible in this way.');
   }
 
 }
