@@ -231,11 +231,6 @@ interface CoreInterface {
 
   /**
    * Delete an entity.
-   *
-   * @param string $entity_type
-   *   Entity type machine name.
-   * @param $entity
-   *   The entity to delete, as an object with a property 'id' or a true entity.
    */
   public function entityDelete($entity_type, $entity);
 
