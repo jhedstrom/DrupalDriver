@@ -498,4 +498,18 @@ class Drupal7 extends AbstractCore {
     throw new \Exception('Deletion of entities via the generic Entity API is not yet implemented for Drupal 7.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function placeBlock($delta, $module, $region, $theme) {
+    db_update('block')
+      ->fields(array(
+        'region' => $region,
+      ))
+      ->condition('module', $module)
+      ->condition('delta', $delta)
+      ->condition('theme', $theme)
+      ->execute();
+  }
+
 }
