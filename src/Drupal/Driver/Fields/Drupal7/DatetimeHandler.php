@@ -11,7 +11,7 @@ class DatetimeHandler extends AbstractDateHandler {
    * {@inheritdoc}
    */
   protected function getDateFormat() {
-    return 'Y-m-d h:m:s';
+    return 'Y-m-d H:i:s';
   }
 
 }
