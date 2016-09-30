@@ -10,8 +10,6 @@ class DateHandler extends AbstractDateHandler {
   /**
    * {@inheritdoc}
    */
-  protected function getDateFormat() {
-    return 'Y-m-d\TH:I:s';
-  }
+  protected $dateFormat = 'Y-m-d\TH:i:s';
 
 }

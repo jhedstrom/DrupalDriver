@@ -8,12 +8,11 @@ namespace Drupal\Driver\Fields\Drupal7;
 abstract class AbstractDateHandler extends AbstractHandler {
 
   /**
-   * Get the format in which the dates are saved in Drupal's database.
+   * The format in which the dates are saved in Drupal's database.
    *
-   * @return string
-   *   The format in which the dates are saved in Drupal's database.
+   * @var string
    */
-  abstract protected function getDateFormat();
+  protected $dateFormat = NULL;
 
   /**
    * Converts a date string into the format expected by Drupal.
@@ -23,8 +22,12 @@ abstract class AbstractDateHandler extends AbstractHandler {
    */
   protected function formatDateValue($value) {
 
+    if (empty($this->dateFormat)) {
+      return $value;
+    }
+
     $date = new \DateTime($value);
-    return $date->format($this->getDateFormat());
+    return $date->format($this->dateFormat);
   }
 
   /**

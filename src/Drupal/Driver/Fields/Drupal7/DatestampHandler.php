@@ -10,8 +10,6 @@ class DatestampHandler extends AbstractDateHandler {
   /**
    * {@inheritdoc}
    */
-  protected function getDateFormat() {
-    return 'U';
-  }
+  protected $dateFormat = 'U';
 
 }
