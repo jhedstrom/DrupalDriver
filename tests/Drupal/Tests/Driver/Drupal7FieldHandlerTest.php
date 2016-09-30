@@ -28,6 +28,9 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
    * @dataProvider dataProvider
    */
   public function testFieldHandlers($class_name, $entity, $entity_type, array $field, array $expected_values) {
+    // Set the timezone so that timestamp dates can be predictable.
+    date_default_timezone_set('UTC');
+
     $handler = $this->getMockHandler($class_name, $entity, $entity_type, $field);
 
     $field_name = $field['field_name'];
@@ -129,6 +132,98 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
             array(
               'value' => '2015-01-01 00:00:00',
               'value2' => '2015-01-02 00:00:00',
+            ),
+          ),
+        ),
+      ),
+
+      // Test single-value date (ISO) field provided as simple text.
+      array(
+        'DateHandler',
+        (object) array('field_date' => '2015-01-01 00:00:00'),
+        'node',
+        array('field_name' => 'field_date'),
+        array('en' => array(array('value' => '2015-01-01T00:00:00'))),
+      ),
+
+      // Test single-value date (ISO) field provided as an array.
+      array(
+        'DateHandler',
+        (object) array('field_date' => array('2015-01-01 00:00:00')),
+        'node',
+        array('field_name' => 'field_date'),
+        array('en' => array(array('value' => '2015-01-01T00:00:00'))),
+      ),
+
+      // Test double-value date (ISO) field. Can only be provided as an array
+      // due to array type casting we perform in
+      // \Drupal\Driver\Fields\Drupal7\AbstractFieldHandler::__call()
+      array(
+        'DateHandler',
+        (object) array(
+          'field_date' => array(
+            array(
+              '2015-01-01 00:00:00',
+              '2015-01-02 00:00:00',
+            ),
+          ),
+        ),
+        'node',
+        array(
+          'field_name' => 'field_date',
+          'columns' => array('value' => '', 'value2' => ''),
+        ),
+        array(
+          'en' => array(
+            array(
+              'value' => '2015-01-01T00:00:00',
+              'value2' => '2015-01-02T00:00:00',
+            ),
+          ),
+        ),
+      ),
+
+      // Test single-value datestamp field provided as simple text.
+      array(
+        'DatestampHandler',
+        (object) array('field_date' => '2015-01-01 00:00:00'),
+        'node',
+        array('field_name' => 'field_date'),
+        array('en' => array(array('value' => '1420070400'))),
+      ),
+
+      // Test single-value datestamp field provided as an array.
+      array(
+        'DatestampHandler',
+        (object) array('field_date' => array('2015-01-01 00:00:00')),
+        'node',
+        array('field_name' => 'field_date'),
+        array('en' => array(array('value' => '1420070400'))),
+      ),
+
+      // Test double-value datestamp field. Can only be provided as an array
+      // due to array type casting we perform in
+      // \Drupal\Driver\Fields\Drupal7\AbstractFieldHandler::__call()
+      array(
+        'DatestampHandler',
+        (object) array(
+          'field_date' => array(
+            array(
+              '2015-01-01 00:00:00',
+              '2015-01-02 00:00:00',
+            ),
+          ),
+        ),
+        'node',
+        array(
+          'field_name' => 'field_date',
+          'columns' => array('value' => '', 'value2' => ''),
+        ),
+        array(
+          'en' => array(
+            array(
+              'value' => '1420070400',
+              'value2' => '1420156800',
             ),
           ),
         ),
