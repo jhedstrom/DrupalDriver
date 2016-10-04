@@ -36,16 +36,14 @@ abstract class AbstractDateHandler extends AbstractHandler {
   public function expand($values) {
 
     $return = array();
-    if (isset($this->fieldInfo['columns']['value2'])) {
-      foreach ($values as $value) {
+    foreach ($values as $value) {
+      if (is_array($value) && isset($this->fieldInfo['columns']['value2'])) {
         $return[$this->language][] = array(
           'value' => $this->formatDateValue($value[0]),
           'value2' => $this->formatDateValue($value[1]),
         );
       }
-    }
-    else {
-      foreach ($values as $value) {
+      else {
         $return[$this->language][] = array(
           'value' => $this->formatDateValue($value),
         );
