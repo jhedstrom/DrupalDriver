@@ -42,7 +42,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * Drupal core version.
    *
-   * @var integer
+   * @var int
    */
   public $version;
 
@@ -317,6 +317,20 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function clearStaticCaches() {
     $this->getCore()->clearStaticCaches();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createEntity($entity_type, $entity) {
+    return $this->getCore()->entityCreate($entity_type, $entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, $entity) {
+    return $this->getCore()->entityDelete($entity_type, $entity);
   }
 
 }

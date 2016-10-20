@@ -160,4 +160,18 @@ abstract class BaseDriver implements DriverInterface {
     return sprintf('No ability to %s in %%s. Put `@api` into your feature and add an API driver (ex: `api_driver: drupal`) in behat.yml.', $error);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function createEntity($entity_type, $entity) {
+    throw new UnsupportedDriverActionException($this->errorString('create entities using the generic Entity API'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, $entity) {
+    throw new UnsupportedDriverActionException($this->errorString('delete entities using the generic Entity API'), $this);
+  }
+
 }
