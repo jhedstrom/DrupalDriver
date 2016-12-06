@@ -62,10 +62,6 @@ class Drupal8 extends AbstractCore {
     if (!in_array($node->type, array_keys($bundles))) {
       throw new \Exception("Cannot create content because provided content type '$node->type' does not exist.");
     }
-    // Default status to 1 if not set.
-    if (!isset($node->status)) {
-      $node->status = 1;
-    }
     // If 'author' is set, remap it to 'uid'.
     if (isset($node->author)) {
       $user = user_load_by_name($node->author);
@@ -74,7 +70,7 @@ class Drupal8 extends AbstractCore {
       }
     }
     $this->expandEntityFields('node', $node);
-    $entity = entity_create('node', (array) $node);
+    $entity = Node::create((array) $node);
     $entity->save();
 
     $node->nid = $entity->id();
