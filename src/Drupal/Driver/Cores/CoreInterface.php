@@ -221,7 +221,7 @@ interface CoreInterface {
    *
    * @param string $entity_type
    *   Entity type machine name.
-   * @param array $entity
+   * @param object $entity
    *   The field values and properties desired for the new entity.
    *
    * @return \Drupal\Core\Entity\EntityInterface

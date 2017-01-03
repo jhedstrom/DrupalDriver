@@ -36,6 +36,8 @@ class DrushDriver extends BaseDriver {
 
   /**
    * Track bootstrapping.
+   *
+   * @var bool
    */
   private $bootstrapped = FALSE;
 
@@ -196,6 +198,7 @@ class DrushDriver extends BaseDriver {
    *
    * @param string $output
    *   The output from Drush.
+   *
    * @return object
    *   The decoded JSON object.
    */
@@ -247,7 +250,9 @@ class DrushDriver extends BaseDriver {
     // Drush Driver to work with certain built-in Drush capabilities (e.g.
     // creating users) even if the Behat Drush Endpoint is not available.
     try {
-      $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
+      $value = array($entity_type, $field_name);
+      $arguments = array('is-field', escapeshellarg(json_encode($value)));
+      $result = $this->drush('behat', $arguments, array());
       return strpos($result, "true\n") !== FALSE;
     }
     catch (\Exception $e) {
