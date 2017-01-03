@@ -9,7 +9,7 @@ php:
   - hhvm
 
 install:
-  - composer install --dev --prefer-source
+  - composer install
 
 script:
   - find ./src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
