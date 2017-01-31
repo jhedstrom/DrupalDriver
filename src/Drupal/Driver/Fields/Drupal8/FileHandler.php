@@ -16,10 +16,13 @@ class FileHandler extends AbstractHandler {
       throw new \Exception("Error reading file");
     }
 
+    $ext = pathinfo($values[0], PATHINFO_EXTENSION);
+    $ext = !empty($ext) ? '.' . $ext : '';
+
     /* @var \Drupal\file\FileInterface $file */
     $file = file_save_data(
         $data,
-        'public://' . uniqid());
+        'public://' . uniqid() . $ext);
 
     if (FALSE === $file) {
       throw new \Exception("Error saving file");
