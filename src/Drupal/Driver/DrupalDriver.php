@@ -333,4 +333,11 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     return $this->getCore()->entityDelete($entity_type, $entity);
   }
 
+  /**
+   * Place block.
+   */
+  public function placeBlock($delta, $module, $region, $theme) {
+    $this->getCore()->placeBlock($delta, $module, $region, $theme);
+  }
+
 }

@@ -174,4 +174,11 @@ abstract class BaseDriver implements DriverInterface {
     throw new UnsupportedDriverActionException($this->errorString('delete entities using the generic Entity API'), $this);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function placeBlock($delta, $module, $region, $theme) {
+    throw new UnsupportedDriverActionException($this->errorString('place block'), $this);
+  }
+
 }
