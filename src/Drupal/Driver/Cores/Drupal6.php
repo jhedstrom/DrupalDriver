@@ -214,7 +214,7 @@ class Drupal6 extends AbstractCore {
     // Add permissions to role.
     $rid = db_last_insert_id('role', 'rid');
     db_query("INSERT INTO {permission} (rid, perm) VALUES (%d, '%s')", $rid, implode(', ', $permissions));
-    return $name;
+    return $rid;
   }
 
   /**
