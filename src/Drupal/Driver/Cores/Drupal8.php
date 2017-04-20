@@ -314,7 +314,7 @@ class Drupal8 extends AbstractCore {
       $parent = \taxonomy_term_load_multiple_by_name($term->parent, $term->vocabulary_machine_name);
       if (!empty($parent)) {
         $parent = reset($parent);
-        $term->parent = $parent->tid;
+        $term->parent = $parent->id();
       }
     }
 
