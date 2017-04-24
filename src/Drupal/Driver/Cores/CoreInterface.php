@@ -144,7 +144,7 @@ interface CoreInterface {
    * @return \Drupal\Driver\Fields\FieldHandlerInterface
    *   The field handler.
    */
-  public function getFieldHandler($entity, $entity_type, $field_name);
+  public function getFieldHandler(\stdClass $entity, $entity_type, $field_name);
 
   /**
    * Check if the specified field is an actual Drupal field.
