@@ -53,7 +53,7 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFieldHandler($entity, $entity_type, $field_name) {
+  public function getFieldHandler(\stdClass $entity, $entity_type, $field_name) {
     $reflection = new \ReflectionClass($this);
     $core_namespace = $reflection->getShortName();
     $field_types = $this->getEntityFieldTypes($entity_type);
