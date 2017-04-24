@@ -3,7 +3,7 @@
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
- * Image field handler for Drupal 7.
+ * Image field handler for Drupal 8.
  */
 class ImageHandler extends AbstractHandler {
 
