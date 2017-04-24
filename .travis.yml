@@ -16,7 +16,7 @@ script:
   - phpunit
   - vendor/bin/phpspec run -f pretty --no-interaction
   # Don't test coding on php 5.3.
-  - test ${TRAVIS_PHP_VERSION} == "5.3" || ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml --ignore=./vendor --ignore=./doc --ignore=./spec --ignore=./drush .
+  - test ${TRAVIS_PHP_VERSION} == "5.3" || ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml --ignore=./vendor --ignore=./doc --ignore=./spec --ignore=./drush --ignore=*.md .
 
 # Enable Travis containers.
 sudo: false

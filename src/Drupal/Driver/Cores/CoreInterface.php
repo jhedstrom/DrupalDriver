@@ -134,6 +134,8 @@ interface CoreInterface {
   /**
    * Get FieldHandler class.
    *
+   * @param \stdClass $entity
+   *   Entity object.
    * @param string $entity_type
    *   Entity type machine name.
    * @param string $field_name
@@ -142,7 +144,7 @@ interface CoreInterface {
    * @return \Drupal\Driver\Fields\FieldHandlerInterface
    *   The field handler.
    */
-  public function getFieldHandler($entity, $entity_type, $field_name);
+  public function getFieldHandler(\stdClass $entity, $entity_type, $field_name);
 
   /**
    * Check if the specified field is an actual Drupal field.
