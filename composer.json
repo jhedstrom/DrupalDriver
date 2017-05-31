@@ -1,7 +1,8 @@
 {
-  "name": "drupal/drupal-driver",
+  "name": "artusamak/drupal-driver",
   "type": "library",
   "description": "A collection of reusable Drupal drivers",
+  "minimum-stability": "dev",
   "keywords": ["drupal", "web", "test"],
   "homepage": "http://github.com/jhedstrom/DrupalDriver",
   "license": "GPL-2.0+",
@@ -27,11 +28,6 @@
       "Drupal\\Component": "src/",
       "Drupal\\Driver": "src/",
       "Drupal\\Tests\\Driver" : "tests/"
-    }
-  },
-  "extra": {
-    "branch-alias": {
-      "dev-master": "1.2.x-dev"
     }
   }
 }
