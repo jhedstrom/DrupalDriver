@@ -1,5 +1,5 @@
 {
-  "name": "drupal/drupal-driver",
+  "name": "artusamak/drupal-driver",
   "type": "library",
   "description": "A collection of reusable Drupal drivers",
   "keywords": ["drupal", "web", "test"],
