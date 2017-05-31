@@ -14,7 +14,7 @@ class EntityReferenceHandler extends AbstractHandler {
     $return = array();
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityManager()->getDefinition($entity_type_id);
-    $label_key = $entity_definition->getKey('label');
+    $label_key = $entity_definition->getKey('id');
 
     // Determine target bundle restrictions.
     $target_bundle_key = NULL;
@@ -31,7 +31,10 @@ class EntityReferenceHandler extends AbstractHandler {
         $return[] = array_shift($entities);
       }
       else {
-        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $value, $entity_type_id));
+        // Do not throw an exception if the field has auto created items.
+        if (!$this->fieldConfig->getSetting('handler_settings')['auto_create']) {
+          throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $value, $entity_type_id));
+        }
       }
     }
     return $return;
