@@ -239,7 +239,7 @@ interface CoreInterface {
   /**
    * Get the mail backend.
    *
-   * @return mixed $config
+   * @return mixed
    *   The name or configuration array of the mail backend.
    */
   public function getMailBackend();
@@ -247,8 +247,8 @@ interface CoreInterface {
   /**
    * Set the mail backend.
    *
-   * @param mixed $config
-   *   The name or configuration array of the desired mail backend.
+   * @param mixed
+   *   The name or configuration array of the mail backend.
    */
   public function setMailBackend($config);
 
@@ -257,7 +257,7 @@ interface CoreInterface {
    *
    * @return \stdClass[]
    *   An array of collected emails, each formatted as a Drupal 8
-   * \Drupal\Core\Mail\MailInterface::mail $message array.
+   *   \Drupal\Core\Mail\MailInterface::mail $message array.
    */
   public function getMail();
 

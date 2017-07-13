@@ -510,7 +510,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function sendMail($body = '', $subject = '', $to = '', $langcode = '') {
-    //Send the mail, via the system module's hook_mail
+    // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
     $mailManager = \Drupal::service('plugin.manager.mail');

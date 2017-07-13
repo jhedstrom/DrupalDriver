@@ -181,7 +181,7 @@ interface DriverInterface {
   /**
    * Get the mail backend.
    *
-   * @return mixed $config
+   * @return mixed
    *   The name or configuration array of the mail backend.
    */
   public function getMailBackend();
