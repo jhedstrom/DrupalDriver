@@ -498,4 +498,43 @@ class Drupal7 extends AbstractCore {
     throw new \Exception('Deletion of entities via the generic Entity API is not yet implemented for Drupal 7.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getMailBackend() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMailBackend($config) {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body, $subject ='', $to = '', $langcode = '') {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
 }

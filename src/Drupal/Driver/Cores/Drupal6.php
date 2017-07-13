@@ -513,4 +513,43 @@ class Drupal6 extends AbstractCore {
     throw new \Exception('Drupal 6 does not have a generic Entity API, so deletion of entities is not possible in this way.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getMailBackend() {
+    // @todo: create a D6 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMailBackend($config) {
+    // @todo: create a D6 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    // @todo: create a D6 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 6.');  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    // @todo: create a D6 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body, $subject ='', $to = '', $langcode = '') {
+    // @todo: create a D6 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
+  }
+
 }

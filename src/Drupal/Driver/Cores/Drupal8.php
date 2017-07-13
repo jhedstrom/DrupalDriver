@@ -470,4 +470,52 @@ class Drupal8 extends AbstractCore {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getMailBackend() {
+    $mailConfig = \Drupal::configFactory()->get('system.mail');
+    return $mailConfig->get('interface.default');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMailBackend($config) {
+    $mailConfig = \Drupal::configFactory()->getEditable('system.mail');
+    $mailConfig->set('interface.default', $config)->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    \Drupal::state()->resetCache();
+    $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
+    // Discard cancelled mail.
+    $mail = array_values(array_filter($mail, function ($mailItem) {
+      return ($mailItem['send'] == TRUE);
+    }));
+    return $mail;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    \Drupal::state()->set('system.test_mail_collector', []);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body = '', $subject = '', $to = '', $langcode = '') {
+    //Send the mail, via the system module's hook_mail
+    $params['context']['message'] = $body;
+    $params['context']['subject'] = $subject;
+    $mailManager = \Drupal::service('plugin.manager.mail');
+    $result = $mailManager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
+    return $result;
+  }
+
 }

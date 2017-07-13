@@ -236,4 +236,51 @@ interface CoreInterface {
    */
   public function entityDelete($entity_type, $entity);
 
+  /**
+   * Get the mail backend.
+   *
+   * @return mixed $config
+   *   The name or configuration array of the mail backend.
+   */
+  public function getMailBackend();
+
+  /**
+   * Set the mail backend.
+   *
+   * @param mixed $config
+   *   The name or configuration array of the desired mail backend.
+   */
+  public function setMailBackend($config);
+
+  /**
+   * Get any mail collected by the test mail collector.
+   *
+   * @return \stdClass[]
+   *   An array of collected emails, each formatted as a Drupal 8
+   * \Drupal\Core\Mail\MailInterface::mail $message array.
+   */
+  public function getMail();
+
+  /**
+   * Empty the test mail collector store of any collected mail.
+   */
+  public function clearMail();
+
+  /**
+   * Send a mail.
+   *
+   * @param string $body
+   *   The body of the mail.
+   * @param string $subject
+   *   The subject of the mail.
+   * @param string $to
+   *   The recipient's email address, passing PHP email validation filter.
+   * @param string $langcode
+   *   The language used in subject and body.
+   *
+   * @return bool
+   *   Whether the email was sent successfully.
+   */
+  public function sendMail($body, $subject, $to, $langcode);
+
 }
