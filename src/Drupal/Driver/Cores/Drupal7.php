@@ -238,7 +238,7 @@ class Drupal7 extends AbstractCore {
 
     $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    $_SERVER['REQUEST_METHOD']  = NULL;
+    $_SERVER['REQUEST_METHOD'] = NULL;
 
     $_SERVER['SERVER_SOFTWARE'] = NULL;
     $_SERVER['HTTP_USER_AGENT'] = NULL;

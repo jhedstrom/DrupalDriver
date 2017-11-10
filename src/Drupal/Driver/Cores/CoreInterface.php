@@ -134,6 +134,8 @@ interface CoreInterface {
   /**
    * Get FieldHandler class.
    *
+   * @param object $entity
+   *   The entity object.
    * @param string $entity_type
    *   Entity type machine name.
    * @param string $field_name
