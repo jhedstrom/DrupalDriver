@@ -11,10 +11,7 @@ install:
   - composer install --dev --prefer-source
 
 script:
-  - find ./src -name "*.php" -print0 | xargs -0 -n1 -P8 php -l
-  - vendor/bin/phpunit
-  - vendor/bin/phpspec run -f pretty --no-interaction
-  - ./vendor/bin/phpcs --standard=./phpcs-ruleset.xml .
+  - composer test
 
 # Enable Travis containers.
 sudo: false
