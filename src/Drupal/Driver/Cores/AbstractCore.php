@@ -69,6 +69,8 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * Expands properties on the given entity object to the expected structure.
    *
+   * @param string $entity_type
+   *   The entity type ID.
    * @param \stdClass $entity
    *   Entity object.
    */
