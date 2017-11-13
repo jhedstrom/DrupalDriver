@@ -309,6 +309,15 @@ class Drupal8 extends AbstractCore {
    */
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
+
+    if (isset($term->parent)) {
+      $parent = \taxonomy_term_load_multiple_by_name($term->parent, $term->vocabulary_machine_name);
+      if (!empty($parent)) {
+        $parent = reset($parent);
+        $term->parent = $parent->id();
+      }
+    }
+
     $this->expandEntityFields('taxonomy_term', $term);
     $entity = Term::create((array) $term);
     $entity->save();
