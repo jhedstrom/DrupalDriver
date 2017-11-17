@@ -56,6 +56,13 @@ class DrushDriver extends BaseDriver {
   private $arguments = '';
 
   /**
+   * Tracks legacy drush.
+   *
+   * @var bool
+   */
+  protected static $isLegacyDrush;
+
+  /**
    * Set drush alias or root path.
    *
    * @param string $alias
@@ -110,7 +117,30 @@ class DrushDriver extends BaseDriver {
     if (!isset($this->alias) && !isset($this->root)) {
       throw new BootstrapException('A drush alias or root path is required.');
     }
+
+    // Determine if drush version is legacy.
+    if (!isset(self::$isLegacyDrush)) {
+      self::$isLegacyDrush = $this->isLegacyDrush();
+    }
+
     $this->bootstrapped = TRUE;
+  }
+
+  /**
+   * Determine if drush is a legacy version.
+   *
+   * @return bool
+   *   Returns TRUE if drush is older than drush 9.
+   */
+  protected function isLegacyDrush() {
+    try {
+      // Try for a drush 9 version.
+      $version = unserialize($this->drush('version', [], ['format' => 'php']));
+      return version_compare($version['drush-version'], '9', '<=');
+    }
+    catch (\RuntimeException $e) {
+      return TRUE;
+    }
   }
 
   /**
@@ -306,7 +336,12 @@ class DrushDriver extends BaseDriver {
     $arguments = implode(' ', $arguments);
 
     // Disable colored output from drush.
-    $options['nocolor'] = TRUE;
+    if (isset(static::$isLegacyDrush) && static::$isLegacyDrush) {
+      $options['nocolor'] = TRUE;
+    }
+    else {
+      $options['no-ansi'] = NULL;
+    }
     $string_options = $this->parseArguments($options);
 
     $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;
