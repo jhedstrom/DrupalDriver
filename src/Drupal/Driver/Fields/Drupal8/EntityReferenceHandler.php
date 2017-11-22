@@ -26,7 +26,7 @@ class EntityReferenceHandler extends AbstractHandler {
 
     // Determine target bundle restrictions.
     $target_bundle_key = NULL;
-    if (!$target_bundles = $this->getTargetBundles()) {
+    if ($target_bundles = $this->getTargetBundles()) {
       $target_bundle_key = $entity_definition->getKey('bundle');
     }
 
