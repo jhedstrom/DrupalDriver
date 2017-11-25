@@ -2,12 +2,11 @@
 
 namespace Drupal\Driver\Fields\Drupal7;
 
-use Drupal\Driver\Fields\FieldHandlerInterface;
-
 /**
  * Node reference field handler for Drupal 7.
  */
-class NodereferenceHandler implements FieldHandlerInterface {
+class NodereferenceHandler extends AbstractHandler {
+
   /**
    * {@inheritdoc}
    */
