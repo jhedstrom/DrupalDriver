@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\EntityReferenceGenerator\Driver\Field;
+namespace Drupal\Driver\Fields\Drupal7;
 
 use Drupal\Driver\Fields\FieldHandlerInterface;
 
