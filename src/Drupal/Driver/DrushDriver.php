@@ -135,10 +135,12 @@ class DrushDriver extends BaseDriver {
   protected function isLegacyDrush() {
     try {
       // Try for a drush 9 version.
-      $version = unserialize($this->drush('version', [], ['format' => 'php']));
-      return version_compare($version['drush-version'], '9', '<=');
+      $version = trim($this->drush('version', [], ['format' => 'string']));
+      return version_compare($version, '9', '<=');
     }
     catch (\RuntimeException $e) {
+      // The version of drush is old enough that only `--version` was available,
+      // so this is a legacy version.
       return TRUE;
     }
   }
