@@ -2,9 +2,6 @@
 
 namespace Drupal\Driver\Fields\Drupal8;
 
-use function strpos;
-use function substr;
-
 /**
  * Datetime field handler for Drupal 8.
  */
