@@ -14,7 +14,7 @@ class DatetimeHandler extends AbstractHandler {
     foreach ($values as $key => $value) {
       if (strpos($value, "relative:") !== FALSE) {
         $relative = trim(str_replace('relative:', '', $value));
-        // Get time, convert to ISO 8601 date in GMT/UTC, remove time zone offset.
+        // Get time, convert to ISO 8601 date in GMT/UTC, remove TZ offset.
         $values[$key] = substr(gmdate('c', strtotime($relative)), 0, 19);
       }
       else {
