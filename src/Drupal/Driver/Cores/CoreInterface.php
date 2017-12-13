@@ -118,7 +118,7 @@ interface CoreInterface {
    * @param array $permissions
    *   An array of permissions to create the role with.
    *
-   * @return int
+   * @return int|string
    *   The created role name.
    */
   public function roleCreate(array $permissions);
