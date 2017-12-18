@@ -368,7 +368,7 @@ class Drupal8 extends AbstractCore {
    * @param array $base_fields
    *   Base fields to be expanded in addition to user defined fields.
    */
-  public function expandEntityBaseFields($entity_type, \stdClass $entity, $base_fields) {
+  public function expandEntityBaseFields($entity_type, \stdClass $entity, array $base_fields) {
     $this->expandEntityFields($entity_type, $entity, $base_fields);
   }
 

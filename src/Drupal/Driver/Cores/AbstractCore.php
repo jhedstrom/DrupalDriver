@@ -77,7 +77,7 @@ abstract class AbstractCore implements CoreInterface {
    *   Optional. Define base fields that will be expanded in addition to user
    *   defined fields.
    */
-  protected function expandEntityFields($entity_type, \stdClass $entity, $base_fields = array()) {
+  protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = array()) {
     $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {

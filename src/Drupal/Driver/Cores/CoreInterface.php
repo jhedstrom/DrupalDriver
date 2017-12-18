@@ -171,7 +171,7 @@ interface CoreInterface {
    * @return array
    *   An associative array of field types, keyed by field name.
    */
-  public function getEntityFieldTypes($entity_type, $base_fields = array());
+  public function getEntityFieldTypes($entity_type, array $base_fields = array());
 
   /**
    * Creates a language.
