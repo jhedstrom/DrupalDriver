@@ -375,7 +375,7 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, $base_fields = array()) {
+  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
     $return = array();
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
     foreach ($fields as $field_name => $field) {

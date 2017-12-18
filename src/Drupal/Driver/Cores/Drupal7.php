@@ -456,7 +456,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, $base_fields = array()) {
+  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
     $return = array();
     $fields = field_info_field_map();
     foreach ($fields as $field_name => $field) {
