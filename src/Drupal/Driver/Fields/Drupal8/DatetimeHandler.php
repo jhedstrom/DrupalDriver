@@ -25,7 +25,7 @@ class DatetimeHandler extends AbstractHandler {
       else {
         // A Drupal install has a default site timezone, but nonetheless
         // uses UTC for internal storage. If no timezone is specified in a date
-        // field value by the step author, assume it is in the default timezone of
+        // field value by the step author, assume the default timezone of
         // the Drupal install, and therefore transform it into UTC for storage.
         $date = new DateTime($value, $siteTimezone);
         $date->setTimezone($storageTimezone);
