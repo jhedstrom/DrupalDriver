@@ -9,7 +9,7 @@ use Drupal\Driver\Plugin\DriverFieldPluginBase;
  * @DriverField(
  *   id = "test",
  *   fieldNames = {
- *     "field1",
+ *     "name",
  *     "field2",
  *   },
  *   fieldTypes = {
@@ -23,7 +23,10 @@ use Drupal\Driver\Plugin\DriverFieldPluginBase;
  */
 class Test extends DriverFieldPluginBase {
 
-  public function processValue($value) {
+  /**
+   * {@inheritdoc}
+   */
+  protected function processValue($value) {
     return ['value' => 'now' . $value['value'] . 'processed'];
   }
 }

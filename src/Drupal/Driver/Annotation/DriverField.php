@@ -13,32 +13,32 @@ use Drupal\Driver\Annotation\DriverBase;
  */
 class DriverField extends DriverBase {
 
-  /* All of these should have proper doc comments */
-  public $id;
-
   /**
+   * The machine names of the fields the plugin targets.
+   *
    * @var array
    */
   public $fieldNames;
 
   /**
+   * The machines names of the field types the plugin targets.
+   *
    * @var array
    */
   public $fieldTypes;
 
   /**
+   * The machines names of the entity types the plugin targets.
+   *
    * @var array
    */
   public $entityTypes;
 
   /**
+   * The machine names of the entity bundles the plugin targets.
+   *
    * @var array
    */
   public $entityBundles;
-
-  /**
-   * @var integer
-   */
-  public $weight = 0;
 
 }

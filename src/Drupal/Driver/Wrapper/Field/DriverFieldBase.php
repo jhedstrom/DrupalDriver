@@ -2,9 +2,11 @@
 
 namespace Drupal\Driver\Wrapper\Field;
 
+use Drupal\Driver\Plugin\DriverFieldPluginManager;
 
 /**
- * A base class for Driver field object that wraps a Drupal field object.
+ * A base class for a Driver field object that holds information about a Drupal
+ * entity field.
  */
 abstract class DriverFieldBase implements DriverFieldInterface {
 
@@ -34,14 +36,15 @@ abstract class DriverFieldBase implements DriverFieldInterface {
    *
    * @var object|array
    */
-  protected $fieldDefinition;
+  protected $definition;
 
   /**
-   * Particular field definition (D7 field instance definition, D8: field_storage_config).
+   * Particular field definition (D7 field instance definition, D8:
+   * field_storage_config).
    *
    * @var object|array
    */
-  protected $fieldStorageDefinition;
+  protected $storageDefinition;
 
   /**
    * Raw field values before processing by DriverField plugins.
@@ -58,27 +61,48 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   protected $processedValues;
 
   /**
+   * A driver field plugin manager object.
+   *
+   * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   */
+  protected $fieldPluginManager;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $rawValues, $fieldName, $entityType, $bundle = NULL) {
-    foreach ($rawValues as $rawValue) {
-      if (!is_array($rawValue)) {
-        throw New \Exception("Every field value must be an associative array");
-      }
-    }
-
-    if (is_null($bundle)) {
+  public function __construct(DriverFieldPluginManager $fieldPluginManager,
+                              array $rawValues,
+                              $fieldName,
+                              $entityType,
+                              $bundle = NULL) {
+    if (empty($bundle)) {
       $bundle = $entityType;
     }
     $this->setRawValues($rawValues);
-    $this->setProcessedValues($rawValues);
     $this->setName($fieldName);
     $this->setEntityType($entityType);
     $this->setBundle($bundle);
+    $this->setFieldPluginManager($fieldPluginManager);
+  }
 
-    //field_info_field($entity_type, $field_name) -> FieldStorageConfig::loadByName($entity_type, $field_name)Only for cases where the code is explicitly working with configurable fields, see node_add_body_field() as an example.
-    //field_info_instance($entity_type, $field_name, $bundle) -> FieldConfig::loadByName($entity_type, $bundle, $field_name).
-    // the EntityManager provides the methods getFieldDefinitions($entity_type, $bundle) getFieldStorageDefinitions($entity_type)
+  /**
+   * {@inheritdoc}
+   */
+  public function getProcessedValues() {
+    if (is_null($this->processedValues)) {
+      $this->setProcessedValues($this->getRawValues());
+      $fieldPluginManager = $this->getFieldPluginManager();
+      $definitions = $fieldPluginManager->getMatchedDefinitions($this);
+      foreach ($definitions as $definition) {
+        $plugin = $fieldPluginManager->createInstance($definition['id'], ['field' => $this]);
+        $processedValues = $plugin->processValues($this->processedValues);
+        $this->setProcessedValues($processedValues);
+        if ($plugin->isFinal($this)) {
+          break;
+        };
+      }
+    }
+    return $this->processedValues;
   }
 
   /**
@@ -126,22 +150,22 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   /**
    * {@inheritdoc}
    */
-  public function getProcessedValues() {
-    return $this->processedValues;
+  public function getDefinition() {
+    return $this->definition;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFieldDefinition() {
-    return $this->fieldDefinition;
+  public function getStorageDefinition() {
+    return $this->storageDefinition;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFieldStorageDefinition() {
-    return $this->fieldStorageDefinition;
+  public function getFieldPluginManager() {
+    return $this->fieldPluginManager;
   }
 
   /**
@@ -161,7 +185,7 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   /**
    * {@inheritdoc}
    */
-  public function setBundle(string $bundle) {
+  public function setBundle($bundle) {
     $this->bundle = $bundle;
   }
 
@@ -182,15 +206,21 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFieldDefinition($definition) {
-    $this->fieldDefinition = $definition;
+  public function setDefinition($definition) {
+    $this->definition = $definition;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setFieldWithStorageDefinition($definition) {
-    $this->fieldStorageDefinition = $definition;
+  public function setStorageDefinition($definition) {
+    $this->storageDefinition = $definition;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function setFieldPluginManager($fieldPluginManager) {
+    $this->fieldPluginManager = $fieldPluginManager;
+  }
 }

@@ -14,6 +14,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Driver\Plugin\DriverFieldPluginManager;
+use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 
 /**
  * Drupal 8 core.
@@ -112,7 +114,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
-    $this->validateDrupalSite();
+    //$this->validateDrupalSite();
 
     // Default status to TRUE if not explicitly creating a blocked user.
     if (!isset($user->status)) {
@@ -480,7 +482,7 @@ class Drupal8 extends AbstractCore {
     if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
       $bundles = \Drupal::entityManager()->getBundleInfo($entity_type);
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
+        throw new \Exception("Cannot create entity because provided bundle " . $entity->$bundle_key . " does not exist.");
       }
     }
     if (empty($entity_type)) {
@@ -609,6 +611,49 @@ class Drupal8 extends AbstractCore {
   protected function stopCollectingMailSystemMail() {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
+    }
+  }
+
+  /**
+   * Expands properties on the given entity object to the expected structure.
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param \stdClass $entity
+   *   Entity object.
+   */
+  protected function expandEntityFields($entity_type, \stdClass $entity) {
+    $field_types = $this->getEntityFieldTypes($entity_type);
+    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
+    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
+      $bundle = $entity->$bundle_key;
+    }
+    else {
+      $bundle = $entity_type;
+    }
+
+    foreach ($field_types as $field_name => $type) {
+      if (isset($entity->$field_name)) {
+        $namespaces = \Drupal::service('container.namespaces');
+        $cache_backend = \Drupal::service('cache.discovery');
+        $module_handler = \Drupal::service('module_handler');
+        $fieldPluginManager = New DriverFieldPluginManager($namespaces, $cache_backend, $module_handler);
+        // @todo find a bettter way of standardising single/multi value fields
+        if (is_array($entity->$field_name)) {
+          $fieldValues = $entity->$field_name;
+        }
+        else {
+          $fieldValues = [$entity->$field_name];
+        }
+        $field = New DriverFieldDrupal8(
+          $fieldPluginManager,
+          $fieldValues,
+          $field_name,
+          $entity_type,
+          $bundle
+        );
+        $entity->$field_name = $field->getProcessedValues();
+      }
     }
   }
 

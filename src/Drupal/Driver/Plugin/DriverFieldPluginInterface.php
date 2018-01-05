@@ -18,22 +18,11 @@ interface DriverFieldPluginInterface extends PluginInspectionInterface {
   public function processValues($field);
 
   /**
-   * Converts a single string instruction into a field value.
-   *
-   * @return array
-   *   returns the array of column values for one field value.
-   */
-  public function processValue($value);
-
-  /**
-   * Validates that the expanded value is suitable for the field,
-   * throwing an exception if not.
-   */
-  public function validateValues($field);
-
-  /**
    * Indicates whether lower-priority plugins should be called or if field
-   * processing should finish here.
+   * processing should finish with this plugin.
+   *
+   * @return boolean
+   *   whether processing should finish with this plugin.
    */
   public function isFinal($value);
 

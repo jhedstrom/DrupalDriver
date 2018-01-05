@@ -11,6 +11,8 @@ use Drupal\Tests\Driver\Kernel\Drupal8\Field\DriverFieldKernelTestBase;
  */
 class LinkTest extends DriverFieldKernelTestBase {
 
+  // @todo add a test for handling of named keys in field input.
+
   /**
    * {@inheritdoc}
    */

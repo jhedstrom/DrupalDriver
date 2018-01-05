@@ -69,6 +69,7 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
     $this->setUpDriver();
     $this->fieldTestData = new \ArrayObject([], \ArrayObject::ARRAY_AS_PROPS);
     $this->storage = \Drupal::entityTypeManager()->getStorage($this->entityType);
+    $this->fieldName = NULL;
   }
 
   /**
@@ -76,6 +77,12 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
    *
    * @param string $field_type
    *   Machine name of the field type.
+   * @param integer $cardinality
+   *   (optional) Cardinality of the field.
+   * @param array $field_settings
+   *   (optional) Field settings.
+   * @param array $field_storage_settings
+   *   (optional) Field storage settings.
    * @param string $suffix
    *   (optional) A string that should only contain characters that are valid in
    *   PHP variable names as well.
@@ -128,17 +135,29 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
     $this->assertFieldValues($entity, $fieldExpected);
   }
 
-  protected function createTestEntity($fieldIntended) {
+  protected function createTestEntity($fieldIntended, $entity_type = 'entity_test', $bundle = NULL) {
+    $this->fieldName = $this->createFieldForDriverTest($this->fieldType,
+      count($fieldIntended),
+      $this->fieldSettings,
+      $this->fieldStorageSettings,
+      '',
+      $entity_type,
+      $bundle);
+
     // Create the entity with the field values.
-    $this->fieldName = $this->createFieldForDriverTest($this->fieldType, count($fieldIntended), $this->fieldSettings, $this->fieldStorageSettings);
     $name = $this->randomString();
     $fields = [
       'name' => $name,
       $this->fieldName => $fieldIntended,
     ];
-    $this->driver->createEntity('entity_test', (object) $fields);
+    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
+    if (!empty($bundle)) {
+      $fields[$bundle_key] = $bundle;
+    }
+    $this->driver->createEntity($entity_type, (object) $fields);
 
     // Load the created entity.
+    $this->storage = \Drupal::entityTypeManager()->getStorage($entity_type);
     $entities = $this->storage->loadByProperties(['name' => $name]);
     $this->assertEquals(1, count($entities));
     $entity = reset($entities);

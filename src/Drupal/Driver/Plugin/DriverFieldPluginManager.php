@@ -7,57 +7,47 @@ namespace Drupal\Driver\Plugin;
  */
 class DriverFieldPluginManager extends DriverPluginManagerBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $driverPluginType = 'DriverField';
 
-  protected $filters = [
-    'fieldName',
-    'fieldType',
-    'entityBundle',
-    'entityType'
-  ];
-
-  protected $specificityCriteria = [
-    ['fieldName', 'entityBundle', 'entityType'],
-    ['fieldName', 'entityBundle'],
-    ['fieldName', 'entityType'],
-    ['fieldName', 'fieldType'],
-    ['fieldName'],
-    ['fieldType', 'entityBundle'],
-    ['fieldType', 'entityType'],
-    ['fieldType'],
-    ['entityBundle', 'entityType'],
-    ['entityBundle'],
-    ['entityType'],
-  ];
-
   /**
-   * Process a field for the driver, converting a human-friendly string
-   * into a value for Drupal's API.
+   * {@inheritdoc}
    */
-  public function processValues($field) {
-    $definitions = $this->getMatchedDefinitions($field);
-    foreach ($definitions as $definition) {
-      $plugin = $this->createInstance($definition['id']);
-      $processedValues = $plugin->processValues($field->getProcessedValues());
-      $field->setProcessedValues($processedValues);
-      if ($plugin->isFinal($field)) {
-        break;
-      };
-    }
-    return $field;
-  }
-
+  protected $filters = [
+    'fieldNames',
+    'fieldTypes',
+    'entityBundles',
+    'entityTypes'
+  ];
 
   /**
-   * Convert a target object into a filterable target, an array with a key for
-   * each filter.
+   * {@inheritdoc}
+   */
+  protected $specificityCriteria = [
+    ['fieldNames', 'entityBundles', 'entityTypes'],
+    ['fieldNames', 'entityBundles'],
+    ['fieldNames', 'entityTypes'],
+    ['fieldNames', 'fieldTypes'],
+    ['fieldNames'],
+    ['fieldTypes', 'entityBundles'],
+    ['fieldTypes', 'entityTypes'],
+    ['fieldTypes'],
+    ['entityBundles', 'entityTypes'],
+    ['entityBundles'],
+    ['entityTypes'],
+  ];
+
+  /**
+   * {@inheritdoc}
    */
   protected function getFilterableTarget($field) {
     return [
-      'fieldName' => $field->getName(),
-      'fieldType' => $field->getFieldType(),
-      'entityType' =>$field->getEntityType(),
-      'entityBundle' => $field->getBundle()
+      'fieldNames' => $field->getName(),
+      'fieldTypes' => $field->getType(),
+      'entityTypes' =>$field->getEntityType(),
+      'entityBundles' => $field->getBundle()
     ];
   }
 

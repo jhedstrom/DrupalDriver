@@ -15,12 +15,16 @@ class DriverBase extends Plugin {
   public $id;
 
   /**
-   * @var integer The priority of the plugin
+   * The priority to give to this plugin.
+   *
+   * @var integer
    */
   public $weight = 0;
 
   /**
-   * @var integer Whether this should be the last plugin processed.
+   * Whether this should be the last plugin processed.
+   *
+   * @var integer
    */
   public $final = FALSE;
 

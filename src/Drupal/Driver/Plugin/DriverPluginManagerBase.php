@@ -8,20 +8,46 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Driver\Exception\Exception;
 
 /**
- * Provides the plugin manager for the Driver's field plugins.
+ * Provides a base class for the Driver's plugin managers.
  */
-class DriverPluginManagerBase extends DefaultPluginManager {
+abstract class DriverPluginManagerBase extends DefaultPluginManager implements DriverPluginManagerInterface {
 
+  /**
+   * The name of the plugin type this is the manager for.
+   *
+   * @var string
+   */
   protected $driverPluginType;
 
+  /**
+   * Discovered plugin definitions that match targets.
+   *
+   * An array, keyed by target. Each array value is a sub-array of sorted
+   * plugin definitions that match that target.
+   *
+   * @var array
+   */
   protected $matchedDefinitions;
 
+  /**
+   * An array of target characteristics that plugins should be filtered by.
+   *
+   * @var array
+   */
   protected $filters;
 
+  /**
+   * An multi-dimensional array of sets of target characteristics.
+   *
+   * The order indicates the specificity of the match between the plugin
+   * definition and the target; earlier arrays are a more precise match.
+   *
+   * @var array
+   */
   protected $specificityCriteria;
 
   /**
-   * Constructor for DriverFieldPluginManager objects.
+   * Constructor for DriverPluginManagerBase objects.
    *
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
@@ -54,8 +80,7 @@ class DriverPluginManagerBase extends DefaultPluginManager {
   }
 
   /**
-   * Sorts plugin definitions into groups according to how well they fit
-   * a target as specified by grouping criteria.
+   * {@inheritdoc}
    */
   public function getMatchedDefinitions($rawTarget) {
     // Make sure the target is in a filterable format.
@@ -68,8 +93,8 @@ class DriverPluginManagerBase extends DefaultPluginManager {
 
     // Get stored plugins if available.
     $targetKey = serialize($target);
-    if (isset($this->MatchedDefinitions[$targetKey])) {
-      return $this->MatchedDefinitions[$targetKey];
+    if (isset($this->matchedDefinitions[$targetKey])) {
+      return $this->matchedDefinitions[$targetKey];
     }
 
     // Discover plugins & discard those that don't match the target.
@@ -106,8 +131,13 @@ class DriverPluginManagerBase extends DefaultPluginManager {
   }
 
   /**
-   * Convert a target object into a filterable target, an array with a key for
-   * each filter.
+   * Convert a target object into a filterable target.
+   *
+   * @param array|object $rawTarget
+   *   An array or object that is the target to match definitions against.
+   *
+   * @return array
+   *   An array with a key for each filter used by this plugin manager.
    */
   protected function getFilterableTarget($rawTarget) {
     return $rawTarget;
@@ -115,8 +145,14 @@ class DriverPluginManagerBase extends DefaultPluginManager {
 
   /**
    * Sort an array of definitions by their specificity.
+   *
+   * @param array $definitions
+   *   An array of definitions.
+   *
+   * @return array
+   *   An array of definitions sorted by the specificity criteria.
    */
-  protected function sortDefinitionsBySpecificity($definitions) {
+  protected function sortDefinitionsBySpecificity(array $definitions) {
     // Group definitions by which criteria they match
     $groupedDefinitions = [];
     foreach($definitions as $definition) {
@@ -140,6 +176,12 @@ class DriverPluginManagerBase extends DefaultPluginManager {
 
   /**
    * Find the specificity group a plugin definition belongs to.
+   *
+   * @param array $definition
+   *   A plugin definition with keys for the specificity criteria.
+   *
+   * @return integer
+   *   An integer for which of the specificity criteria the definition fits.
    */
   protected function findSpecificityGroup($definition) {
     // Work  though specificity criteria until a match is found.
@@ -159,6 +201,14 @@ class DriverPluginManagerBase extends DefaultPluginManager {
 
   /**
    * Remove plugin definitions that don't fit a target according to filters.
+   *
+   * @param array $target
+   *   An array with keys for each filter that plugins may or may not match.
+   * @param array $definitions
+   *   An array of plugin definitions to match against the target.
+   *
+   * @return array
+   *   An array of plugin definitions, only those which match the target.
    */
   protected function filterDefinitionsByTarget($target, $definitions) {
     $filters = $this->getFilters();
@@ -181,11 +231,13 @@ class DriverPluginManagerBase extends DefaultPluginManager {
   }
 
   /**
-   * Finds plugin definitions. Overwrites the parent method to retain discovered
-   * plugins with the provider 'driver'.
+   * Finds plugin definitions.
+   *
+   * Overwrites the parent method to retain discovered plugins with the provider
+   * 'driver'. The parent implementation is not aware of this Drupal Driver.
    *
    * @return array
-   *   List of definitions to store in cache.
+   *   List of discovered plugin definitions.
    */
   protected function findDefinitions() {
     $definitions = $this->getDiscovery()->getDefinitions();
@@ -204,18 +256,47 @@ class DriverPluginManagerBase extends DefaultPluginManager {
     return $definitions;
   }
 
+  /**
+   * Get the name of the type of driver plugin this is the manager of.
+   *
+   * @return string
+   *   The name of the type of driver plugin being managed.
+   */
   protected function getDriverPluginType() {
     return $this->driverPluginType;
   }
 
+  /**
+   * Get the specificity criteria for this driver plugin type.
+   *
+   * @return array
+   * An multi-dimensional array of sets of target characteristics. The order
+   * indicates the specificity of the match between the plugin definition and
+   * the target; earlier arrays are a more precise match.
+   */
   protected function getSpecificityCriteria() {
     return $this->specificityCriteria;
   }
 
+  /**
+   * Get the filters for this driver plugin type.
+   *
+   * @return array
+   * An array of target characteristics that plugins should be filtered by.
+   */
   protected function getFilters() {
     return $this->filters;
   }
 
+  /**
+   * Sets the matched plugin definitions.
+   *
+   * @param string $targetKey
+   *   A serialized representation of a filterable target.
+   * @param array $definitions
+   *   An array of plugin definitions matched & sorted against the target key.
+   *
+   */
   protected function setMatchedDefinitions($targetKey, $definitions) {
     $this->matchedDefinitions[$targetKey] = $definitions;
   }

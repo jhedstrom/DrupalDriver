@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\Driver;
 
+use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
+
 /**
  * Tests the Driver's plugin managers.
  */
@@ -198,6 +200,8 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
     $mock = \Mockery::mock('Drupal\Driver\Plugin\DriverFieldPluginManager');
     $mock->makePartial();
     $mock->shouldReceive('getDefinitions')->andReturn($mockDefinitions);
+    $mock->shouldAllowMockingProtectedMethods();
+    $mock->shouldReceive('getFilterableTarget')->andReturn($target);
 
     $matchedDefinitions = $mock->getMatchedDefinitions($target);
     $ids = array_column($matchedDefinitions, 'id');
@@ -215,33 +219,33 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       [
         'id' => 'A',
         'weight' => 0,
-        'entityType' => ['node'],
-        'fieldType' => ['datetime'],
-        'fieldName' => ['datefield'],
+        'entityTypes' => ['node'],
+        'fieldTypes' => ['datetime'],
+        'fieldNames' => ['datefield'],
       ],
       [
         'id' => 'B',
         'weight' => 0,
-        'fieldType' => ['datetime'],
+        'fieldTypes' => ['datetime'],
       ],
       [
         'id' => 'C',
         'weight' => 0,
-        'entityType' => ['node'],
-        'fieldName' => ['datefield'],
+        'entityTypes' => ['node'],
+        'fieldNames' => ['datefield'],
       ],
       [
         'id' => 'D',
         'weight' => 0,
-        'entityType' => ['node'],
+        'entityTypes' => ['node'],
       ],
       [
         'id' => 'E',
         'weight' => 0,
-        'entityType' => ['node'],
-        'entityBundle' => ['article'],
-        'fieldType' => ['datetime'],
-        'fieldName' => ['datefield'],
+        'entityTypes' => ['node'],
+        'entityBundles' => ['article'],
+        'fieldTypes' => ['datetime'],
+        'fieldNames' => ['datefield'],
       ],
       [
         'id' => 'F',
@@ -256,10 +260,10 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       // Test specificity order.
       [
         [
-          'entityType' => 'node',
-          'entityBundle' => 'article',
-          'fieldType' => 'datetime',
-          'fieldName' => 'datefield'
+          'entityTypes' => 'node',
+          'entityBundles' => 'article',
+          'fieldTypes' => 'datetime',
+          'fieldNames' => 'datefield'
         ],
         $mockDefinitions,
         ['E','A','C','B','D','F'],
@@ -268,10 +272,10 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       // Test entity type must not conflict.
       [
         [
-          'entityType' => 'user',
-          'entityBundle' => 'article',
-          'fieldType' => 'datetime',
-          'fieldName' => 'datefield'
+          'entityTypes' => 'user',
+          'entityBundles' => 'article',
+          'fieldTypes' => 'datetime',
+          'fieldNames' => 'datefield'
         ],
         $mockDefinitions,
         ['B','F'],
@@ -280,10 +284,10 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       // Test entity bundle must not conflict.
       [
         [
-          'entityType' => 'node',
-          'entityBundle' => 'page',
-          'fieldType' => 'datetime',
-          'fieldName' => 'datefield'
+          'entityTypes' => 'node',
+          'entityBundles' => 'page',
+          'fieldTypes' => 'datetime',
+          'fieldNames' => 'datefield'
         ],
         $mockDefinitions,
         ['A','C','B','D','F'],
@@ -292,10 +296,10 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       // Test field type must not conflict.
       [
         [
-          'entityType' => 'node',
-          'entityBundle' => 'article',
-          'fieldType' => 'string',
-          'fieldName' => 'datefield'
+          'entityTypes' => 'node',
+          'entityBundles' => 'article',
+          'fieldTypes' => 'string',
+          'fieldNames' => 'datefield'
         ],
         $mockDefinitions,
         ['C','D','F'],
@@ -304,10 +308,10 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       // Test field name must not conflict.
       [
         [
-          'entityType' => 'node',
-          'entityBundle' => 'page',
-          'fieldType' => 'datetime',
-          'fieldName' => 'otherdatefield'
+          'entityTypes' => 'node',
+          'entityBundles' => 'page',
+          'fieldTypes' => 'datetime',
+          'fieldNames' => 'otherdatefield'
         ],
         $mockDefinitions,
         ['B','D','F'],
@@ -316,10 +320,10 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
       // Weight trumps specificity.
       [
         [
-          'entityType' => 'node',
-          'entityBundle' => 'article',
-          'fieldType' => 'datetime',
-          'fieldName' => 'datefield'
+          'entityTypes' => 'node',
+          'entityBundles' => 'article',
+          'fieldTypes' => 'datetime',
+          'fieldNames' => 'datefield'
         ],
         $reweightedDefinitions,
         ['A','E','C','B','D','F'],
