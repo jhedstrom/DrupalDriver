@@ -256,6 +256,11 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
     $reweightedDefinitions = $mockDefinitions;
     $reweightedDefinitions[0]['weight'] = 10;
 
+    $capitalisedDefinitions = $mockDefinitions;
+    $capitalisedDefinitions[0]['entityTypes'][0] = 'Node';
+    $capitalisedDefinitions[0]['fieldTypes'][0] = 'Datetime';
+    $capitalisedDefinitions[0]['fieldNames'][0] = 'DATEFIELD';
+
     return array(
       // Test specificity order.
       [
@@ -328,6 +333,19 @@ class DriverPluginManagersTest extends \PHPUnit_Framework_TestCase {
         $reweightedDefinitions,
         ['A','E','C','B','D','F'],
       ],
+
+      // Test case insensitivity.
+      [
+        [
+          'entityTypes' => 'node',
+          'entityBundles' => 'article',
+          'fieldTypes' => 'datetime',
+          'fieldNames' => 'datefield'
+        ],
+        $capitalisedDefinitions,
+        ['E','A','C','B','D','F'],
+      ],
+
     );
   }
 

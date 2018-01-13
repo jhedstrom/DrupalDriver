@@ -1,26 +1,27 @@
 <?php
 namespace Drupal\Driver\Plugin\DriverField;
 
-use Drupal\Driver\Plugin\DriverFieldPluginBase;
+use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
 
 /**
  * A driver field plugin for image fields.
  *
  * @DriverField(
  *   id = "image",
+ *   version = 8,
  *   fieldTypes = {
  *     "image",
  *   },
  *   weight = -100,
  * )
  */
-class Image extends DriverFieldPluginBase {
+class ImageDrupal8 extends DriverFieldPluginDrupal8Base {
 
   /**
    * {@inheritdoc}
    */
   protected function processValue($value) {
-    $data = file_get_contents($value);
+    $data = file_get_contents($value['target_id']);
     if (FALSE === $data) {
       throw new \Exception("Error reading file");
     }
@@ -44,14 +45,4 @@ class Image extends DriverFieldPluginBase {
     return $return;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function processValues($values) {
-    // @todo this field handler was buggy: it expected an array input, unlike all
-    // other handlers, but only processed the first value..
-    $processed = [];
-    $processed[] = $this->processValue($values[0]);
-    return $processed;
-  }
 }

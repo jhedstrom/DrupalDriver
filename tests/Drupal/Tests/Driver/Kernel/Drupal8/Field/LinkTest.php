@@ -11,8 +11,6 @@ use Drupal\Tests\Driver\Kernel\Drupal8\Field\DriverFieldKernelTestBase;
  */
 class LinkTest extends DriverFieldKernelTestBase {
 
-  // @todo add a test for handling of named keys in field input.
-
   /**
    * {@inheritdoc}
    */
@@ -24,6 +22,23 @@ class LinkTest extends DriverFieldKernelTestBase {
    * @string
    */
   protected $fieldType = 'link';
+
+  /**
+   * Test link field with named properties.
+   */
+  public function testLinkWithPropertyNames() {
+    $fieldExpected = [[
+      'uri' => 'http://' . $this->randomMachineName() . '.com',
+      'title' => $this->randomMachineName(),
+      'options' => ['query' => 'hgf', 'fragment' => 'jju'],
+    ]];
+    $field = [[
+      'uri' => $fieldExpected[0]['uri'],
+      'title' =>$fieldExpected[0]['title'],
+      'options' => 'query=hgf&fragment=jju',
+    ]];
+    $this->assertCreatedWithField($field, $fieldExpected);
+  }
 
   /**
    * Test link field without options.
@@ -81,6 +96,38 @@ class LinkTest extends DriverFieldKernelTestBase {
         $fieldExpected[1]['uri'],
       ],
     ];
+    $this->assertCreatedWithField($field, $fieldExpected);
+  }
+
+  /**
+   * Test link field title default.
+   */
+  public function testLinkTitleDefaultNoUriKey() {
+    $uri = 'http://' . $this->randomMachineName() . '.com';
+    $fieldExpected = [[
+      'uri' => $uri,
+      'title' => $uri,
+      'options' => [],
+    ]];
+    $field = [[
+      $fieldExpected[0]['uri'],
+    ]];
+    $this->assertCreatedWithField($field, $fieldExpected);
+  }
+
+  /**
+   * Test link field title default.
+   */
+  public function testLinkTitleDefaultWithUriKey() {
+    $uri = 'http://' . $this->randomMachineName() . '.com';
+    $fieldExpected = [[
+      'uri' => $uri,
+      'title' => $uri,
+      'options' => [],
+    ]];
+    $field = [[
+      'uri' => $fieldExpected[0]['uri'],
+    ]];
     $this->assertCreatedWithField($field, $fieldExpected);
   }
 

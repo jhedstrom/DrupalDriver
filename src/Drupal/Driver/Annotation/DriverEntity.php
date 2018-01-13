@@ -4,14 +4,14 @@ namespace Drupal\Driver\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
 /**
- * Defines a Driver field plugin annotation object.
+ * Defines a Driver entity plugin annotation object.
  *
- * @see \Drupal\Driver\Plugin\DriverFieldPluginManager
+ * @see \Drupal\Driver\Plugin\DriverEntityPluginManager
  * @see plugin_api
  *
  * @Annotation
  */
-class DriverField extends Plugin {
+class DriverEntity extends Plugin {
 
   /**
    * @var string The plugin id.
@@ -33,27 +33,6 @@ class DriverField extends Plugin {
   public $version;
 
   /**
-   * Whether this should be the last plugin processed.
-   *
-   * @var integer
-   */
-
-  public $final = FALSE;
-  /**
-   * The machine names of the fields the plugin targets.
-   *
-   * @var array
-   */
-  public $fieldNames;
-
-  /**
-   * The machines names of the field types the plugin targets.
-   *
-   * @var array
-   */
-  public $fieldTypes;
-
-  /**
    * The machines names of the entity types the plugin targets.
    *
    * @var array
@@ -68,10 +47,11 @@ class DriverField extends Plugin {
   public $entityBundles;
 
   /**
-   * The main property name for the field. Ignored for Drupal 8.
+   * The machine names of the fields that might be used to reference this
+   * entity.
    *
-   * @var string
+   * @var array
    */
-  public $mainPropertyName = 'value';
+  public $labelKeys;
 
 }

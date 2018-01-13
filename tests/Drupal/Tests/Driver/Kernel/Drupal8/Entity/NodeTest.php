@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\Driver\Kernel\Drupal8\Entity;
 
+use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
 use Drupal\Tests\Driver\Kernel\Drupal8\Entity\DriverEntityKernelTestBase;
 use Drupal\node\Entity\NodeType;
 
@@ -54,7 +55,6 @@ class NodeTest extends DriverEntityKernelTestBase {
 
     // Check the id of the new node has been added to the returned object.
     $entity = reset($entities);
-    $this->assertObjectHasAttribute('nid', $node);
     $this->assertEquals($entity->id(), $node->nid);
 
     // Check the node can be deleted.
@@ -95,6 +95,69 @@ class NodeTest extends DriverEntityKernelTestBase {
       'body' => $body,
     ];
     $node = $this->driver->createNode($node);
+
+    $entities = $this->storage->loadByProperties(['title' => $title]);
+    $this->assertEquals(1, count($entities));
+    $entity = reset($entities);
+    $this->assertEquals($body, $entity->get('body')->value);
+  }
+
+  /**
+   * Test that a node can be created and deleted.
+   */
+  public function testNodeCreateDeleteByWrapper() {
+    $title = $this->driver->getRandom()->string();
+    $fields = [
+      'title' => $title,
+      'type' => 'article',
+    ];
+    $node = DriverEntityDrupal8::create($fields, $this->entityType)->save();
+
+    $entities = $this->storage->loadByProperties(['title' => $title]);
+    $this->assertEquals(1, count($entities));
+
+    // Check the id of the new node has been added to the returned object.
+    $entity = reset($entities);
+    $this->assertEquals($entity->id(), $node->nid);
+
+    // Check the node can be deleted.
+    $this->driver->nodeDelete($node);
+    $entities = $this->storage->loadByProperties(['title' => $title]);
+    $this->assertEquals(0, count($entities));
+  }
+
+  /**
+   * Test that a node can be created specifying its author by name.
+   */
+  public function testNodeCreateWithAuthorNameByWrapper() {
+    $title = $this->randomString();
+    $author = $this->createUser();
+    $authorName = $author->getUsername();
+    $fields = [
+      'title' => $title,
+      'type' => 'article',
+      'author' => $authorName,
+    ];
+    $node = DriverEntityDrupal8::create($fields, $this->entityType)->save();
+
+    $entities = $this->storage->loadByProperties(['title' => $title]);
+    $this->assertEquals(1, count($entities));
+    $entity = reset($entities);
+    $this->assertEquals($author->id(), $entity->getOwnerId());
+  }
+
+  /**
+   * Test that a node can be created specifying its body field.
+   */
+  public function testNodeCreateWithBodyByWrapper() {
+    $title = $this->randomString();
+    $body = $this->randomString();
+    $fields = [
+      'title' => $title,
+      'type' => 'article',
+      'body' => $body,
+    ];
+    $node = DriverEntityDrupal8::create($fields, $this->entityType)->save();
 
     $entities = $this->storage->loadByProperties(['title' => $title]);
     $this->assertEquals(1, count($entities));

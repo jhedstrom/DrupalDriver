@@ -634,10 +634,6 @@ class Drupal8 extends AbstractCore {
 
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {
-        $namespaces = \Drupal::service('container.namespaces');
-        $cache_backend = \Drupal::service('cache.discovery');
-        $module_handler = \Drupal::service('module_handler');
-        $fieldPluginManager = New DriverFieldPluginManager($namespaces, $cache_backend, $module_handler);
         // @todo find a bettter way of standardising single/multi value fields
         if (is_array($entity->$field_name)) {
           $fieldValues = $entity->$field_name;
@@ -646,7 +642,6 @@ class Drupal8 extends AbstractCore {
           $fieldValues = [$entity->$field_name];
         }
         $field = New DriverFieldDrupal8(
-          $fieldPluginManager,
           $fieldValues,
           $field_name,
           $entity_type,

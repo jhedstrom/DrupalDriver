@@ -48,4 +48,24 @@ class ImageTest extends DriverFieldKernelTestBase {
     $this->assertFileExists($file->getFileUri());
   }
 
+
+  /**
+   * Test referencing multiple images by uri.
+   */
+  public function testMultipleImagesFromUri() {
+    $fieldIntended = [
+      'http://www.google.com',
+      'http://www.drupal.com',
+    ];
+    $entity = $this->createTestEntity($fieldIntended);
+    $this->assertValidField($entity);
+    $field = $entity->get($this->fieldName);
+    $fileId1 = $field->getValue()[0]['target_id'];
+    $fileId2 = $field->getValue()[1]['target_id'];
+    $file1 = File::load($fileId1);
+    $this->assertFileExists($file1->getFileUri());
+    $file2 = File::load($fileId2);
+    $this->assertFileExists($file2->getFileUri());
+  }
+
 }

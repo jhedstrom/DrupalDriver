@@ -48,14 +48,14 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
    *
    * @array
    */
-  protected $fieldSettings = array();
+  protected $fieldSettings;
 
   /**
    * Settings for the test field storage.
    *
    * @array
    */
-  protected $fieldStorageSettings = array();
+  protected $fieldStorageSettings;
 
   /**
    * Entity storage.
@@ -64,12 +64,17 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
    */
   protected $storage;
 
+  /**
+   * @inheritdoc
+   */
   protected function setUp() {
     parent::setUp();
     $this->setUpDriver();
     $this->fieldTestData = new \ArrayObject([], \ArrayObject::ARRAY_AS_PROPS);
     $this->storage = \Drupal::entityTypeManager()->getStorage($this->entityType);
     $this->fieldName = NULL;
+    $this->fieldSettings = [];
+    $this->fieldStorageSettings = [];
   }
 
   /**
@@ -93,7 +98,7 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
    *   (optional) The entity type on which the field should be created.
    *   Defaults to the default bundle of the entity type.
    */
-  protected function createFieldForDriverTest($field_type, $cardinality = 1, $field_settings = [], $field_storage_settings = [], $suffix = '', $entity_type = 'entity_test', $bundle = NULL) {
+  protected function createFieldForDriverTest($field_type, $cardinality = 1, $field_settings = [], $field_storage_settings = [], $suffix = '', $entity_type = 'entity_test', $bundle = NULL, $field_name_prefix = NULL) {
     if (empty($bundle)) {
       $bundle = $entity_type;
     }
@@ -103,7 +108,11 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
     $field = 'field' . $suffix;
     $field_definition = 'field_definition' . $suffix;
 
-    $this->fieldTestData->$field_name = Unicode::strtolower($this->randomMachineName() . '_field_name' . $suffix);
+    if (is_null($field_name_prefix)) {
+      $field_name_prefix = $this->randomMachineName();
+    }
+
+    $this->fieldTestData->$field_name = Unicode::strtolower($field_name_prefix . '_field_name' . $suffix);
     $this->fieldTestData->$field_storage = FieldStorageConfig::create([
       'field_name' => $this->fieldTestData->$field_name,
       'entity_type' => $entity_type,
@@ -135,7 +144,10 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
     $this->assertFieldValues($entity, $fieldExpected);
   }
 
-  protected function createTestEntity($fieldIntended, $entity_type = 'entity_test', $bundle = NULL) {
+  protected function createTestEntity($fieldIntended, $entity_type = NULL, $bundle = NULL) {
+    if (is_null($entity_type)) {
+      $entity_type = $this->entityType;
+    }
     $this->fieldName = $this->createFieldForDriverTest($this->fieldType,
       count($fieldIntended),
       $this->fieldSettings,
@@ -154,6 +166,9 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
     if (!empty($bundle)) {
       $fields[$bundle_key] = $bundle;
     }
+    // @todo This can be changed to DriverFieldDrupal8::create once it is no
+    // longer important to show field plugins working with deprecated driver
+    // methods.
     $this->driver->createEntity($entity_type, (object) $fields);
 
     // Load the created entity.
@@ -169,7 +184,7 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase {
     // Make sure the saved data is valid. Drupal does this when forms are saved,
     // but not when values are set by entity API.
     $field = $entity->get($this->fieldName);
-    $this->assertEmpty($field->validate(), format_string("Test field has no validation constraint violation. Values are: \n @values", ['@values' => print_r($field->getValue(), TRUE)]));
+    $this->assertEmpty($field->validate(), format_string("Test field has validation constraint violation. Values are: \n @values", ['@values' => print_r($field->getValue(), TRUE)]));
   }
 
   protected function assertFieldValues($entity, $expectedValues) {

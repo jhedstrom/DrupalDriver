@@ -7,8 +7,6 @@ use Drupal\Tests\Driver\Kernel\Drupal8\Field\DriverFieldKernelTestBase;
 /**
  * Tests the driver's handling of datetime fields.
  *
- * @todo add test for date-only field.
- *
  * @group driver
  */
 class DatetimeTest extends DriverFieldKernelTestBase {
@@ -40,6 +38,15 @@ class DatetimeTest extends DriverFieldKernelTestBase {
   public function testDatetimeRelative() {
     $field = ['relative: 2015-02-10 17:45:00 + 1 day'];
     $fieldExpected = ['2015-02-11T06:45:00'];
+    $this->assertCreatedWithField($fieldExpected);
+  }
+
+  /**
+   * Test an absolute value for a date-only datetime field.
+   */
+  public function testDateOnly() {
+    $fieldExpected = ['2015-02-10'];
+    $this->fieldStorageSettings = ['datetime_type' => 'date'];
     $this->assertCreatedWithField($fieldExpected);
   }
 

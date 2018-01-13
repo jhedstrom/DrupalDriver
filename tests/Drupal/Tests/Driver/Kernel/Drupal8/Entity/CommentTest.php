@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\Driver\Kernel\Drupal8\Entity;
 
+use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
 use Drupal\Tests\Driver\Kernel\Drupal8\Entity\DriverEntityKernelTestBase;
 use Drupal\comment\Entity\CommentType;
 use Drupal\comment\Tests\CommentTestTrait;
@@ -62,7 +63,7 @@ class CommentTest extends DriverEntityKernelTestBase {
     $comment = (object) [
       'subject' => $subject,
       'entity_type' => 'user',
-      'entity_type' => $user->getUsername(),
+      'entity_id' => $user->getUsername(),
       'step_bundle' => 'testcomment'
     ];
     $comment = $this->driver->createEntity('comment', $comment);
@@ -72,13 +73,44 @@ class CommentTest extends DriverEntityKernelTestBase {
 
     // Check the id of the new comment has been added to the returned object.
     $entity = reset($entities);
-    $this->assertObjectHasAttribute('id', $comment);
     $this->assertEquals($entity->id(), $comment->id);
 
     // Check the comment can be deleted.
     $this->driver->entityDelete('comment', $comment);
     $entities = $this->storage->loadByProperties(['subject' => $subject]);
     $this->assertEquals(0, count($entities));
+
+  }
+
+  /**
+   * Test that a comment can be created and deleted.
+   */
+  public function testCommentCreateDeleteByWrapper() {
+    // Create a comment on a test user.
+    $user = $this->createUser();
+    $subject = $this->randomString();
+
+    $fields = [
+      'subject' => $subject,
+      'entity_type' => 'user',
+      'entity_id' => $user->getUsername(),
+      'comment_type' => 'testcomment'
+    ];
+    $comment = DriverEntityDrupal8::create($fields, $this->entityType)->save();
+
+    $entities = $this->storage->loadByProperties(['subject' => $subject]);
+    $this->assertEquals(1, count($entities));
+
+    // Check the id of the new comment has been added to the returned object.
+    $entity = reset($entities);
+    $this->assertEquals($entity->id(), $comment->id);
+
+    // Check the comment can be deleted.
+    $comment->delete();
+    $entities = $this->storage->loadByProperties(['subject' => $subject]);
+    $this->assertEquals(0, count($entities));
+
+
 
   }
 

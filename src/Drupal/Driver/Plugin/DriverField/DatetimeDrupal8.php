@@ -1,20 +1,21 @@
 <?php
 namespace Drupal\Driver\Plugin\DriverField;
 
-use Drupal\Driver\Plugin\DriverFieldPluginBase;
+use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
 
 /**
  * A driver field plugin for datetime fields.
  *
  * @DriverField(
  *   id = "datetime",
+ *   version = 8,
  *   fieldTypes = {
  *     "datetime",
  *   },
  *   weight = -100,
  * )
  */
-class Datetime extends DriverFieldPluginBase {
+class DatetimeDrupal8 extends DriverFieldPluginDrupal8Base {
 
   /**
    * {@inheritdoc}

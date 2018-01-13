@@ -4,6 +4,8 @@ namespace Drupal\Tests\Driver\Kernel\Drupal8\Entity;
 
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
 use Drupal\Tests\Driver\Kernel\DriverKernelTestTrait;
+use Drupal\Driver\Plugin\DriverFieldPluginManager;
+use Drupal\Driver\Plugin\DriverEntityPluginManager;
 
 /**
  * Base class for all Driver entity kernel tests.
@@ -26,10 +28,29 @@ class DriverEntityKernelTestBase extends EntityKernelTestBase {
    */
   protected $storage;
 
+  /**
+   * Absolute path to test project plugins.
+   *
+   * * @var string;
+   */
+  protected $projectPluginRoot;
+
   protected function setUp() {
     parent::setUp();
     $this->setUpDriver();
-    $this->storage = \Drupal::entityTypeManager()->getStorage($this->entityType);
+    if (empty($this->config)) {
+      $this->storage = \Drupal::entityTypeManager()
+        ->getStorage($this->entityType);
+    }
+
+    $namespaces = \Drupal::service('container.namespaces');
+    $cache_backend = \Drupal::service('cache.discovery');
+    $module_handler = \Drupal::service('module_handler');
+
+    $reflection = new \ReflectionClass($this);
+    $this->projectPluginRoot = dirname($reflection->getFileName(), 7) . "/test_project";
+    $this->fieldPluginManager = New DriverFieldPluginManager($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
+    $this->entityPluginManager = New DriverEntityPluginManager($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
   }
 
 }

@@ -9,36 +9,12 @@ namespace Drupal\Driver\Wrapper\Field;
 interface DriverFieldInterface {
 
   /**
-   * Gets the machine name of the field.
+   * Gets the bundle context for this driver field.
    *
    * @return string
-   *   the machine name of the field.
+   *   Bundle machine name.
    */
-  public function getName();
-
-  /**
-   * Gets the label of the field.
-   *
-   * @return string
-   *   the label of the field.
-   */
-  public function getLabel();
-
-  /**
-   * Gets the raw values specified for the field.
-   *
-   * @return string
-   *   the label of the field.
-   */
-  public function getRawValues();
-
-  /**
-   * Gets the values specified for the field given the processing so far.
-   *
-   * @return string
-   *   the label of the field.
-   */
-  public function getProcessedValues();
+  public function getBundle();
 
   /**
    * Gets the general field definition (D7 field definition, D8: field_config).
@@ -49,6 +25,46 @@ interface DriverFieldInterface {
   public function getDefinition();
 
   /**
+   * Gets the entity type context for this driver field.
+   *
+   * @return string
+   *   Entity type machine name.
+   */
+  public function getEntityType();
+
+  /**
+   * Gets the machine name of the field.
+   *
+   * @return string
+   *   the machine name of the field.
+   */
+  public function getName();
+
+  /**
+   * Gets the values specified for the field given the processing so far.
+   *
+   * @return string
+   *   the label of the field.
+   */
+  public function getProcessedValues();
+
+  /**
+   * Gets project plugin root.
+   *
+   * @return string
+   *   Directory to search for additional project-specific driver plugins.
+   */
+  public function getProjectPluginRoot();
+
+  /**
+   * Gets the raw values specified for the field.
+   *
+   * @return string
+   *   the label of the field.
+   */
+  public function getRawValues();
+
+  /**
    * Gets the particular field definition (D7 field instance definition, D8: field_storage_config).
    *
    * @return object|array
@@ -57,42 +73,19 @@ interface DriverFieldInterface {
   public function getStorageDefinition();
 
   /**
-   * Gets the particular field definition (D7 field instance definition, D8: field_storage_config).
+   * Get the type of this field.
    *
-   * @return object|array
-   *   the field definition.
+   * @return string
+   *   Field type machine name.
    */
   public function getType();
 
   /**
-   * Sets the raw values.
+   * Whether or not this field is a config property.
    *
-   * @param array $values
-   *   An array of unprocessed field value sets.
+   * @return boolean
+   *   Whether this field is a config property.
    */
-  public function setRawValues(array $values);
-
-  /**
-   * Sets the processed values.
-   *
-   * @param array $values
-   *   An array of processed field value sets.
-   */
-  public function setProcessedValues(array $values);
-
-  /**
-   * Sets the general field definition (D7 field definition, D8: field_config).
-   *
-   * @param array|object $definition
-   *   A field definition (D7 field definition, D8: field_config).
-   */
-  public function setDefinition($definition);
-
-  /**
-   * Sets the particular field definition (D7 field instance definition, D8: field_storage_config).
-   * @param array|object $definition
-   *   A field storage definition (D7 field instance definition, D8: field_storage_config).
-   */
-  public function setStorageDefinition($definition);
+  public function isConfigProperty();
 
 }

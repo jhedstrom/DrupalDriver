@@ -2,6 +2,7 @@
 
 namespace Drupal\Driver\Wrapper\Field;
 
+use Drupal\Driver\Plugin\DriverPluginManagerInterface;
 use Drupal\Driver\Plugin\DriverFieldPluginManager;
 
 /**
@@ -11,7 +12,14 @@ use Drupal\Driver\Plugin\DriverFieldPluginManager;
 abstract class DriverFieldBase implements DriverFieldInterface {
 
   /**
-   * Field name.
+   * Human-readable text intended to identify the field instance.
+   *
+   * @var string
+   */
+  protected $identifier;
+
+  /**
+   * Field instance's machine name.
    *
    * @var string
    */
@@ -30,21 +38,6 @@ abstract class DriverFieldBase implements DriverFieldInterface {
    * @var string
    */
   protected $bundle;
-
-  /**
-   * General field definition (D7 field definition, D8: field_config).
-   *
-   * @var object|array
-   */
-  protected $definition;
-
-  /**
-   * Particular field definition (D7 field instance definition, D8:
-   * field_storage_config).
-   *
-   * @var object|array
-   */
-  protected $storageDefinition;
 
   /**
    * Raw field values before processing by DriverField plugins.
@@ -68,62 +61,61 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   protected $fieldPluginManager;
 
   /**
-   * {@inheritdoc}
+   * Directory to search for additional project-specific driver plugins.
+   *
+   * @var string
    */
-  public function __construct(DriverFieldPluginManager $fieldPluginManager,
-                              array $rawValues,
-                              $fieldName,
+  protected $projectPluginRoot;
+
+  /**
+   * Construct a DriverField object.
+   *
+   * @param mixed
+   *   Raw values for the field. Typically an array, one for each value of a
+   *   multivalue field, but can be single. Values are typically string.
+   * @param string $fieldName
+   *   The machine name of the field.
+   * @param string $entityType
+   *   The machine name of the entity type the field is attached to.
+   * @param string $bundle
+   *   (optional) The machine name of the entity bundle the field is attached to.
+   * @param string $projectPluginRoot
+   *   The directory to search for additional project-specific driver plugins.
+   * @param NULL|\Drupal\Driver\Plugin\DriverPluginManagerInterface $fieldPluginManager
+   *   (optional) A driver field plugin manager.
+   *
+   */
+  public function __construct($rawValues,
+                              $identifier,
                               $entityType,
-                              $bundle = NULL) {
+                              $bundle = NULL,
+                              $projectPluginRoot = NULL,
+                              $fieldPluginManager = NULL) {
+
+    // Default to entity type as bundle if no bundle specified.
     if (empty($bundle)) {
       $bundle = $entityType;
     }
-    $this->setRawValues($rawValues);
-    $this->setName($fieldName);
-    $this->setEntityType($entityType);
-    $this->setBundle($bundle);
-    $this->setFieldPluginManager($fieldPluginManager);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getProcessedValues() {
-    if (is_null($this->processedValues)) {
-      $this->setProcessedValues($this->getRawValues());
-      $fieldPluginManager = $this->getFieldPluginManager();
-      $definitions = $fieldPluginManager->getMatchedDefinitions($this);
-      foreach ($definitions as $definition) {
-        $plugin = $fieldPluginManager->createInstance($definition['id'], ['field' => $this]);
-        $processedValues = $plugin->processValues($this->processedValues);
-        $this->setProcessedValues($processedValues);
-        if ($plugin->isFinal($this)) {
-          break;
-        };
-      }
+    // Wrap single values into an array so single and multivalue fields can be
+    // handled identically.
+    if (!is_array($rawValues)) {
+      $rawValues = [$rawValues];
     }
-    return $this->processedValues;
+    $this->projectPluginRoot = $projectPluginRoot;
+    $this->setFieldPluginManager($fieldPluginManager, $projectPluginRoot);
+    $this->rawValues = $rawValues;
+    $this->entityType = $entityType;
+    $this->bundle = $bundle;
+    $this->name = $this->identify($identifier);
+    $this->identifier = $identifier;
   }
+
 
   /**
    * {@inheritdoc}
    */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLabel() {
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFieldType() {
-    return 'string';
+  public function getBundle() {
+    return $this->bundle;
   }
 
   /**
@@ -136,8 +128,50 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBundle() {
-    return $this->bundle;
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProcessedValues() {
+    if (is_null($this->processedValues)) {
+      $this->setProcessedValues($this->getRawValues());
+      $fieldPluginManager = $this->getFieldPluginManager();
+      $definitions = $fieldPluginManager->getMatchedDefinitions($this);
+      // Process values through matched plugins, until a plugin
+      // declares it is the final one.
+      foreach ($definitions as $definition) {
+        $plugin = $fieldPluginManager->createInstance($definition['id'], ['field' => $this]);
+        $processedValues = $plugin->processValues($this->processedValues);
+        if (!is_array($processedValues)) {
+          throw new \Exception("Field plugin failed to return array of processed values.");
+        }
+        $this->setProcessedValues($processedValues);
+        if ($plugin->isFinal($this)) {
+          break;
+        };
+      }
+    }
+
+    // Don't pass an array back to singleton config properties.
+    if ($this->isConfigProperty()) {
+      if ($this->getType() !== 'sequence') {
+        if (count($this->processedValues) > 1) {
+          throw new \Exception("Config properties not of the type sequence should not have array input.");
+        }
+        return $this->processedValues[0];
+      }
+    }
+    return $this->processedValues;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProjectPluginRoot() {
+    return $this->projectPluginRoot;
   }
 
   /**
@@ -148,79 +182,44 @@ abstract class DriverFieldBase implements DriverFieldInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Sets the processed values.
+   *
+   * @return \Drupal\Driver\Plugin\DriverPluginManagerInterface
+   *   The field plugin manager.
    */
-  public function getDefinition() {
-    return $this->definition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getStorageDefinition() {
-    return $this->storageDefinition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFieldPluginManager() {
+  protected function getFieldPluginManager() {
     return $this->fieldPluginManager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
-    $this->name = $name;
+  public function isConfigProperty() {
+    return FALSE;
   }
 
   /**
-   * {@inheritdoc}
+   * Sets the processed values.
+   *
+   * @param array $values
+   *   An array of processed field value sets.
    */
-  public function setEntityType($entityType) {
-    $this->entityType = $entityType;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setBundle($bundle) {
-    $this->bundle = $bundle;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setRawValues(array $values) {
-    $this->rawValues = $values;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setProcessedValues(array $values) {
+  protected function setProcessedValues(array $values) {
     $this->processedValues = $values;
   }
 
   /**
-   * {@inheritdoc}
+   * Set the driver field plugin manager.
+   *
+   * @param \Drupal\Driver\Plugin\DriverPluginManagerInterface $manager
+   *   The driver entity plugin manager.
+   * @param string $projectPluginRoot
+   *   The directory to search for additional project-specific driver plugins.
    */
-  public function setDefinition($definition) {
-    $this->definition = $definition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setStorageDefinition($definition) {
-    $this->storageDefinition = $definition;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFieldPluginManager($fieldPluginManager) {
-    $this->fieldPluginManager = $fieldPluginManager;
+  protected function setFieldPluginManager($manager, $projectPluginRoot) {
+    if (!($manager instanceof DriverPluginManagerInterface)) {
+      $manager = New DriverFieldPluginManager($this->namespaces, $this->cache_backend, $this->module_handler, $this->version, $projectPluginRoot);
+    }
+    $this->fieldPluginManager = $manager;
   }
 }

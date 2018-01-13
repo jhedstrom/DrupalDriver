@@ -47,6 +47,13 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
   protected $specificityCriteria;
 
   /**
+   * The Drupal version being driven.
+   *
+   * @var integer
+   */
+  protected $version;
+
+  /**
    * Constructor for DriverPluginManagerBase objects.
    *
    * @param \Traversable $namespaces
@@ -56,10 +63,15 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to invoke the alter hook with.
+   * @param string $projectPluginRoot
+   *   The directory to search for additional project-specific driver plugins .
    */
   public function __construct(\Traversable $namespaces,
                               CacheBackendInterface $cache_backend,
-                              ModuleHandlerInterface $module_handler) {
+                              ModuleHandlerInterface $module_handler,
+                              $version, $projectPluginRoot = NULL) {
+
+    $this->version = $version;
 
     // Add the driver to the namespaces searched for plugins.
     $reflection = new \ReflectionClass($this);
@@ -71,11 +83,18 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
     }
     $supplementedNamespaces['Drupal\Driver'] = $driverPath;
 
+    if (!is_null($projectPluginRoot)) {
+      // Need some way to load project-specific plugins.
+      //$supplementedNamespaces['Drupal\Driver'] = $projectPluginRoot;
+    }
+
     parent::__construct('Plugin/' . $this->getDriverPluginType(), $supplementedNamespaces, $module_handler,
       'Drupal\Driver\Plugin\\' .  $this->getDriverPluginType() . 'PluginInterface',
       'Drupal\Driver\Annotation\\' . $this->getDriverPluginType());
 
-    $this->setCacheBackend($cache_backend, $this->getDriverPluginType() . '_plugins');
+    if (!is_null($cache_backend)) {
+      $this->setCacheBackend($cache_backend, $this->getDriverPluginType() . '_plugins');
+    }
 
   }
 
@@ -214,15 +233,22 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
     $filters = $this->getFilters();
     $filteredDefinitions = [];
     foreach ($definitions as $definition) {
+      // Drop plugins for other Drupal versions if version specified.
+      if (isset($definition['version']) && $definition['version'] !== $this->getVersion()) {
+        continue;
+      }
       reset($filters);
       foreach ($filters as $filter) {
         // If a definition doesn't contain the value specified by the target,
         // for this filter, then skip this definition and don't store it.
         $isCompatibleArray = isset($definition[$filter]) &&
           is_array($definition[$filter]) && (count($definition[$filter]) > 0);
-        if ($isCompatibleArray &&
-          !in_array($target[$filter], $definition[$filter], TRUE)) {
-          continue(2);
+        if ($isCompatibleArray) {
+          // Use case insensitive comparison.
+          $definitionFilters = array_map('mb_strtolower', $definition[$filter]);
+          if (!in_array(mb_strtolower($target[$filter]), $definitionFilters, TRUE)) {
+            continue(2);
+          }
         }
       }
       $filteredDefinitions[] = $definition;
@@ -286,6 +312,16 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
    */
   protected function getFilters() {
     return $this->filters;
+  }
+
+  /**
+   * Get the Drupal version being driven.
+   *
+   * @return integer
+   *   The Drupal major version number.
+   */
+  protected function getVersion() {
+    return $this->version;
   }
 
   /**

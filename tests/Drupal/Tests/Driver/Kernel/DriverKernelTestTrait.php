@@ -16,6 +16,9 @@ trait DriverKernelTestTrait {
   protected $driver;
 
   protected function setUpDriver() {
+    // @todo These hard-coded values are only necessary to test the driver's
+    // methods directly. Doing so becomes less important once more logic has
+    // been moved off the driver into other directly testable classes.
     $this->driver = new DrupalDriver('/app/web', 'http://nothing');
     $this->driver->setCoreFromVersion();
   }
