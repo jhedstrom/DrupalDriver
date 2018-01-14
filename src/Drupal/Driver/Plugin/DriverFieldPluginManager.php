@@ -5,27 +5,28 @@ namespace Drupal\Driver\Plugin;
 /**
  * Provides the plugin manager for the Driver's field plugins.
  */
-class DriverFieldPluginManager extends DriverPluginManagerBase {
+class DriverFieldPluginManager extends DriverPluginManagerBase
+{
 
   /**
    * {@inheritdoc}
    */
-  protected $driverPluginType = 'DriverField';
+    protected $driverPluginType = 'DriverField';
 
   /**
    * {@inheritdoc}
    */
-  protected $filters = [
+    protected $filters = [
     'fieldNames',
     'fieldTypes',
     'entityBundles',
     'entityTypes'
-  ];
+    ];
 
   /**
    * {@inheritdoc}
    */
-  protected $specificityCriteria = [
+    protected $specificityCriteria = [
     ['fieldNames', 'entityBundles', 'entityTypes'],
     ['fieldNames', 'entityBundles'],
     ['fieldNames', 'entityTypes'],
@@ -37,18 +38,18 @@ class DriverFieldPluginManager extends DriverPluginManagerBase {
     ['entityBundles', 'entityTypes'],
     ['entityBundles'],
     ['entityTypes'],
-  ];
+    ];
 
   /**
    * {@inheritdoc}
    */
-  protected function getFilterableTarget($field) {
-    return [
-      'fieldNames' => $field->getName(),
-      'fieldTypes' => $field->getType(),
-      'entityTypes' =>$field->getEntityType(),
-      'entityBundles' => $field->getBundle()
-    ];
-  }
-
+    protected function getFilterableTarget($field)
+    {
+        return [
+        'fieldNames' => $field->getName(),
+        'fieldTypes' => $field->getType(),
+        'entityTypes' =>$field->getEntityType(),
+        'entityBundles' => $field->getBundle()
+        ];
+    }
 }

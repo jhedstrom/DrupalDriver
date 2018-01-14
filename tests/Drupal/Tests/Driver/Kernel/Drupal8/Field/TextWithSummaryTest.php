@@ -9,67 +9,71 @@ use Drupal\Tests\Driver\Kernel\Drupal8\Field\DriverFieldKernelTestBase;
  *
  * @group driver
  */
-class TextWithSummaryTest extends DriverFieldKernelTestBase {
+class TextWithSummaryTest extends DriverFieldKernelTestBase
+{
 
   /**
    * Machine name of the field type being tested.
    *
    * @string
    */
-  protected $fieldType = 'text_with_summary';
+    protected $fieldType = 'text_with_summary';
 
   /**
    * Test single value with summary and main text.
    */
-  public function testSummarySingle() {
-    $field = [[
-      'value' => $this->randomString(),
-      'summary' => $this->randomString(),
-      ]];
-    $this->assertCreatedWithField($field);
-  }
+    public function testSummarySingle()
+    {
+        $field = [[
+        'value' => $this->randomString(),
+        'summary' => $this->randomString(),
+        ]];
+        $this->assertCreatedWithField($field);
+    }
 
   /**
    * Test multiple value with summary and main text.
    */
-  public function testSummaryMultiple() {
-    $field = [
-      [
+    public function testSummaryMultiple()
+    {
+        $field = [
+        [
         'value' => $this->randomString(),
         'summary' => $this->randomString(),
-      ],
-      [
+        ],
+        [
         'value' => $this->randomString(),
         'summary' => $this->randomString(),
-      ],
-    ];
-    $this->assertCreatedWithField($field);
-  }
+        ],
+        ];
+        $this->assertCreatedWithField($field);
+    }
 
   /**
    * Test single value with no summary.
    */
-  public function testNoSummarySingle() {
-    $field = [[
-      'value' => $this->randomString(),
-    ]];
-    $this->assertCreatedWithField($field);
-  }
+    public function testNoSummarySingle()
+    {
+        $field = [[
+        'value' => $this->randomString(),
+        ]];
+        $this->assertCreatedWithField($field);
+    }
 
   /**
    * Test multiple value with and without summary.
    */
-  public function testMixedMultiple() {
-    $field = [
-      [
+    public function testMixedMultiple()
+    {
+        $field = [
+        [
         'value' => $this->randomString(),
-      ],
-      [
+        ],
+        [
         'value' => $this->randomString(),
         'summary' => $this->randomString(),
-      ],
-    ];
-    $this->assertCreatedWithField($field);
-  }
-
+        ],
+        ];
+        $this->assertCreatedWithField($field);
+    }
 }

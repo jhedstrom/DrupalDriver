@@ -5,6 +5,7 @@ namespace Drupal\Driver\Cores;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Wrapper\Entity\DriverEntityWrapperInterface;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
@@ -16,6 +17,7 @@ use Drupal\taxonomy\TermInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Driver\Plugin\DriverFieldPluginManager;
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
+use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
 
 /**
  * Drupal 8 core.
@@ -69,27 +71,10 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeCreate($node) {
-    // Throw an exception if the node type is missing or does not exist.
-    if (!isset($node->type) || !$node->type) {
-      throw new \Exception("Cannot create content because it is missing the required property 'type'.");
-    }
-    $bundles = \Drupal::entityManager()->getBundleInfo('node');
-    if (!in_array($node->type, array_keys($bundles))) {
-      throw new \Exception("Cannot create content because provided content type '$node->type' does not exist.");
-    }
-    // If 'author' is set, remap it to 'uid'.
-    if (isset($node->author)) {
-      $user = user_load_by_name($node->author);
-      if ($user) {
-        $node->uid = $user->id();
-      }
-    }
-    $this->expandEntityFields('node', $node);
-    $entity = Node::create((array) $node);
+    $entity = $this->getNewEntity('node');
+    $entity->setFields((array) $node);
     $entity->save();
-
     $node->nid = $entity->id();
-
     return $node;
   }
 
@@ -97,10 +82,10 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeDelete($node) {
-    $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
-    if ($node instanceof NodeInterface) {
-      $node->delete();
-    }
+    $nid = $node instanceof NodeInterface ? $node->id() : $node->nid;
+    $entity = $this->getNewEntity('node');
+    $entity->load($nid);
+    $entity->delete();
   }
 
   /**
@@ -114,67 +99,39 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function userCreate(\stdClass $user) {
-    //$this->validateDrupalSite();
+    // @todo determine if this needs to be here. It disrupts the new kernel
+    // tests.
+    $this->validateDrupalSite();
 
-    // Default status to TRUE if not explicitly creating a blocked user.
-    if (!isset($user->status)) {
-      $user->status = 1;
-    }
-
-    // Clone user object, otherwise user_save() changes the password to the
-    // hashed password.
-    $this->expandEntityFields('user', $user);
-    $account = entity_create('user', (array) $user);
-    $account->save();
-
-    // Store UID.
-    $user->uid = $account->id();
+    $entity = $this->getNewEntity('user');
+    $entity->setFields((array) $user);
+    $entity->save();
+    $user->uid = $entity->id();
+    return $user;
   }
 
   /**
    * {@inheritdoc}
    */
   public function roleCreate(array $permissions) {
-    // Generate a random, lowercase machine name.
-    $rid = strtolower($this->random->name(8, TRUE));
+    // Generate a random machine name & label.
+    $id = strtolower($this->random->name(8, TRUE));
+    $label = trim($this->random->name(8, TRUE));
 
-    // Generate a random label.
-    $name = trim($this->random->name(8, TRUE));
-
-    // Convert labels to machine names.
-    $this->convertPermissions($permissions);
-
-    // Check the all the permissions strings are valid.
-    $this->checkPermissions($permissions);
-
-    // Create new role.
-    $role = entity_create('user_role', array(
-      'id' => $rid,
-      'label' => $name,
-    ));
-    $result = $role->save();
-
-    if ($result === SAVED_NEW) {
-      // Grant the specified permissions to the role, if any.
-      if (!empty($permissions)) {
-        user_role_grant_permissions($role->id(), $permissions);
-      }
-      return $role->id();
-    }
-
-    throw new \RuntimeException(sprintf('Failed to create a role with "%s" permission(s).', implode(', ', $permissions)));
+    $entity = $this->getNewEntity('role');
+    $entity->set('id', $id);
+    $entity->set('label', $label);
+    $entity->grantPermissions($permissions);
+    $entity->save();
+    return $entity->id();
   }
 
   /**
    * {@inheritdoc}
    */
   public function roleDelete($role_name) {
-    $role = user_role_load($role_name);
-
-    if (!$role) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
-    }
-
+    $role = $this->getNewEntity('role');
+    $role->load($role_name);
     $role->delete();
   }
 
@@ -189,79 +146,26 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
-   * Retrieve all permissions.
-   *
-   * @return array
-   *   Array of all defined permissions.
-   */
-  protected function getAllPermissions() {
-    $permissions = &drupal_static(__FUNCTION__);
-
-    if (!isset($permissions)) {
-      $permissions = \Drupal::service('user.permissions')->getPermissions();
-    }
-
-    return $permissions;
-  }
-
-  /**
-   * Convert any permission labels to machine name.
-   *
-   * @param array &$permissions
-   *   Array of permission names.
-   */
-  protected function convertPermissions(array &$permissions) {
-    $all_permissions = $this->getAllPermissions();
-
-    foreach ($all_permissions as $name => $definition) {
-      $key = array_search($definition['title'], $permissions);
-      if (FALSE !== $key) {
-        $permissions[$key] = $name;
-      }
-    }
-  }
-
-  /**
-   * Check to make sure that the array of permissions are valid.
-   *
-   * @param array $permissions
-   *   Permissions to check.
-   */
-  protected function checkPermissions(array &$permissions) {
-    $available = array_keys($this->getAllPermissions());
-
-    foreach ($permissions as $permission) {
-      if (!in_array($permission, $available)) {
-        throw new \RuntimeException(sprintf('Invalid permission "%s".', $permission));
-      }
-    }
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
+    // Not using user_cancel here leads to an error when batch_process()
+    // is subsequently called.
     user_cancel(array(), $user->uid, 'user_cancel_delete');
+    //$entity = $this->getNewEntity('user');
+    //$entity->load($user->uid);
+    //$entity->delete();
   }
 
   /**
    * {@inheritdoc}
    */
   public function userAddRole(\stdClass $user, $role_name) {
-    // Allow both machine and human role names.
-    $roles = user_role_names();
-    $id = array_search($role_name, $roles);
-    if (FALSE !== $id) {
-      $role_name = $id;
-    }
-
-    if (!$role = user_role_load($role_name)) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
-    }
-
-    $account = \user_load($user->uid);
-    $account->addRole($role->id());
-    $account->save();
+    $uid = $user->uid;
+    $user = $this->getNewEntity('user');
+    $user->load($uid);
+    $user->addRole($role_name);
+    $user->save();
   }
 
   /**
@@ -323,20 +227,9 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function termCreate(\stdClass $term) {
-    $term->vid = $term->vocabulary_machine_name;
-
-    if (isset($term->parent)) {
-      $parent = \taxonomy_term_load_multiple_by_name($term->parent, $term->vocabulary_machine_name);
-      if (!empty($parent)) {
-        $parent = reset($parent);
-        $term->parent = $parent->id();
-      }
-    }
-
-    $this->expandEntityFields('taxonomy_term', $term);
-    $entity = Term::create((array) $term);
+    $entity = $this->getNewEntity('taxonomy_term');
+    $entity->setFields((array) $term);
     $entity->save();
-
     $term->tid = $entity->id();
     return $term;
   }
@@ -345,10 +238,9 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
-    $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
-    if ($term instanceof TermInterface) {
-      $term->delete();
-    }
+    $entity = $this->getNewEntity('taxonomy_term');
+    $entity->load($term->tid);
+    $entity->delete();
   }
 
   /**
@@ -402,6 +294,16 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
+   * Get a new driver entity wrapper.
+   *
+   * @return \Drupal\Driver\Wrapper\Entity\DriverEntityWrapperInterface;
+   */
+  public function getNewEntity($type, $bundle = NULL) {
+    $entity = new DriverEntityDrupal8($type, $bundle);
+    return $entity;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
@@ -425,11 +327,10 @@ class Drupal8 extends AbstractCore {
 
     // Enable a language only if it has not been enabled already.
     if (!ConfigurableLanguage::load($langcode)) {
-      $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
-      if (!$created_language) {
-        throw new InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
-      }
-      $created_language->save();
+      $entity = $this->getNewEntity('configurable_language');
+      $entity->set('id', $langcode);
+      $entity->set('label', $langcode);
+      $entity->save();
       return $language;
     }
 
@@ -472,29 +373,10 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityCreate($entity_type, $entity) {
-    // If the bundle field is empty, put the inferred bundle value in it.
-    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
-    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
-      $entity->$bundle_key = $entity->step_bundle;
-    }
-
-    // Throw an exception if a bundle is specified but does not exist.
-    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
-      $bundles = \Drupal::entityManager()->getBundleInfo($entity_type);
-      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception("Cannot create entity because provided bundle " . $entity->$bundle_key . " does not exist.");
-      }
-    }
-    if (empty($entity_type)) {
-      throw new \Exception("You must specify an entity type to create an entity.");
-    }
-
-    $this->expandEntityFields($entity_type, $entity);
-    $createdEntity = entity_create($entity_type, (array) $entity);
-    $createdEntity->save();
-
-    $entity->id = $createdEntity->id();
-
+    $entityWrapped = $this->getNewEntity($entity_type);
+    $entityWrapped->setFields((array) $entity);
+    $entityWrapped->save();
+    $entity->id = $entityWrapped->id();
     return $entity;
   }
 
@@ -502,10 +384,10 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    $entity = $entity instanceof EntityInterface ? $entity : entity_load($entity_type, $entity->id);
-    if ($entity instanceof EntityInterface) {
-      $entity->delete();
-    }
+    $eid = $entity instanceof EntityInterface ? $entity->id() : $entity->id;
+    $entity = $this->getNewEntity($entity_type);
+    $entity->load($eid);
+    $entity->delete();
   }
 
   /**

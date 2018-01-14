@@ -19,7 +19,8 @@ use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
  *   },
  * )
  */
-class UserDrupal8 extends DriverEntityPluginDrupal8Base {
+class UserDrupal8 extends DriverEntityPluginDrupal8Base
+{
 
   /**
    * The id of the attached user.
@@ -28,24 +29,55 @@ class UserDrupal8 extends DriverEntityPluginDrupal8Base {
    *
    * @deprecated Use id() instead.
    */
-  public $uid;
+    public $uid;
 
   /**
    * {@inheritdoc}
    */
-  public function save() {
-    parent::save();
-    $this->uid = $this->id();
-  }
+    public function delete()
+    {
+        user_cancel(array(), $this->id(), 'user_cancel_delete');
+    }
 
   /**
    * {@inheritdoc}
    */
-  protected function getNewEntity() {
-    $entity = parent::getNewEntity();
-    $entity->set('status', 1);
-    return $entity;
-  }
+    public function load($entityId)
+    {
+        $entity = parent::load($entityId);
+        $this->uid = is_null($this->entity) ? NULL : $this->id();
+        return $entity;
+    }
+
+  /**
+   * {@inheritdoc}
+   */
+    public function save()
+    {
+        parent::save();
+        $this->uid = $this->id();
+    }
+
+  /**
+   * {@inheritdoc}
+   */
+    public function set($identifier, $field)
+    {
+      // Ignore the role key passed by Drupal extension.
+      if ($identifier !== 'role') {
+        parent::set($identifier, $field);
+      }
+    }
+
+  /**
+   * {@inheritdoc}
+   */
+    protected function getNewEntity()
+    {
+        $entity = parent::getNewEntity();
+        $entity->set('status', 1);
+        return $entity;
+    }
 
   /**
    * Add a role by human-friendly identifier.
@@ -53,13 +85,14 @@ class UserDrupal8 extends DriverEntityPluginDrupal8Base {
    * @param string $roleIdentifier
    *   A human-friendly string identifying a role.
    */
-  public function addRole($roleIdentifier) {
-    $driverField = $this->getNewDriverField('roles', $roleIdentifier);
-    $roleId = $driverField->getProcessedValues()[0]['target_id'];
-    $roles = $this->getEntity()->getRoles(TRUE);
-    $roles[] = $roleId;
-    $this->getEntity()->set('roles', array_unique($roles));
-    $this->save();
-  }
+    public function addRole($roleIdentifier)
+    {
+        // Use a driver field to convert identifier to id.
+        $driverField = $this->getNewDriverField('roles', $roleIdentifier);
+        $roleId = $driverField->getProcessedValues()[0]['target_id'];
 
+        $roles = $this->getEntity()->getRoles(true);
+        $roles[] = $roleId;
+        $this->getEntity()->set('roles', array_unique($roles));
+    }
 }

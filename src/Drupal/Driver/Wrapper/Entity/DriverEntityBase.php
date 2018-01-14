@@ -14,83 +14,57 @@ use Drupal\Component\Utility\DriverNameMatcher;
  * A base class for a Driver entity object that holds information about a
  * Drupal entity.
  */
-abstract class DriverEntityBase implements DriverEntityWrapperInterface {
-
-
-  // use entity wrappers on the D8 core
-
-  // node author->uid remap
-  // default use status to true
-  // treat permissions as field plugin
-  // user_cancel method
-  // special user add role method
-  // term parent field
-  // $term->vid = $term->vocabulary_machine_name
-
-  // roleCreateWithPermissions
-  // userAddRole
-  // isField
-  // getEntityFieldTypes
-
-  // Consider collapsing DriverFieldWrapper back onto DriverEntityWrapper
-  // case sensitivity of entity reference queries
-  // ExpandEntityField's weird ignoring of some fields
-  // defaultPluginManager not available for D7
-  // D7 & D6 plugins
-  // loading plugins from project
-  // hard coded something in driverkerneltesttrait
-  // test running
-  // final/provisional plugin naming
-  // todo table parsing rat's nest deeply entangled with driver
+abstract class DriverEntityBase implements DriverEntityWrapperInterface
+{
 
   /**
    * Entity type's machine name.
    *
    * @var string
    */
-  protected $type;
+    protected $type;
 
   /**
    * Entity bundle's machine name.
    *
    * @var string
    */
-  protected $bundle;
+    protected $bundle;
 
   /**
    * A driver entity plugin manager object.
    *
    * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
    */
-  protected $entityPluginManager;
+    protected $entityPluginManager;
 
   /**
    * A driver field plugin manager object.
    *
    * @var \Drupal\Driver\Plugin\DriverPluginManagerInterface
    */
-  protected $fieldPluginManager;
+    protected $fieldPluginManager;
 
   /**
    * The directory to search for additional project-specific driver plugins.
    *
    * @var string
    */
-  protected $projectPluginRoot;
+    protected $projectPluginRoot;
 
   /**
    * The preliminary bundle-agnostic matched driver entity plugin.
    *
    * @var \Drupal\Driver\Plugin\DriverEntityPluginInterface
    */
-  protected $provisionalPlugin;
+    protected $provisionalPlugin;
 
   /**
    * The final bundle-specific matched driver entity plugin.
    *
    * @var \Drupal\Driver\Plugin\DriverEntityPluginInterface
    */
-  protected $finalPlugin;
+    protected $finalPlugin;
 
   /**
    * Constructs a driver entity wrapper object.
@@ -106,82 +80,87 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
    * @param string $projectPluginRoot
    *   The directory to search for additional project-specific driver plugins .
    */
-  public function __construct($type,
-                              $bundle = NULL,
-                              DriverPluginManagerInterface $entityPluginManager = NULL,
-                              DriverPluginManagerInterface $fieldPluginManager = NULL,
-                              $projectPluginRoot = NULL
-                              ) {
+    public function __construct(
+        $type,
+        $bundle = null,
+        DriverPluginManagerInterface $entityPluginManager = null,
+        DriverPluginManagerInterface $fieldPluginManager = null,
+        $projectPluginRoot = null
+    ) {
 
-    $this->setEntityPluginManager($entityPluginManager, $projectPluginRoot);
-    $this->fieldPluginManager = $fieldPluginManager;
-    $this->projectPluginRoot = $projectPluginRoot;
-    $this->setType($type);
+        $this->setEntityPluginManager($entityPluginManager, $projectPluginRoot);
+        $this->fieldPluginManager = $fieldPluginManager;
+        $this->projectPluginRoot = $projectPluginRoot;
+        $this->setType($type);
 
-    // Provisional plugin set before bundle as it's used in bundle validation.
-    $this->setProvisionalPlugin($this->getPlugin());
+        // Provisional plugin set before bundle as it's used in bundle validation.
+        $this->setProvisionalPlugin($this->getPlugin());
 
-    if (!empty($bundle)) {
-      $this->setBundle($bundle);
-      // Only set final plugin if bundle is known.
-      $this->setFinalPlugin($this->getPlugin());
+        if (!empty($bundle)) {
+            $this->setBundle($bundle);
+            // Only set final plugin if bundle is known.
+            $this->setFinalPlugin($this->getPlugin());
+        }
     }
 
-  }
-
   /**
    * {@inheritdoc}
    */
-  public function __call($name, $arguments) {
-    // Forward unknown calls to the plugin.
-    if ($this->hasFinalPlugin()) {
-      return call_user_func_array([
-        $this->getFinalPlugin(),
-        $name,
-      ], $arguments);
+    public function __call($name, $arguments)
+    {
+        // Forward unknown calls to the plugin.
+        if ($this->hasFinalPlugin()) {
+            return call_user_func_array([
+            $this->getFinalPlugin(),
+            $name,
+            ], $arguments);
+        }
+        throw new \Exception("Method '$name' unknown on Driver entity wrapper and plugin not yet available.");
     }
-    throw new \Exception("Method '$name' unknown on Driver entity wrapper and plugin not yet available.");
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function __get($name) {
-    // Forward unknown calls to the plugin.
-    if ($this->hasFinalPlugin()) {
-      return $this->getFinalPlugin()->$name;
+    public function __get($name)
+    {
+        // Forward unknown calls to the plugin.
+        if ($this->hasFinalPlugin()) {
+            return $this->getFinalPlugin()->$name;
+        }
+        throw new \Exception("Property '$name' unknown on Driver entity wrapper and plugin not yet available.");
     }
-    throw new \Exception("Property '$name' unknown on Driver entity wrapper and plugin not yet available.");
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function bundle() {
-    // Default to entity type as bundle. This is used when the bundle is not
-    // yet known, for example during DriverField processing of the bundle field.
-    // If no bundle is supplied, this default is permanently set as the bundle
-    // later by getFinalPlugin().
-    if (is_null($this->bundle)) {
-      return $this->getEntityTypeId();
+    public function bundle()
+    {
+        // Default to entity type as bundle. This is used when the bundle is not
+        // yet known, for example during DriverField processing of the bundle field.
+        // If no bundle is supplied, this default is permanently set as the bundle
+        // later by getFinalPlugin().
+        if (is_null($this->bundle)) {
+            return $this->getEntityTypeId();
+        }
+        return $this->bundle;
     }
-    return $this->bundle;
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function delete() {
-    $this->getEntity()->delete();
-    return $this;
-  }
+    public function delete()
+    {
+        $this->getEntity()->delete();
+        return $this;
+    }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntity() {
-    return $this->getFinalPlugin()->getEntity();
-  }
+    public function getEntity()
+    {
+        return $this->getFinalPlugin()->getEntity();
+    }
 
   /**
    * Get an entity plugin.
@@ -192,176 +171,192 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
    * @return \Drupal\Driver\Plugin\DriverEntityPluginInterface
    *   An instantiated driver entity plugin object.
    */
-  protected function getPlugin() {
-    if (is_null($this->getEntityTypeId())) {
-      throw new \Exception("Entity type is required to discover matched plugins.");
+    protected function getPlugin()
+    {
+        if (is_null($this->getEntityTypeId())) {
+            throw new \Exception("Entity type is required to discover matched plugins.");
+        }
+
+        // Build the basic config for the plugin.
+        $config = [
+        'type' => $this->getEntityTypeId(),
+        'bundle' => $this->bundle(),
+        'projectPluginRoot' => $this->projectPluginRoot,
+        'fieldPluginManager' => $this->fieldPluginManager,
+        ];
+
+        // Discover, instantiate and store plugin.
+        $manager = $this->getFinalPluginManager();
+        // Get only the highest priority matched plugin.
+        $matchedDefinitions = $manager->getMatchedDefinitions($this);
+        if (count($matchedDefinitions) === 0) {
+            throw new \Exception("No matching DriverEntity plugins found.");
+        }
+        $topDefinition = $matchedDefinitions[0];
+        $plugin = $manager->createInstance($topDefinition['id'], $config);
+        if (!($plugin instanceof DriverEntityPluginInterface)) {
+          throw new \Exception("DriverEntity plugin '" . $topDefinition['id'] . "' failed to instantiate.");
+        }
+        return $plugin;
     }
 
-    // Build the basic config for the plugin.
-    $config = [
-      'type' => $this->getEntityTypeId(),
-      'bundle' => $this->bundle(),
-      'projectPluginRoot' => $this->projectPluginRoot,
-      'fieldPluginManager' => $this->fieldPluginManager,
-    ];
-
-    // Discover, instantiate and store plugin.
-    $manager = $this->getFinalPluginManager();
-    // Get only the highest priority matched plugin.
-    $matchedDefinitions = $manager->getMatchedDefinitions($this);
-    if (count($matchedDefinitions) === 0) {
-      throw new \Exception("No matching DriverEntity plugins found.");
-    }
-    $topDefinition = $matchedDefinitions[0];
-    $plugin = $manager->createInstance($topDefinition['id'], $config);
-    return $plugin;
-  }
-
   /**
    * {@inheritdoc}
    */
-  public function getFinalPlugin() {
-    if (!$this->hasFinalPlugin()) {
-      // Commit to default bundle if still using that.
-      if ($this->isBundleMissing()) {
-        $this->setBundle($this->bundle());
-      }
-      $this->setFinalPlugin($this->getPlugin());
-    }
-    if (!$this->hasFinalPlugin()) {
-      throw new \Exception("Failed to discover or instantiate bundle-specific plugin.");
+    public function getFinalPlugin()
+    {
+        if (!$this->hasFinalPlugin()) {
+            // Commit to default bundle if still using that.
+            if ($this->isBundleMissing()) {
+                $this->setBundle($this->bundle());
+            }
+            $this->setFinalPlugin($this->getPlugin());
+        }
+        if (!$this->hasFinalPlugin()) {
+            throw new \Exception("Failed to discover or instantiate bundle-specific plugin.");
+        }
+
+        return $this->finalPlugin;
     }
 
-    return $this->finalPlugin;
-  }
-
   /**
    * {@inheritdoc}
    */
-  public function getEntityTypeId() {
-    return $this->type;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function id() {
-    return $this->getFinalPlugin()->id();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isNew() {
-    if ($this->hasFinalPlugin()) {
-      return $this->getFinalPlugin()->isNew();
+    public function getEntityTypeId()
+    {
+        return $this->type;
     }
-    else {
-      return TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
+    public function id()
+    {
+        return $this->getFinalPlugin()->id();
     }
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function label() {
-    return $this->getFinalPlugin()->label();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function load($entityId) {
-    if (!is_string($entityId) && !is_integer($entityId)) {
-      throw new \Exception("Entity ID to be loaded must be string or integer.");
+    public function isNew()
+    {
+        if ($this->hasFinalPlugin()) {
+            return $this->getFinalPlugin()->isNew();
+        } else {
+            return true;
+        }
     }
-    if ($this->hasFinalPlugin()) {
-     $this->getFinalPlugin()->load($entityId);
+
+  /**
+   * {@inheritdoc}
+   */
+    public function label()
+    {
+        return $this->getFinalPlugin()->label();
     }
-    else {
-      $entity = $this->getProvisionalPlugin()->load($entityId);
-      if ($this->isBundleMissing()) {
-        $this->setBundle($entity->bundle());
-      }
-      $this->getFinalPlugin()->load($entityId);
+
+  /**
+   * {@inheritdoc}
+   */
+    public function load($entityId)
+    {
+        if (!is_string($entityId) && !is_integer($entityId)) {
+            throw new \Exception("Entity ID to be loaded must be string or integer.");
+        }
+        if ($this->hasFinalPlugin()) {
+            $this->getFinalPlugin()->load($entityId);
+        } else {
+            $entity = $this->getProvisionalPlugin()->load($entityId);
+            if ($this->isBundleMissing()) {
+                $this->setBundle($entity->bundle());
+            }
+            $this->getFinalPlugin()->load($entityId);
+        }
+        return $this;
     }
-    return $this;
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function reload() {
-    $this->getFinalPlugin()->reload();
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function save() {
-    $this->getFinalPlugin()->save();
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function set($identifier, $field) {
-    $this->setFields([$identifier => $field]);
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setBundle($identifier) {
-    if ($this->hasFinalPlugin()) {
-      throw New \Exception("Cannot change entity bundle after final plugin discovery has taken place");
+    public function reload()
+    {
+        $this->getFinalPlugin()->reload();
+        return $this;
     }
-    $this->bundle = $identifier;
-    return $this;
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function setFinalPlugin($plugin) {
-    if ($this->hasFinalPlugin()) {
-      throw New \Exception("Cannot change entity plugin without risk of data loss.");
+    public function save()
+    {
+        $this->getFinalPlugin()->save();
+        return $this;
     }
-    $this->finalPlugin = $plugin;
-    return $this;
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function setFields($fields) {
-    // We don't try to identify all the fields here - or even check that they
-    // are all identifiable - because we want to pass everything on to the
-    // plugin as raw as possible. But we must extract the bundle field (if the
-    // bundle is not already known) as the bundle is used in plugin discovery.
-    if ($this->isBundleMissing()) {
-      $fields = $this->extractBundleField($fields);
+    public function set($identifier, $field)
+    {
+        $this->setFields([$identifier => $field]);
+        return $this;
     }
-    $this->getFinalPlugin()->setFields($fields);
-    return $this;
-  }
 
   /**
    * {@inheritdoc}
    */
-  public function url($rel = 'canonical', $options = []) {
-    return $this->getFinalPlugin()->url($rel, $options);
-  }
+    public function setBundle($identifier)
+    {
+        if ($this->hasFinalPlugin()) {
+            throw new \Exception("Cannot change entity bundle after final plugin discovery has taken place");
+        }
+        $this->bundle = $identifier;
+        return $this;
+    }
 
   /**
    * {@inheritdoc}
    */
-  public function tearDown() {
-    return $this->getFinalPlugin()->tearDown();
-  }
+    public function setFinalPlugin($plugin)
+    {
+        if ($this->hasFinalPlugin()) {
+            throw new \Exception("Cannot change entity plugin without risk of data loss.");
+        }
+        $this->finalPlugin = $plugin;
+        return $this;
+    }
+
+  /**
+   * {@inheritdoc}
+   */
+    public function setFields($fields)
+    {
+        // We don't try to identify all the fields here - or even check that they
+        // are all identifiable - because we want to pass everything on to the
+        // plugin as raw as possible. But we must extract the bundle field (if the
+        // bundle is not already known) as the bundle is used in plugin discovery.
+        if ($this->isBundleMissing()) {
+            $fields = $this->extractBundleField($fields);
+        }
+        $this->getFinalPlugin()->setFields($fields);
+        return $this;
+    }
+
+  /**
+   * {@inheritdoc}
+   */
+    public function url($rel = 'canonical', $options = [])
+    {
+        return $this->getFinalPlugin()->url($rel, $options);
+    }
+
+  /**
+   * {@inheritdoc}
+   */
+    public function tearDown()
+    {
+        return $this->getFinalPlugin()->tearDown();
+    }
 
   /**
    * Extract the bundle field from a set of fields, and store the bundle.
@@ -372,49 +367,54 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
    * @return array
    *   An array of inputs that represent fields, without the bundle field.
    */
-  protected function extractBundleField($fields) {
-    $bundleKey = $this->getProvisionalPlugin()->getBundleKey();
-    // If this is a bundle-less entity, there's nothing to do.
-    if (empty($bundleKey)) {
-      return $fields;
-    }
-    else {
-      // Find the bundle field, if it is present among the fields.
-      $bundleKeyLabels = $this->getProvisionalPlugin()->getBundleKeyLabels();
-      $candidates = [];
-      foreach ($bundleKeyLabels as $label) {
-        $candidates[$label] = $bundleKey;
-      }
-      $matcher = New DriverNameMatcher($candidates);
-      $bundleFieldMatch = $matcher->identifySet($fields);
+    protected function extractBundleField($fields)
+    {
+        $bundleKey = $this->getProvisionalPlugin()->getBundleKey();
+        // If this is a bundle-less entity, there's nothing to do.
+        if (empty($bundleKey)) {
+            return $fields;
+        } else {
+            // BC support for identifying the bundle by the name 'step_bundle'.
+            if (isset($fields['step_bundle'])) {
+              $fields[$bundleKey] = $fields['step_bundle'];
+              unset($fields['step_bundle']);
+            }
+            // Find the bundle field, if it is present among the fields.
+            $bundleKeyLabels = $this->getProvisionalPlugin()->getBundleKeyLabels();
+            $candidates = [];
+            foreach ($bundleKeyLabels as $label) {
+                $candidates[$label] = $bundleKey;
+            }
+            $matcher = new DriverNameMatcher($candidates);
+            $bundleFieldMatch = $matcher->identifySet($fields);
 
-      // If the bundle field has been found, process it and set the bundle.
-      // Don't throw an exception if none if found, as it is possible to have
-      // entities (like entity_test) that have a bundle key but don't require
-      // a bundle to be set.
-      if (count($bundleFieldMatch) !== 0) {
-        if ($bundleFieldMatch[$bundleKey] instanceof DriverFieldInterface) {
-          $bundleField = $bundleFieldMatch[$bundleKey];
-        }
-        else {
-          $bundleField = $this->getNewDriverField($bundleKey, $bundleFieldMatch[$bundleKey]);
-        }
-        $this->setBundle($bundleField->getProcessedValues()[0]['target_id']);
-      }
+            // If the bundle field has been found, process it and set the bundle.
+            // Don't throw an exception if none if found, as it is possible to have
+            // entities (like entity_test) that have a bundle key but don't require
+            // a bundle to be set.
+            if (count($bundleFieldMatch) !== 0) {
+                if ($bundleFieldMatch[$bundleKey] instanceof DriverFieldInterface) {
+                    $bundleField = $bundleFieldMatch[$bundleKey];
+                } else {
+                    $bundleField = $this->getNewDriverField($bundleKey, $bundleFieldMatch[$bundleKey]);
+                }
+                $this->setBundle($bundleField->getProcessedValues()[0]['target_id']);
+            }
 
-      // Return the other fields (with the bundle field now removed).
-      return $matcher->getUnmatchedTargets();
+            // Return the other fields (with the bundle field now removed).
+            return $matcher->getUnmatchedTargets();
+        }
     }
-  }
 
   /**
    * Get the driver entity plugin manager.
    *
    * @return \Drupal\Driver\Plugin\DriverPluginManagerInterface
    */
-  protected function getFinalPluginManager() {
-    return $this->entityPluginManager;
-  }
+    protected function getFinalPluginManager()
+    {
+        return $this->entityPluginManager;
+    }
 
   /**
    * Get a new driver field with values.
@@ -424,53 +424,57 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
    * @param string|array $values
    *   An input that can be transformed into Driver field values.
    */
-  protected function getNewDriverField($fieldName, $values) {
-    $driverFieldVersionClass = "Drupal\Driver\Wrapper\Field\DriverFieldDrupal" . $this->version;
-    $field = New $driverFieldVersionClass(
-      $values,
-      $fieldName,
-      $this->getEntityTypeId(),
-      $this->bundle(),
-      $this->projectPluginRoot,
-      $this->fieldPluginManager
-    );
-    return $field;
-  }
+    protected function getNewDriverField($fieldName, $values)
+    {
+        $driverFieldVersionClass = "Drupal\Driver\Wrapper\Field\DriverFieldDrupal" . $this->version;
+        $field = new $driverFieldVersionClass(
+        $values,
+        $fieldName,
+        $this->getEntityTypeId(),
+        $this->bundle(),
+        $this->projectPluginRoot,
+        $this->fieldPluginManager
+        );
+        return $field;
+    }
 
   /**
    * Gets the provisional entity plugin.
    *
    * @return \Drupal\Driver\Plugin\DriverEntityPluginInterface
    */
-  protected function getProvisionalPlugin() {
-    if ($this->hasFinalPlugin()) {
-      return $this->getFinalPlugin();
+    protected function getProvisionalPlugin()
+    {
+        if ($this->hasFinalPlugin()) {
+            return $this->getFinalPlugin();
+        }
+        return $this->provisionalPlugin;
     }
-    return $this->provisionalPlugin;
-  }
 
   /**
    * Whether a matched plugin has yet been discovered and stored.
    *
    * @return boolean
    */
-  protected function hasFinalPlugin() {
-    $hasFinalPlugin = !is_null($this->finalPlugin);
-    if ($hasFinalPlugin) {
-      $hasFinalPlugin = $this->finalPlugin instanceof DriverEntityPluginInterface;
+    protected function hasFinalPlugin()
+    {
+        $hasFinalPlugin = !is_null($this->finalPlugin);
+        if ($hasFinalPlugin) {
+            $hasFinalPlugin = $this->finalPlugin instanceof DriverEntityPluginInterface;
+        }
+        return $hasFinalPlugin;
     }
-    return $hasFinalPlugin;
-  }
 
   /**
    * Whether a bundle has been set yet.
    *
    * @return boolean
    */
-  protected function isBundleMissing() {
-    $supportsBundles = $this->getProvisionalPlugin()->supportsBundles();
-    return ($supportsBundles && is_null($this->bundle));
-  }
+    protected function isBundleMissing()
+    {
+        $supportsBundles = $this->getProvisionalPlugin()->supportsBundles();
+        return ($supportsBundles && is_null($this->bundle));
+    }
 
   /**
    * Set the driver entity plugin manager.
@@ -480,20 +484,21 @@ abstract class DriverEntityBase implements DriverEntityWrapperInterface {
    * @param string $projectPluginRoot
    *   The directory to search for additional project-specific driver plugins.
    */
-  protected function setEntityPluginManager($manager, $projectPluginRoot) {
-    if (!($manager instanceof DriverPluginManagerInterface)) {
-      $manager = New DriverEntityPluginManager($this->namespaces, $this->cache_backend, $this->module_handler, $this->version, $projectPluginRoot);
+    protected function setEntityPluginManager($manager, $projectPluginRoot)
+    {
+        if (!($manager instanceof DriverPluginManagerInterface)) {
+            $manager = new DriverEntityPluginManager($this->namespaces, $this->cache_backend, $this->module_handler, $this->version, $projectPluginRoot);
+        }
+        $this->entityPluginManager = $manager;
     }
-    $this->entityPluginManager = $manager;
-  }
 
   /**
    * Sets the provisional entity plugin.
    *
    * @param \Drupal\Driver\Plugin\DriverEntityPluginInterface
    */
-  protected function setProvisionalPlugin($plugin) {
-    $this->provisionalPlugin = $plugin;
-  }
-
+    protected function setProvisionalPlugin($plugin)
+    {
+        $this->provisionalPlugin = $plugin;
+    }
 }

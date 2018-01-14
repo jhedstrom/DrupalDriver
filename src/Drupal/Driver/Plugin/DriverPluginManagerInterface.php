@@ -7,7 +7,8 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 /**
  * Defines an interface for the Driver's plugin managers.
  */
-interface DriverPluginManagerInterface extends PluginManagerInterface {
+interface DriverPluginManagerInterface extends PluginManagerInterface
+{
 
   /**
    * Get plugin definitions matching a target, sorted by weight and specificity.
@@ -18,6 +19,5 @@ interface DriverPluginManagerInterface extends PluginManagerInterface {
    * @return array
    *   An array of sorted plugin definitions that match that target.
    */
-  public function getMatchedDefinitions($rawTarget);
-
+    public function getMatchedDefinitions($rawTarget);
 }

@@ -12,5 +12,6 @@ use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
  *   weight = -100,
  * )
  */
-class GenericDrupal8 extends DriverFieldPluginDrupal8Base {
+class GenericDrupal8 extends DriverFieldPluginDrupal8Base
+{
 }

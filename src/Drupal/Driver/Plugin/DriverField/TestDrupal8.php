@@ -24,12 +24,14 @@ use Drupal\Driver\Plugin\DriverFieldPluginDrupal8Base;
  *   weight = -100,
  * )
  */
-class TestDrupal8 extends DriverFieldPluginDrupal8Base {
+class TestDrupal8 extends DriverFieldPluginDrupal8Base
+{
 
   /**
    * {@inheritdoc}
    */
-  protected function processValue($value) {
-    return ['value' => 'now' . $value['value'] . 'processed'];
-  }
+    protected function processValue($value)
+    {
+        return ['value' => 'now' . $value['value'] . 'processed'];
+    }
 }

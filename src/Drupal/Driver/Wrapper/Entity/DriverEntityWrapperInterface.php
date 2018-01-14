@@ -6,7 +6,8 @@ namespace Drupal\Driver\Wrapper\Entity;
  * Defines an interface for a Driver entity wrapper that holds information
  * about a Drupal entity.
  */
-interface DriverEntityWrapperInterface extends DriverEntityInterface {
+interface DriverEntityWrapperInterface extends DriverEntityInterface
+{
 
   /**
    * Gets the machine name of the entity bundle.
@@ -14,7 +15,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    * @return string
    *   the machine name of the entity bundle.
    */
-  public function bundle();
+    public function bundle();
 
   /**
    * Create and save an entity with certain field values.
@@ -31,7 +32,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    *
    * @return $this
    */
-  public static function create($fields, $type, $bundle);
+    public static function create($fields, $type, $bundle);
 
   /**
    * Gets the machine name of the entity type.
@@ -39,7 +40,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    * @return string
    *   the machine name of the entity type.
    */
-  public function getEntityTypeId();
+    public function getEntityTypeId();
 
   /**
    * Gets the matching entity plugin.
@@ -47,7 +48,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    * @return \Drupal\Driver\Plugin\DriverEntityPluginInterface $plugin
    *   An instantiated driver entity plugin matching this entity.
    */
-  public function getFinalPlugin();
+    public function getFinalPlugin();
 
   /**
    * Load an entity by its id.
@@ -57,7 +58,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    *
    * @return $this
    */
-  public function load($entityId);
+    public function load($entityId);
 
   /**
    * Sets the entity bundle.
@@ -67,7 +68,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    *
    * @return $this
    */
-  public function setBundle($identifer);
+    public function setBundle($identifer);
 
   /**
    * Set field values on the driver entity.
@@ -80,7 +81,7 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    *
    * @return $this
    */
-  public function setFields($fields);
+    public function setFields($fields);
 
   /**
    * Sets the matching entity plugin.
@@ -88,6 +89,5 @@ interface DriverEntityWrapperInterface extends DriverEntityInterface {
    * @param \Drupal\Driver\Plugin\DriverEntityPluginInterface $plugin
    *   An instantiated driver entity plugin matching this entity.
    */
-  public function setFinalPlugin($plugin);
-
+    public function setFinalPlugin($plugin);
 }

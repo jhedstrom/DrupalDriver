@@ -3,6 +3,7 @@
 namespace Drupal\Driver\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
+
 /**
  * Defines a Driver entity plugin annotation object.
  *
@@ -11,40 +12,41 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class DriverEntity extends Plugin {
+class DriverEntity extends Plugin
+{
 
   /**
    * @var string The plugin id.
    */
-  public $id;
+    public $id;
 
   /**
    * The priority to give to this plugin.
    *
    * @var integer
    */
-  public $weight = 0;
+    public $weight = 0;
 
   /**
    * The Drupal major version being driven.
    *
    * @var integer
    */
-  public $version;
+    public $version;
 
   /**
    * The machines names of the entity types the plugin targets.
    *
    * @var array
    */
-  public $entityTypes;
+    public $entityTypes;
 
   /**
    * The machine names of the entity bundles the plugin targets.
    *
    * @var array
    */
-  public $entityBundles;
+    public $entityBundles;
 
   /**
    * The machine names of the fields that might be used to reference this
@@ -52,6 +54,5 @@ class DriverEntity extends Plugin {
    *
    * @var array
    */
-  public $labelKeys;
-
+    public $labelKeys;
 }

@@ -13,59 +13,62 @@ use Drupal\file\Entity\File;
  *
  * @group driver
  */
-class ImageTest extends DriverFieldKernelTestBase {
+class ImageTest extends DriverFieldKernelTestBase
+{
 
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['entity_test', 'field', 'image', 'file'];
+    public static $modules = ['entity_test', 'field', 'image', 'file'];
 
   /**
    * Machine name of the field type being tested.
    *
    * @string
    */
-  protected $fieldType = 'image';
+    protected $fieldType = 'image';
 
-  protected function setUp() {
-    parent::setUp();
-    $this->installEntitySchema('file');
-    $this->installSchema('file', ['file_usage']);
-  }
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->installEntitySchema('file');
+        $this->installSchema('file', ['file_usage']);
+    }
 
   /**
    * Test referencing an image by a uri.
    */
-  public function testImageFromUri() {
-    $fieldIntended = [
-      'http://www.google.com',
-      ];
-    $entity = $this->createTestEntity($fieldIntended);
-    $this->assertValidField($entity);
-    $field = $entity->get($this->fieldName);
-    $fileId = $field->getValue()[0]['target_id'];
-    $file = File::load($fileId);
-    $this->assertFileExists($file->getFileUri());
-  }
+    public function testImageFromUri()
+    {
+        $fieldIntended = [
+        'http://www.google.com',
+        ];
+        $entity = $this->createTestEntity($fieldIntended);
+        $this->assertValidField($entity);
+        $field = $entity->get($this->fieldName);
+        $fileId = $field->getValue()[0]['target_id'];
+        $file = File::load($fileId);
+        $this->assertFileExists($file->getFileUri());
+    }
 
 
   /**
    * Test referencing multiple images by uri.
    */
-  public function testMultipleImagesFromUri() {
-    $fieldIntended = [
-      'http://www.google.com',
-      'http://www.drupal.com',
-    ];
-    $entity = $this->createTestEntity($fieldIntended);
-    $this->assertValidField($entity);
-    $field = $entity->get($this->fieldName);
-    $fileId1 = $field->getValue()[0]['target_id'];
-    $fileId2 = $field->getValue()[1]['target_id'];
-    $file1 = File::load($fileId1);
-    $this->assertFileExists($file1->getFileUri());
-    $file2 = File::load($fileId2);
-    $this->assertFileExists($file2->getFileUri());
-  }
-
+    public function testMultipleImagesFromUri()
+    {
+        $fieldIntended = [
+        'http://www.google.com',
+        'http://www.drupal.com',
+        ];
+        $entity = $this->createTestEntity($fieldIntended);
+        $this->assertValidField($entity);
+        $field = $entity->get($this->fieldName);
+        $fileId1 = $field->getValue()[0]['target_id'];
+        $fileId2 = $field->getValue()[1]['target_id'];
+        $file1 = File::load($fileId1);
+        $this->assertFileExists($file1->getFileUri());
+        $file2 = File::load($fileId2);
+        $this->assertFileExists($file2->getFileUri());
+    }
 }

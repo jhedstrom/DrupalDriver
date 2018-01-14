@@ -7,7 +7,8 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 /**
  * Defines an interface for the Driver's entity plugins.
  */
-interface DriverEntityPluginInterface extends PluginInspectionInterface {
+interface DriverEntityPluginInterface extends PluginInspectionInterface
+{
 
   /**
    * Get the bundle key for the entity type.
@@ -15,7 +16,7 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    * @return string
    *   The bundle key for the entity type
    */
-  public function getBundleKey();
+    public function getBundleKey();
 
   /**
    * Get the label for the bundle key field for the entity type.
@@ -23,7 +24,7 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    * @return array
    *   An array of (string) bundle key labels.
    */
-  public function getBundleKeyLabels();
+    public function getBundleKeyLabels();
 
   /**
    * Gets the bundles for the current entity type.
@@ -31,7 +32,7 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    * @return array
    *   An array of bundle machine names.
    */
-  public function getBundles();
+    public function getBundles();
 
   /**
    * Get the machine names of fields that can be used as this entity's label.
@@ -39,7 +40,7 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    * @return array
    *   An array of field instance machine names.
    */
-  public function getLabelKeys();
+    public function getLabelKeys();
 
   /**
    * Load an entity by its id.
@@ -47,7 +48,7 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    * @param integer|string $entityId
    *   An entity id.
    */
-  public function load($entityId);
+    public function load($entityId);
 
   /**
    * Set fields on the wrapped entity.
@@ -57,7 +58,7 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    *
    * @return $this
    */
-  public function setFields($fields);
+    public function setFields($fields);
 
   /**
    * Whether the current entity type supports bundles.
@@ -65,6 +66,5 @@ interface DriverEntityPluginInterface extends PluginInspectionInterface {
    * @return boolean
    *   Whether the entity type supports bundles.
    */
-  public function supportsBundles();
-
+    public function supportsBundles();
 }

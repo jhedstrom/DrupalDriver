@@ -13,5 +13,6 @@ use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
  * )
  */
 
-class GenericDrupal8 extends DriverEntityPluginDrupal8Base {
+class GenericDrupal8 extends DriverEntityPluginDrupal8Base
+{
 }
