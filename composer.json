@@ -4,7 +4,7 @@
   "description": "A collection of reusable Drupal drivers",
   "keywords": ["drupal", "web", "test"],
   "homepage": "http://github.com/jhedstrom/DrupalDriver",
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "authors": [
      {
        "name": "Jonathan Hedstrom",
@@ -12,6 +12,7 @@
      }
   ],
   "require": {
+    "php": ">=5.5.9",
     "symfony/process": "~2.5|~3.0",
     "symfony/dependency-injection": "~2.6|~3.0"
   },
