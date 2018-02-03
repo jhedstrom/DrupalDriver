@@ -3,6 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\Site\Settings;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -468,6 +469,25 @@ class Drupal8 extends AbstractCore {
     if ($entity instanceof ContentEntityInterface) {
       $entity->delete();
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    // Scan test directories for modules.
+    $settings = Settings::getAll();
+    $settings['extension_discovery_scan_tests'] = TRUE;
+    new Settings($settings);
+
+    \Drupal::service('module_installer')->install(array($module_name));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    \Drupal::service('module_installer')->uninstall(array($module_name));
   }
 
 }

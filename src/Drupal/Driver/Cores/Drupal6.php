@@ -513,4 +513,19 @@ class Drupal6 extends AbstractCore {
     throw new \Exception('Drupal 6 does not have a generic Entity API, so deletion of entities is not possible in this way.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    module_enable(array($module_name));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    module_disable(array($module_name));
+    drupal_uninstall_module(array($module_name));
+  }
+
 }

@@ -387,6 +387,20 @@ class DrushDriver extends BaseDriver {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    $this->drush('pm-enable', array($module_name), array('yes' => TRUE));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    $this->drush('pm-uninstall', array($module_name), array('yes' => TRUE));
+  }
+
+  /**
    * Run Drush commands dynamically from a DrupalContext.
    */
   public function __call($name, $arguments) {

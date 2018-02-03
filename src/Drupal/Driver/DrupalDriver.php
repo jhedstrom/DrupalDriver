@@ -333,4 +333,18 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
     return $this->getCore()->entityDelete($entity_type, $entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    $this->getCore()->moduleInstall($module_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    $this->getCore()->moduleUninstall($module_name);
+  }
+
 }
