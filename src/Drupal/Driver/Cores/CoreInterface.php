@@ -236,4 +236,20 @@ interface CoreInterface {
    */
   public function entityDelete($entity_type, $entity);
 
+  /**
+   * Installs a module.
+   *
+   * @param string $module_name
+   *   The machine name of the module to install.
+   */
+  public function moduleInstall($module_name);
+
+  /**
+   * Uninstalls a module.
+   *
+   * @param string $module_name
+   *   The machine name of the module to uninstall.
+   */
+  public function moduleUninstall($module_name);
+
 }

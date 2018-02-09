@@ -498,4 +498,19 @@ class Drupal7 extends AbstractCore {
     throw new \Exception('Deletion of entities via the generic Entity API is not yet implemented for Drupal 7.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    module_enable(array($module_name));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    module_disable(array($module_name));
+    drupal_uninstall_modules(array($module_name));
+  }
+
 }

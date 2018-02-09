@@ -174,4 +174,18 @@ abstract class BaseDriver implements DriverInterface {
     throw new UnsupportedDriverActionException($this->errorString('delete entities using the generic Entity API'), $this);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    throw new UnsupportedDriverActionException($this->errorString('install modules'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    throw new UnsupportedDriverActionException($this->errorString('uninstall modules'), $this);
+  }
+
 }
