@@ -473,17 +473,19 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function getMailBackend() {
-    $mailConfig = \Drupal::configFactory()->get('system.mail');
-    return $mailConfig->get('interface.default');
+  public function startCollectingMail() {
+    global $config;
+    // @todo Use a collector that supports html after D#2223967 lands.
+    $config['system.mail']['interface.default'] = 'test_mail_collector';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMailBackend($config) {
-    $mailConfig = \Drupal::configFactory()->getEditable('system.mail');
-    $mailConfig->set('interface.default', $config)->save();
+  public function stopCollectingMail() {
+    global $config;
+    $original = \Drupal::config('system.mail')->getOriginal('interface.default', FALSE);
+    $config['system.mail']['interface.default'] = $original;
   }
 
   /**

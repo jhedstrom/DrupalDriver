@@ -336,15 +336,15 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMailBackend() {
-    return $this->getCore()->getMailBackend();
+  public function startCollectingMail() {
+    return $this->getCore()->startCollectingMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMailBackend($config) {
-    return $this->getCore()->setMailBackend($config);
+  public function stopCollectingMail() {
+    return $this->getCore()->stopCollectingMail();
   }
 
   /**

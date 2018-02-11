@@ -177,14 +177,14 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMailBackend() {
+  public function startCollectingMail() {
     throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMailBackend($config) {
+  public function stopCollectingMail() {
     throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
   }
 

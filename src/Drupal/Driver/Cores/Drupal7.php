@@ -501,7 +501,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function getMailBackend() {
+  public function startCollectingMail() {
     // @todo: create a D7 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
   }
@@ -509,7 +509,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function setMailBackend($config) {
+  public function stopCollectingMail() {
     // @todo: create a D7 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
   }

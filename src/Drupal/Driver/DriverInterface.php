@@ -179,20 +179,14 @@ interface DriverInterface {
   public function configSet($name, $key, $value);
 
   /**
-   * Get the mail backend.
-   *
-   * @return mixed
-   *   The name or configuration array of the mail backend.
+   * Enable the test mail collector.
    */
-  public function getMailBackend();
+  public function startCollectingMail();
 
   /**
-   * Set the mail backend.
-   *
-   * @param mixed $config
-   *   The name or configuration array of the desired mail backend.
+   * Restore normal operation of outgoing mail.
    */
-  public function setMailBackend($config);
+  public function stopCollectingMail();
 
   /**
    * Get any mail collected by the test mail collector.
