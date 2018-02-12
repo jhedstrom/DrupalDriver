@@ -474,18 +474,16 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function startCollectingMail() {
-    global $config;
     // @todo Use a collector that supports html after D#2223967 lands.
-    $config['system.mail']['interface.default'] = 'test_mail_collector';
+    \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => 'test_mail_collector']]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function stopCollectingMail() {
-    global $config;
     $original = \Drupal::config('system.mail')->getOriginal('interface.default', FALSE);
-    $config['system.mail']['interface.default'] = $original;
+    \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => $original]]);
   }
 
   /**
