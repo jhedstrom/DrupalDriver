@@ -193,7 +193,7 @@ interface DriverInterface {
    *
    * @return \stdClass[]
    *   An array of collected emails, each formatted as a Drupal 8
-   * \Drupal\Core\Mail\MailInterface::mail $message array.
+   *   \Drupal\Core\Mail\MailInterface::mail $message array.
    */
   public function getMail();
 
