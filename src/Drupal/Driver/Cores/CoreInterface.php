@@ -164,11 +164,14 @@ interface CoreInterface {
    *
    * @param string $entity_type
    *   The entity type for which to return the field types.
+   * @param array $base_fields
+   *   Optional. Define base fields that will be returned in addition to user-
+   *   defined fields.
    *
    * @return array
    *   An associative array of field types, keyed by field name.
    */
-  public function getEntityFieldTypes($entity_type);
+  public function getEntityFieldTypes($entity_type, array $base_fields = array());
 
   /**
    * Creates a language.

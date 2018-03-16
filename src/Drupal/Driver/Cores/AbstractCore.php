@@ -56,7 +56,7 @@ abstract class AbstractCore implements CoreInterface {
   public function getFieldHandler($entity, $entity_type, $field_name) {
     $reflection = new \ReflectionClass($this);
     $core_namespace = $reflection->getShortName();
-    $field_types = $this->getEntityFieldTypes($entity_type);
+    $field_types = $this->getEntityFieldTypes($entity_type, array($field_name));
     $camelized_type = Container::camelize($field_types[$field_name]);
     $default_class = sprintf('\Drupal\Driver\Fields\%s\DefaultHandler', $core_namespace);
     $class_name = sprintf('\Drupal\Driver\Fields\%s\%sHandler', $core_namespace, $camelized_type);
@@ -73,9 +73,12 @@ abstract class AbstractCore implements CoreInterface {
    *   The entity type ID.
    * @param \stdClass $entity
    *   Entity object.
+   * @param array $base_fields
+   *   Optional. Define base fields that will be expanded in addition to user
+   *   defined fields.
    */
-  protected function expandEntityFields($entity_type, \stdClass $entity) {
-    $field_types = $this->getEntityFieldTypes($entity_type);
+  protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = array()) {
+    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {
         $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)

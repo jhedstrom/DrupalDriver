@@ -179,6 +179,29 @@ interface DriverInterface {
   public function configSet($name, $key, $value);
 
   /**
+   * Creates an entity of a given type.
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param \stdClass $entity
+   *   The entity to create.
+   *
+   * @return \stdClass
+   *   The created entity with `id` set.
+   */
+  public function createEntity($entity_type, \stdClass $entity);
+
+  /**
+   * Deletes an entity of a given type.
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param \stdClass $entity
+   *   The entity to delete.
+   */
+  public function entityDelete($entity_type, \stdClass $entity);
+
+  /**
    * Enable the test mail collector.
    */
   public function startCollectingMail();

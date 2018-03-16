@@ -3,6 +3,7 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -358,13 +359,28 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
+   * Expands specified base fields on the entity object.
+   *
+   * @param string $entity_type
+   *   The entity type for which to return the field types.
+   * @param \stdClass $entity
+   *   Entity object.
+   * @param array $base_fields
+   *   Base fields to be expanded in addition to user defined fields.
+   */
+  public function expandEntityBaseFields($entity_type, \stdClass $entity, array $base_fields) {
+    $this->expandEntityFields($entity_type, $entity, $base_fields);
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type) {
+  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
     $return = array();
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
     foreach ($fields as $field_name => $field) {
-      if ($this->isField($entity_type, $field_name)) {
+      if ($this->isField($entity_type, $field_name)
+        || (in_array($field_name, $base_fields) && $this->isBaseField($entity_type, $field_name))) {
         $return[$field_name] = $field->getType();
       }
     }
@@ -377,6 +393,14 @@ class Drupal8 extends AbstractCore {
   public function isField($entity_type, $field_name) {
     $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isBaseField($entity_type, $field_name) {
+    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    return (isset($fields[$field_name]) && $fields[$field_name] instanceof BaseFieldDefinition);
   }
 
   /**

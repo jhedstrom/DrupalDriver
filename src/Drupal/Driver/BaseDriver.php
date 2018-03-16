@@ -163,14 +163,14 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function createEntity($entity_type, $entity) {
+  public function createEntity($entity_type, \stdClass $entity) {
     throw new UnsupportedDriverActionException($this->errorString('create entities using the generic Entity API'), $this);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, $entity) {
+  public function entityDelete($entity_type, \stdClass $entity) {
     throw new UnsupportedDriverActionException($this->errorString('delete entities using the generic Entity API'), $this);
   }
 
