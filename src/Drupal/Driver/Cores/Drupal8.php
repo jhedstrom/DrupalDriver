@@ -494,4 +494,52 @@ class Drupal8 extends AbstractCore {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function startCollectingMail() {
+    // @todo Use a collector that supports html after D#2223967 lands.
+    \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => 'test_mail_collector']]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function stopCollectingMail() {
+    $original = \Drupal::config('system.mail')->getOriginal('interface.default', FALSE);
+    \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => $original]]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    \Drupal::state()->resetCache();
+    $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
+    // Discard cancelled mail.
+    $mail = array_values(array_filter($mail, function ($mailItem) {
+      return ($mailItem['send'] == TRUE);
+    }));
+    return $mail;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    \Drupal::state()->set('system.test_mail_collector', []);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body = '', $subject = '', $to = '', $langcode = '') {
+    // Send the mail, via the system module's hook_mail.
+    $params['context']['message'] = $body;
+    $params['context']['subject'] = $subject;
+    $mailManager = \Drupal::service('plugin.manager.mail');
+    $result = $mailManager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
+    return $result;
+  }
+
 }

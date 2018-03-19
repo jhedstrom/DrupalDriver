@@ -174,4 +174,39 @@ abstract class BaseDriver implements DriverInterface {
     throw new UnsupportedDriverActionException($this->errorString('delete entities using the generic Entity API'), $this);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function startCollectingMail() {
+    throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function stopCollectingMail() {
+    throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body, $subject, $to, $langcode) {
+    throw new UnsupportedDriverActionException($this->errorString('work with mail'), $this);
+  }
+
 }

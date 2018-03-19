@@ -527,4 +527,44 @@ class Drupal7 extends AbstractCore {
     entity_delete($entity_type, $id);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function startCollectingMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function stopCollectingMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body, $subject = '', $to = '', $langcode = '') {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
 }
