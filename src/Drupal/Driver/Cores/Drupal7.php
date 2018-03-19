@@ -486,16 +486,45 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityCreate($entity_type, $entity) {
-    // @todo: create a D7 version of this function
-    throw new \Exception('Creation of entities via the generic Entity API is not yet implemented for Drupal 7.');
+    $info = entity_get_info($entity_type);
+    // If the bundle field is empty, put the inferred bundle value in it.
+    $bundle_key = $info['entity keys']['bundle'];
+    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
+      $entity->$bundle_key = $entity->step_bundle;
+    }
+
+    // Throw an exception if a bundle is specified but does not exist.
+    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
+      $bundles = $info['bundles'];
+      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
+        throw new \Exception("Cannot create entity because provided bundle {$entity->$bundle_key} does not exist.");
+      }
+    }
+    if (empty($entity_type)) {
+      throw new \Exception("You must specify an entity type to create an entity.");
+    }
+
+    $this->expandEntityFields($entity_type, $entity);
+    $createdEntity = entity_create($entity_type, (array) $entity);
+
+    // In D7 it's possible that $createdEntity is not of class Entity, so we
+    // must use entity_save().
+    entity_save($entity_type, $createdEntity);
+
+    list($id) = entity_extract_ids($entity_type, $createdEntity);
+    $createdEntity->id = $id;
+
+    return $createdEntity;
   }
 
   /**
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    // @todo: create a D7 version of this function
-    throw new \Exception('Deletion of entities via the generic Entity API is not yet implemented for Drupal 7.');
+    // In D7 it's possible that $entity is not of class Entity, so we must use
+    // entity_delete().
+    list($id) = entity_extract_ids($entity_type, $entity);
+    entity_delete($entity_type, $id);
   }
 
 }
