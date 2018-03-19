@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.0.0 alpha1] 2018-03-19
 ### Added
   * [#113](https://github.com/jhedstrom/DrupalDriver/pull/113): Drupal 7 entity
     create/delete support.
@@ -42,5 +43,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha1...HEAD
+[2.0.0 alpha1]: https://github.com/jhedstrom/DrupalDriver/compare/v1.4.0...v2.0.0-alpha1
 [1.4.0]: https://github.com/jhedstrom/DrupalDriver/compare/v1.3.2...v1.4.0

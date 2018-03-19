@@ -17,6 +17,7 @@
     <exclude-pattern>*/reports/*</exclude-pattern>
     <exclude-pattern>*/spec/*</exclude-pattern>
     <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/CHANGELOG.md</exclude-pattern>
     <exclude-pattern>*/README.md</exclude-pattern>
 
 </ruleset>
