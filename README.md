@@ -25,7 +25,7 @@ These drivers support Drupal versions 7 and 8.
 ``` json
 {
   "require": {
-    "drupal/drupal-driver": "~1.0"
+    "drupal/drupal-driver": "~2.0"
   }
 }
 ```
@@ -64,3 +64,6 @@ $node = (object) array(
 );
 $driver->createNode($node);
 ```
+
+### Release notes
+See [CHANGELOG](CHANGELOG.MD).
