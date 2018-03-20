@@ -21,6 +21,17 @@ use Symfony\Component\HttpFoundation\Request;
 class Drupal8 extends AbstractCore {
 
   /**
+   * Tracks original configuration values.
+   *
+   * This is necessary since configurations modified here are actually saved so
+   * that they persist values across bootstraps.
+   *
+   * @var array
+   *   An array of data, keyed by configuration name.
+   */
+  protected $originalConfiguration = [];
+
+  /**
    * {@inheritdoc}
    */
   public function bootstrap() {
@@ -499,8 +510,15 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function startCollectingMail() {
+    $config = \Drupal::configFactory()->getEditable('system.mail');
+    $data = $config->getRawData();
+
+    // Save the original values for restoration after.
+    $this->originalConfiguration['system.mail'] = $data;
+
     // @todo Use a collector that supports html after D#2223967 lands.
-    \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => 'test_mail_collector']]);
+    $data['interface'] = ['default' => 'test_mail_collector'];
+    $config->setData($data)->save();
     // Disable the mail system module's mail if enabled.
     $this->startCollectingMailSystemMail();
   }
@@ -509,8 +527,8 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function stopCollectingMail() {
-    $original = \Drupal::config('system.mail')->getOriginal('interface.default', FALSE);
-    \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => $original]]);
+    $config = \Drupal::configFactory()->getEditable('system.mail');
+    $config->setData($this->originalConfiguration['system.mail'])->save();
     // Re-enable the mailsystem module's mail if enabled.
     $this->stopCollectingMailSystemMail();
   }
@@ -554,10 +572,15 @@ class Drupal8 extends AbstractCore {
    */
   protected function startCollectingMailSystemMail() {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
-      $data = \Drupal::config('mailsystem.settings')->getRawData();
+      $config = \Drupal::configFactory()->getEditable('mailsystem.settings');
+      $data = $config->getRawData();
+
+      // Track original data for restoration.
+      $this->originalConfiguration['mailsystem.settings'] = $data;
+
       // Convert all of the 'senders' to the test collector.
       $data = $this->findMailSystemSenders($data);
-      \Drupal::config('mailsystem.settings')->setModuleOverride($data);
+      $config->setData($data)->save();
     }
   }
 
@@ -585,7 +608,7 @@ class Drupal8 extends AbstractCore {
    */
   protected function stopCollectingMailSystemMail() {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
-      \Drupal::config('mailsystem.settings')->setModuleOverride([]);
+      \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
     }
   }
 
