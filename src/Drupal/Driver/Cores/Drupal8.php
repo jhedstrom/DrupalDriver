@@ -7,6 +7,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
+use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -500,6 +501,8 @@ class Drupal8 extends AbstractCore {
   public function startCollectingMail() {
     // @todo Use a collector that supports html after D#2223967 lands.
     \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => 'test_mail_collector']]);
+    // Disable the mail system module's mail if enabled.
+    $this->startCollectingMailSystemMail();
   }
 
   /**
@@ -508,6 +511,8 @@ class Drupal8 extends AbstractCore {
   public function stopCollectingMail() {
     $original = \Drupal::config('system.mail')->getOriginal('interface.default', FALSE);
     \Drupal::config('system.mail')->setModuleOverride(['interface' => ['default' => $original]]);
+    // Re-enable the mailsystem module's mail if enabled.
+    $this->stopCollectingMailSystemMail();
   }
 
   /**
@@ -540,6 +545,48 @@ class Drupal8 extends AbstractCore {
     $mailManager = \Drupal::service('plugin.manager.mail');
     $result = $mailManager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
     return $result;
+  }
+
+  /**
+   * If the Mail System module is enabled, collect that mail too.
+   *
+   * @see MailsystemManager::getPluginInstance()
+   */
+  protected function startCollectingMailSystemMail() {
+    if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
+      $data = \Drupal::config('mailsystem.settings')->getRawData();
+      // Convert all of the 'senders' to the test collector.
+      $data = $this->findMailSystemSenders($data);
+      \Drupal::config('mailsystem.settings')->setModuleOverride($data);
+    }
+  }
+
+  /**
+   * Find and replace all the mail system sender plugins with the test plugin.
+   *
+   * This method calls itself recursively.
+   */
+  protected function findMailSystemSenders(array $data) {
+    foreach ($data as $key => $values) {
+      if (is_array($values)) {
+        if (isset($values[MailsystemManager::MAILSYSTEM_TYPE_SENDING])) {
+          $data[$key][MailsystemManager::MAILSYSTEM_TYPE_SENDING] = 'test_mail_collector';
+        }
+        else {
+          $data[$key] = $this->findMailSystemSenders($values);
+        }
+      }
+    }
+    return $data;
+  }
+
+  /**
+   * If the Mail System module is enabled, stop collecting those mails.
+   */
+  protected function stopCollectingMailSystemMail() {
+    if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
+      \Drupal::config('mailsystem.settings')->setModuleOverride([]);
+    }
   }
 
 }
