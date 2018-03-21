@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.0.0 alpha2] 2018-03-21
+### Added
+  * [#126](https://github.com/jhedstrom/DrupalDriver/pull/126): Infer timezone
+    in DateTime field handler.
+  * [#180](https://github.com/jhedstrom/DrupalDriver/pull/180): Support email
+    collection when the Mail System module is enabled.
+### Fixed
+  * [#182](https://github.com/jhedstrom/DrupalDriver/pull/182): Persist mail
+    collection to config storage so email collection works across bootstraps.
+
 ## [2.0.0 alpha1] 2018-03-19
 ### Added
   * [#113](https://github.com/jhedstrom/DrupalDriver/pull/113): Drupal 7 entity
@@ -43,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha1...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha2...HEAD
+[2.0.0 alpha2]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha1...v2.0.0-alpha2
 [2.0.0 alpha1]: https://github.com/jhedstrom/DrupalDriver/compare/v1.4.0...v2.0.0-alpha1
 [1.4.0]: https://github.com/jhedstrom/DrupalDriver/compare/v1.3.2...v1.4.0
