@@ -163,7 +163,14 @@ class DrushDriver extends BaseDriver {
       'password' => $user->pass,
       'mail' => $user->mail,
     );
-    $this->drush('user-create', $arguments, $options);
+    $result = $this->drush('user-create', $arguments, $options);
+    // Find the row containing "User ID : xxx".
+    preg_match('/User ID\s+:\s+\d+/', $result, $matches);
+    if (!empty($matches)) {
+      // Extract the ID from the row.
+      list(, $uid) = explode(':', $matches[0]);
+      $user->uid = (int) $uid;
+    }
     if (isset($user->roles) && is_array($user->roles)) {
       foreach ($user->roles as $role) {
         $this->userAddRole($user, $role);
