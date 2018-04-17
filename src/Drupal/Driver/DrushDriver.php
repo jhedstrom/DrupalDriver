@@ -262,7 +262,7 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function createNode($node) {
-    // Look up author by name
+    // Look up author by name.
     if (isset($node->author)) {
       $user_info = $this->drush('user-information', array(sprintf('"%s"', $node->author)));
       if ($uid = $this->parseUserId($user_info)) {
