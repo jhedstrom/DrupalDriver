@@ -164,17 +164,26 @@ class DrushDriver extends BaseDriver {
       'mail' => $user->mail,
     );
     $result = $this->drush('user-create', $arguments, $options);
-    // Find the row containing "User ID : xxx".
-    preg_match('/User ID\s+:\s+\d+/', $result, $matches);
-    if (!empty($matches)) {
-      // Extract the ID from the row.
-      list(, $uid) = explode(':', $matches[0]);
-      $user->uid = (int) $uid;
+    if ($uid = $this->parseUserId($result)) {
+      $user->uid = $uid;
     }
     if (isset($user->roles) && is_array($user->roles)) {
       foreach ($user->roles as $role) {
         $this->userAddRole($user, $role);
       }
+    }
+  }
+
+  /**
+   * Parse user id from drush user-information output.
+   */
+  protected function parseUserId($info) {
+    // Find the row containing "User ID : xxx".
+    preg_match('/User ID\s+:\s+\d+/', $info, $matches);
+    if (!empty($matches)) {
+      // Extract the ID from the row.
+      list(, $uid) = explode(':', $matches[0]);
+      return (int) $uid;
     }
   }
 
@@ -253,6 +262,13 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function createNode($node) {
+    // Look up author by name
+    if (isset($node->author)) {
+      $user_info = $this->drush('user-information', array(sprintf('"%s"', $node->author)));
+      if ($uid = $this->parseUserId($user_info)) {
+        $node->uid = $uid;
+      }
+    }
     $result = $this->drush('behat', array('create-node', escapeshellarg(json_encode($node))), array());
     return $this->decodeJsonObject($result);
   }
