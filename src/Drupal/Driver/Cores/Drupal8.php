@@ -10,7 +10,7 @@ use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -500,8 +500,8 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    $entity = $entity instanceof ContentEntityInterface ? $entity : entity_load($entity_type, $entity->id);
-    if ($entity instanceof ContentEntityInterface) {
+    $entity = $entity instanceof EntityInterface ? $entity : entity_load($entity_type, $entity->id);
+    if ($entity instanceof EntityInterface) {
       $entity->delete();
     }
   }
