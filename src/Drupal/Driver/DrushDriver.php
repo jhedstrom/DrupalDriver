@@ -261,11 +261,11 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function createEntity($entity_type, $entity) {
+  public function createEntity($entity_type, \StdClass $entity) {
     $options = array(
       'entity_type' => $entity_type,
       'entity' => $entity,
-    )
+    );
     $result = $this->drush('behat', array('create-entity', escapeshellarg(json_encode($options))), array());
     return $this->decodeJsonObject($result);
   }
@@ -273,8 +273,12 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity) {
-    $this->drush('behat', array('delete-entity', escapeshellarg(json_encode($entity))), array());
+  public function entityDelete($entity_type, \StdClass $entity) {
+    $options = array(
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+    );
+    $this->drush('behat', array('delete-entity', escapeshellarg(json_encode($options))), array());
   }
 
   /**
