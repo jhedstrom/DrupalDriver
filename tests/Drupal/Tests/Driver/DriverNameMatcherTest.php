@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\Driver;
 
-use Drupal\Component\Utility\DriverNameMatcher;
+use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
  * Tests the Driver's name matcher utility.

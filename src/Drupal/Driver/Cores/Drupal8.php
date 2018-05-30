@@ -265,6 +265,39 @@ class Drupal8 extends AbstractCore {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = array()) {
+    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
+    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
+    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
+      $bundle = $entity->$bundle_key;
+    }
+    else {
+      $bundle = $entity_type;
+    }
+
+    foreach ($field_types as $field_name => $type) {
+      if (isset($entity->$field_name)) {
+        // @todo find a bettter way of standardising single/multi value fields
+        if (is_array($entity->$field_name)) {
+          $fieldValues = $entity->$field_name;
+        }
+        else {
+          $fieldValues = [$entity->$field_name];
+        }
+        $field = New DriverFieldDrupal8(
+          $fieldValues,
+          $field_name,
+          $entity_type,
+          $bundle
+        );
+        $entity->$field_name = $field->getProcessedValues();
+      }
+    }
+  }
+
+  /**
    * Expands specified base fields on the entity object.
    *
    * @param string $entity_type
@@ -493,44 +526,6 @@ class Drupal8 extends AbstractCore {
   protected function stopCollectingMailSystemMail() {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
-    }
-  }
-
-  /**
-   * Expands properties on the given entity object to the expected structure.
-   *
-   * @param string $entity_type
-   *   The entity type ID.
-   * @param \stdClass $entity
-   *   Entity object.
-   */
-  protected function expandEntityFields($entity_type, \stdClass $entity) {
-    $field_types = $this->getEntityFieldTypes($entity_type);
-    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
-    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
-      $bundle = $entity->$bundle_key;
-    }
-    else {
-      $bundle = $entity_type;
-    }
-
-    foreach ($field_types as $field_name => $type) {
-      if (isset($entity->$field_name)) {
-        // @todo find a bettter way of standardising single/multi value fields
-        if (is_array($entity->$field_name)) {
-          $fieldValues = $entity->$field_name;
-        }
-        else {
-          $fieldValues = [$entity->$field_name];
-        }
-        $field = New DriverFieldDrupal8(
-          $fieldValues,
-          $field_name,
-          $entity_type,
-          $bundle
-        );
-        $entity->$field_name = $field->getProcessedValues();
-      }
     }
   }
 

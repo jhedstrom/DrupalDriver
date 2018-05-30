@@ -8,7 +8,7 @@ use Drupal\Driver\Plugin\DriverEntityPluginManager;
 use Drupal\Driver\Plugin\DriverPluginManagerInterface;
 use Drupal\Driver\Wrapper\Field\DriverFieldInterface;
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
-use Drupal\Component\Utility\DriverNameMatcher;
+use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
  * A base class for a Driver entity object that holds information about a

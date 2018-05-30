@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Component\Utility;
+namespace Drupal\Driver\Plugin;
 
 /**
  * Defines a utility class for matching text input with entities using their

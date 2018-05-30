@@ -4,7 +4,7 @@ namespace Drupal\Driver\Wrapper\Entity;
 
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 use Drupal\Driver\Plugin\DriverPluginManagerInterface;
-use Drupal\Component\Utility\DriverNameMatcher;
+use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
  * A Driver wrapper for Drupal 8 entities.

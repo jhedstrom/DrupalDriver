@@ -4,7 +4,7 @@ namespace Drupal\Driver\Wrapper\Field;
 
 use Drupal\Driver\Plugin\DriverPluginManagerInterface;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\Component\Utility\DriverNameMatcher;
+use Drupal\Driver\Plugin\DriverNameMatcher;
 
 /**
  * A Driver field object that holds information about Drupal 8 field.
