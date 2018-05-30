@@ -79,7 +79,7 @@ abstract class DriverPluginManagerBase extends DefaultPluginManager implements D
 
         // Add the driver to the namespaces searched for plugins.
         $reflection = new \ReflectionClass($this);
-        $driverPath = dirname($reflection->getFileName(), 2);
+        $driverPath = dirname(dirname($reflection->getFileName()));
         $namespaces = $namespaces->getArrayCopy();
         $supplementedNamespaces = new \ArrayObject();
         foreach ($namespaces as $name => $class) {

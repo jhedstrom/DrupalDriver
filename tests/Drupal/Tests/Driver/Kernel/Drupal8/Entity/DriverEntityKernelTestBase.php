@@ -50,7 +50,9 @@ class DriverEntityKernelTestBase extends EntityKernelTestBase
         $module_handler = \Drupal::service('module_handler');
 
         $reflection = new \ReflectionClass($this);
-        $this->projectPluginRoot = dirname($reflection->getFileName(), 7) . "/test_project";
+        // Specify a folder where plugins for the current project can be found.
+        // @todo This should be the same folder where Behat contexts live.
+        $this->projectPluginRoot = "/path/to/project/plugins";
         $this->fieldPluginManager = new DriverFieldPluginManager($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
         $this->entityPluginManager = new DriverEntityPluginManager($namespaces, $cache_backend, $module_handler, 8, $this->projectPluginRoot);
     }
