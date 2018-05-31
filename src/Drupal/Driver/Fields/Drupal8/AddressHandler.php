@@ -38,8 +38,8 @@ class AddressHandler extends AbstractHandler {
         unset($addressFields[$fieldName]);
       }
     }
-    // The remaining field components will be populated in order, using values as they are
-    // ordered in feature step.
+    // The remaining field components will be populated in order, using
+    // values as they are ordered in feature step.
     foreach ($values as $value) {
       $idx = 0;
       foreach ($addressFields as $k => $v) {
@@ -55,7 +55,8 @@ class AddressHandler extends AbstractHandler {
           $idx++;
         }
       }
-      // Set the country code to the first available as configured in this instance of the field.
+      // Set the country code to the first available as configured in this
+      // instance of the field.
       $return['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
     }
     return array($return);
