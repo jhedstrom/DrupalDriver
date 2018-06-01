@@ -196,10 +196,18 @@ class DriverFieldKernelTestBase extends EntityKernelTestBase
 
     protected function assertValidField($entity)
     {
-        // Make sure the saved data is valid. Drupal does this when forms are saved,
-        // but not when values are set by entity API.
-        $field = $entity->get($this->fieldName);
-        $this->assertEmpty($field->validate(), format_string("Test field has validation constraint violation. Values are: \n @values", ['@values' => print_r($field->getValue(), true)]));
+      // Make sure the saved data is valid. Drupal does this when forms are saved,
+      // but not when values are set by entity API.
+      $field = $entity->get($this->fieldName);
+      $errors = $field->validate();
+      $errorsArray = [];
+      if (!empty($errors)) {
+        foreach($errors as $error)
+        {
+          $errorsArray[] = $error->getMessage()->render();
+        }
+      }
+      $this->assertEmpty($errors, format_string("Test field has validation constraint violation.\n\n Validation errors are:\n @errors \n\n Values are: \n @values", ['@status' => $status, '@errors' => print_r($errorsArray, true), '@values' => print_r($field->getValue(), true)]));
     }
 
     protected function assertFieldValues($entity, $expectedValues)
