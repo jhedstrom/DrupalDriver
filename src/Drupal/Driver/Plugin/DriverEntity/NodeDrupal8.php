@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Driver\Plugin\DriverEntity;
 
 use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
@@ -15,46 +16,42 @@ use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
  *   },
  * )
  */
-class NodeDrupal8 extends DriverEntityPluginDrupal8Base
-{
+class NodeDrupal8 extends DriverEntityPluginDrupal8Base {
 
   /**
    * The id of the attached node.
    *
-   * @var integer;
+   * @var int
    *
    * @deprecated Use id() instead.
    */
-    public $nid;
-
-
-    /**
-     * {@inheritdoc}
-     */
-    public function load($entityId)
-    {
-        $entity = parent::load($entityId);
-        $this->nid = is_null($this->entity) ? NULL : $this->id();
-        return $entity;
-    }
+  public $nid;
 
   /**
    * {@inheritdoc}
    */
-    public function save()
-    {
-        parent::save();
-        $this->nid = $this->id();
-    }
+  public function load($entityId) {
+    $entity = parent::load($entityId);
+    $this->nid = is_null($this->entity) ? NULL : $this->id();
+    return $entity;
+  }
 
   /**
    * {@inheritdoc}
    */
-    public function set($identifier, $field)
-    {
-        if ($identifier === 'author') {
-            $identifier = 'uid';
-        }
-        parent::set($identifier, $field);
+  public function save() {
+    parent::save();
+    $this->nid = $this->id();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function set($identifier, $field) {
+    if ($identifier === 'author') {
+      $identifier = 'uid';
     }
+    parent::set($identifier, $field);
+  }
+
 }

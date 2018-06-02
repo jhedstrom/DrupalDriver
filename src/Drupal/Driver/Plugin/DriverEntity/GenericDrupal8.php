@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Driver\Plugin\DriverEntity;
 
 use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
@@ -12,7 +13,5 @@ use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
  *   weight = -100,
  * )
  */
-
-class GenericDrupal8 extends DriverEntityPluginDrupal8Base
-{
+class GenericDrupal8 extends DriverEntityPluginDrupal8Base {
 }

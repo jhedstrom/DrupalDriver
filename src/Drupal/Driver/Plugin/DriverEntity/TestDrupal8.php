@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Driver\Plugin\DriverEntity;
 
 use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
@@ -15,6 +16,5 @@ use Drupal\Driver\Plugin\DriverEntityPluginDrupal8Base;
  *   },
  * )
  */
-class TestDrupal8 extends DriverEntityPluginDrupal8Base
-{
+class TestDrupal8 extends DriverEntityPluginDrupal8Base {
 }

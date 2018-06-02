@@ -5,17 +5,12 @@ namespace Drupal\Driver\Cores;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\Driver\Wrapper\Entity\DriverEntityWrapperInterface;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
-use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\taxonomy\Entity\Term;
-use Drupal\taxonomy\TermInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\Driver\Plugin\DriverFieldPluginManager;
 use Drupal\Driver\Wrapper\Field\DriverFieldDrupal8;
 use Drupal\Driver\Wrapper\Entity\DriverEntityDrupal8;
 
@@ -152,9 +147,9 @@ class Drupal8 extends AbstractCore {
     // Not using user_cancel here leads to an error when batch_process()
     // is subsequently called.
     user_cancel(array(), $user->uid, 'user_cancel_delete');
-    //$entity = $this->getNewEntity('user');
-    //$entity->load($user->uid);
-    //$entity->delete();
+    // $entity = $this->getNewEntity('user');
+    // $entity->load($user->uid);
+    // $entity->delete();
   }
 
   /**
@@ -286,7 +281,7 @@ class Drupal8 extends AbstractCore {
         else {
           $fieldValues = [$entity->$field_name];
         }
-        $field = New DriverFieldDrupal8(
+        $field = new DriverFieldDrupal8(
           $fieldValues,
           $field_name,
           $entity_type,
@@ -329,7 +324,8 @@ class Drupal8 extends AbstractCore {
   /**
    * Get a new driver entity wrapper.
    *
-   * @return \Drupal\Driver\Wrapper\Entity\DriverEntityWrapperInterface;
+   * @return \Drupal\Driver\Wrapper\Entity\DriverEntityWrapperInterface
+   *   A new driver entity wrapper.
    */
   public function getNewEntity($type, $bundle = NULL) {
     $entity = new DriverEntityDrupal8($type, $bundle);

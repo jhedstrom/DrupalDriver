@@ -5,39 +5,38 @@ namespace Drupal\Driver\Wrapper\Entity;
 /**
  * Defines an interface shared by Driver entity wrappers & entity plugins.
  */
-interface DriverEntityInterface
-{
+interface DriverEntityInterface {
 
   /**
    * Delete the entity.
    *
    * @return $this
    */
-    public function delete();
+  public function delete();
 
   /**
    * Gets the saved Drupal entity this object is wrapping for the driver.
    *
-   * @return \Drupal\Core\Entity\EntityInterface;
+   * @return \Drupal\Core\Entity\EntityInterface
    *   The Drupal entity being wrapped for the driver by this object.
    */
-    public function getEntity();
+  public function getEntity();
 
   /**
    * Gets the id of this entity.
    *
-   * @return string|integer
+   * @return string|int
    *   The id of this entity.
    */
-    public function id();
+  public function id();
 
   /**
    * Whether the entity has been saved or is being newly constructed.
    *
-   * @return boolean
+   * @return bool
    *   Whether or not a saved Drupal entity is attached.
    */
-    public function isNew();
+  public function isNew();
 
   /**
    * Gets the label of this entity.
@@ -45,22 +44,21 @@ interface DriverEntityInterface
    * @return string
    *   The label of this entity.
    */
-    public function label();
+  public function label();
 
   /**
    * Reload the current entity from storage.
    *
    * @return $this
    */
-    public function reload();
+  public function reload();
 
   /**
    * Save the entity.
    *
    * @return $this
    */
-    public function save();
-
+  public function save();
 
   /**
    * Set a field from text.
@@ -72,23 +70,26 @@ interface DriverEntityInterface
    *
    * @return $this
    */
-    public function set($identifier, $field);
+  public function set($identifier, $field);
 
   /**
    * Reset Drupal as if this entity never existed.
    *
    * @return $this
    */
-    public function tearDown();
+  public function tearDown();
 
   /**
    * Get the url of this entity.
    *
-   * @param string $rel The link relationship type, for example: canonical or edit-form.
-   * @param array $options See \Drupal\Core\Routing\UrlGeneratorInterface::generateFromRoute() for the available options.
+   * @param string $rel
+   *   The link relationship type, for example: canonical or edit-form.
+   * @param array $options
+   *   See \Drupal\Core\Routing\UrlGeneratorInterface::generateFromRoute.
    *
    * @return string
    *   The url of this entity.
    */
-    public function url($rel, $options);
+  public function url($rel, array $options);
+
 }

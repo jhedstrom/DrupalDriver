@@ -12,67 +12,69 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class DriverField extends Plugin
-{
+class DriverField extends Plugin {
 
   /**
-   * @var string The plugin id.
+   * The plugin id.
+   *
+   * @var string
    */
-    public $id;
+  public $id;
 
   /**
    * The priority to give to this plugin.
    *
-   * @var integer
+   * @var int
    */
-    public $weight = 0;
+  public $weight = 0;
 
   /**
    * The Drupal major version being driven.
    *
-   * @var integer
+   * @var int
    */
-    public $version;
+  public $version;
 
   /**
    * Whether this should be the last plugin processed.
    *
-   * @var integer
+   * @var int
    */
 
-    public $final = false;
+  public $final = FALSE;
   /**
    * The machine names of the fields the plugin targets.
    *
    * @var array
    */
-    public $fieldNames;
+  public $fieldNames;
 
   /**
    * The machines names of the field types the plugin targets.
    *
    * @var array
    */
-    public $fieldTypes;
+  public $fieldTypes;
 
   /**
    * The machines names of the entity types the plugin targets.
    *
    * @var array
    */
-    public $entityTypes;
+  public $entityTypes;
 
   /**
    * The machine names of the entity bundles the plugin targets.
    *
    * @var array
    */
-    public $entityBundles;
+  public $entityBundles;
 
   /**
    * The main property name for the field. Ignored for Drupal 8.
    *
    * @var string
    */
-    public $mainPropertyName = 'value';
+  public $mainPropertyName = 'value';
+
 }

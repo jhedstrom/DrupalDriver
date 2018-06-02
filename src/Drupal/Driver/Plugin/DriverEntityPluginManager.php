@@ -5,39 +5,38 @@ namespace Drupal\Driver\Plugin;
 /**
  * Provides the plugin manager for the Driver's entity plugins.
  */
-class DriverEntityPluginManager extends DriverPluginManagerBase
-{
+class DriverEntityPluginManager extends DriverPluginManagerBase {
 
   /**
    * {@inheritdoc}
    */
-    protected $driverPluginType = 'DriverEntity';
+  protected $driverPluginType = 'DriverEntity';
 
   /**
    * {@inheritdoc}
    */
-    protected $filters = [
+  protected $filters = [
     'entityBundles',
-    'entityTypes'
-    ];
+    'entityTypes',
+  ];
 
   /**
    * {@inheritdoc}
    */
-    protected $specificityCriteria = [
+  protected $specificityCriteria = [
     ['entityBundles', 'entityTypes'],
     ['entityBundles'],
     ['entityTypes'],
-    ];
+  ];
 
   /**
    * {@inheritdoc}
    */
-    protected function getFilterableTarget($entity)
-    {
-        return [
-        'entityTypes' =>$entity->getEntityTypeId(),
-        'entityBundles' => $entity->bundle()
-        ];
-    }
+  protected function getFilterableTarget($entity) {
+    return [
+      'entityTypes' => $entity->getEntityTypeId(),
+      'entityBundles' => $entity->bundle(),
+    ];
+  }
+
 }
