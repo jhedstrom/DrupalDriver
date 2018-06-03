@@ -5,7 +5,7 @@
         <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
         <env name="SIMPLETEST_BASE_URL" value="http://127.0.0.1:8888"/>
         <!-- Example SIMPLETEST_DB value: mysql://drupal:database@localhost/databasename#table_prefix -->
-        <env name="SIMPLETEST_DB" value="sqlite://web/sites/default/files/.sqlite"/>
+        <env name="SIMPLETEST_DB" value="mysql://travis:@127.0.0.1/drupal"/>
     </php>
     <testsuites>
         <testsuite name="KernelD8">

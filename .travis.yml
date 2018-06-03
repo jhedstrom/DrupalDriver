@@ -9,33 +9,34 @@ php:
   - hhvm
 
 env:
-  - TEST_TYPE=uninstalled
-  - TEST_TYPE=installed
-
-#Drush9 requires PHP > 5.5, so tests that need Drupal installation can't run on PHP5.5.
-matrix:
-  exclude:
-  - php: 5.5
-    env: TEST_TYPE=installed
+  global:
+    - PATH=$PATH:/home/travis/.composer/vendor/bin
+  matrix:
+    - TEST_TYPE=uninstalled
+    - TEST_TYPE=installed
 
 matrix:
   allow_failures:
     # This is broken at this time due to a phpspec issue.
     # @see https://github.com/jhedstrom/DrupalDriver/issues/172
     - php: hhvm
+    #PHP 5.5 doesn't support the array_filter's flag argument, used extensively in DriverNameMatcher
+    - php: 5.5
+    #PHP 7.2 requires phpunit > 6
+    # @see https://www.drupal.org/project/drupal/issues/2937469
+    - php: 7.2
 
 install:
   - composer install
 
 before_script:
+  # Create folders that core/tests/bootstrap.php expects.
   - mkdir web/modules web/profiles web/themes
   - cp -r tests/driver_test_profile web/profiles/
-  #Only require Drush and install Drupal when doing kernel tests
-  #Drush9 requires PHP > 5.5
-  - test "${TEST_TYPE}" = "installed" \
-    && composer require "drush/drush:^9.0" \
-    && drush --yes --root=$PWD/web site-install driver_test_profile --db-url=sqlite://web/sites/default/files/.sqlite \
-    && drush --debug runserver :8888 > ~/debug.txt 2>&1 &
+  # Only require Drush and install Drupal when doing kernel tests.
+  - if [[ "${TEST_TYPE}" == "installed" ]]; then composer global require "drush/drush:^9.0"; fi
+  - if [[ "${TEST_TYPE}" == "installed" ]]; then drush --yes --root=$PWD/drupal site-install driver_test_profile --db-url=mysql://travis:@127.0.0.1/drupal; fi
+  - if [[ "${TEST_TYPE}" == "installed" ]]; then drush runserver :8888 > ~/debug.txt 2>&1 && sleep 4s; fi &
 
 script:
   - composer test-${TEST_TYPE}

@@ -39,7 +39,7 @@
       "phpcs --standard=./phpcs-ruleset.xml ."
     ],
     "test-installed": [
-      "phpunit --testsuite Kernel"
+      "phpunit --testsuite KernelD8"
     ]
   },
   "autoload": {

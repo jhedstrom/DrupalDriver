@@ -18,8 +18,6 @@ interface CoreInterface {
    *   URI that is accessing Drupal. Defaults to 'default'.
    * @param \Drupal\Component\Utility\Random $random
    *   Random string generator.
-   * @param string $projectPluginRoot
-   *   The directory to search for additional project-specific driver plugins.
    */
   public function __construct($drupal_root, $uri = 'default', Random $random = NULL);
 
