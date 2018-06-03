@@ -8,6 +8,16 @@ php:
   - 7.2
   - hhvm
 
+env:
+  - TEST_TYPE=uninstalled
+  - TEST_TYPE=installed
+
+#Drush9 requires PHP > 5.5, so tests that need Drupal installation can't run on PHP5.5.
+matrix:
+  exclude:
+  - php: 5.5
+    env: TEST_TYPE=installed
+
 matrix:
   allow_failures:
     # This is broken at this time due to a phpspec issue.
@@ -17,8 +27,21 @@ matrix:
 install:
   - composer install
 
+before_script:
+  - mkdir web/modules web/profiles web/themes
+  - cp -r tests/driver_test_profile web/profiles/
+  #Only require Drush and install Drupal when doing kernel tests
+  #Drush9 requires PHP > 5.5
+  - test "${TEST_TYPE}" = "installed" \
+    && composer require "drush/drush:^9.0" \
+    && drush --yes --root=$PWD/web site-install driver_test_profile --db-url=sqlite://web/sites/default/files/.sqlite \
+    && drush --debug runserver :8888 > ~/debug.txt 2>&1 &
+
 script:
-  - composer test
+  - composer test-${TEST_TYPE}
+
+after_failure:
+  - cat ~/debug.txt
 
 # Enable Travis containers.
 sudo: false

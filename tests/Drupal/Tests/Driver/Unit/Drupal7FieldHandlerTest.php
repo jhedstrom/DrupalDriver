@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Unit;
 
 /**
  * Tests the Drupal 7 field handlers.

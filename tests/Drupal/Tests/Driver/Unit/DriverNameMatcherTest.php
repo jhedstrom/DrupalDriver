@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Unit;
 
 use Drupal\Driver\Plugin\DriverNameMatcher;
 

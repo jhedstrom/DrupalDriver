@@ -1,0 +1,23 @@
+name: Driver test profile
+type: profile
+description: 'Simple profile for testing the Drupal Driver.'
+core: 8.x
+
+# Required modules
+# Note that any dependencies of the modules listed here will be installed automatically.
+dependencies:
+  - node
+  - block
+  - config
+  - comment
+  - image
+  - path
+  - taxonomy
+  - file
+  - language
+
+# List any themes that should be installed as part of the profile installation.
+# Note that this will not set any theme as the default theme.
+themes:
+  - bartik
+  - seven

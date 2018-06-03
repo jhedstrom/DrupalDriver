@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Unit;
 
 /**
  * Tests the Driver's plugin managers.

@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit colors="true" bootstrap="vendor/autoload.php">
+<phpunit colors="true" bootstrap="web/core/tests/bootstrap.php">
+    <php>
+        <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
+        <env name="SIMPLETEST_BASE_URL" value="http://127.0.0.1:8888"/>
+        <!-- Example SIMPLETEST_DB value: mysql://drupal:database@localhost/databasename#table_prefix -->
+        <env name="SIMPLETEST_DB" value="sqlite://web/sites/default/files/.sqlite"/>
+    </php>
     <testsuites>
-        <testsuite name="Drupal Driver test suite">
-            <directory>./tests/Drupal/</directory>
+        <testsuite name="KernelD8">
+            <directory>./tests/Drupal/Tests/Driver/Kernel/Drupal8/</directory>
+        </testsuite>
+        <testsuite name="Unit">
+            <directory>./tests/Drupal/Tests/Driver/Unit/</directory>
         </testsuite>
     </testsuites>
 
