@@ -28,18 +28,43 @@
     "mikey179/vfsStream": "^1.2",
     "composer/installers": "^1.5",
     "drupal-composer/drupal-scaffold": "^2.4",
-    "drupal/core": "^8.5"
+    "drupal/drupal-extension": "dev-master"
   },
   "scripts": {
-    "test-uninstalled": [
+    "test-syntax": [
       "composer validate --no-interaction",
       "parallel-lint src spec tests",
       "phpunit --testsuite Unit --coverage-html=reports/coverage",
       "phpspec run -f pretty --no-interaction",
       "phpcs --standard=./phpcs-ruleset.xml ."
     ],
-    "test-installed": [
-      "phpunit --testsuite KernelD8"
+    "test-unit": [
+      "phpunit --testsuite Unit --coverage-html=reports/coverage"
+    ],
+    "test-kernel": [
+      "phpunit --testsuite KernelD${DRUPAL} --bootstrap web/core/tests/bootstrap.php"
+    ],
+    "test-behat": [
+      "behat -fprogress --profile=drupal${DRUPAL}"
+    ],
+    "install-D8": [
+      "COMPOSER_ROOT_VERSION=dev-master composer require drupal/core:^8.5 symfony/dependency-injection:3.4.11 symfony/translation:3.4.11 symfony/console:3.4.11",
+      "composer global require drush/drush:~9.0",
+      "mkdir web/modules web/profiles web/themes",
+      "drush --yes site-install standard --db-url=mysql://travis:@127.0.0.1/drupal",
+      "cp -r vendor/drupal/drupal-extension/fixtures/drupal8/modules/behat_test web/modules",
+      "drush --yes en behat_test",
+      "drush --yes pmu page_cache",
+      "drush cr"
+    ],
+    "install-D6orD7": [
+      "composer global require drush/drush:~8.0",
+      "drush dl --quiet --yes drupal-${DRUPAL}.x --all --drupal-project-rename=web",
+      "drush --yes --root=${PWD}/web site-install --db-url=mysql://travis:@127.0.0.1/drupal",
+      "cp -r vendor/drupal/drupal-extension/fixtures/drupal${DRUPAL}/modules/behat_test web/sites/all/modules",
+      "drush en behat_test --yes --root=${PWD}/web",
+      "if [[ '${DRUPAL}' == '7' ]]; then drush cc drush && drush help behat --root=${PWD}/web && drush --yes fr behat_test --root=${PWD}/web; fi",
+      "drush cc all --root=${PWD}/web"
     ]
   },
   "autoload": {

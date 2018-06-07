@@ -20,7 +20,7 @@ class DriverNameMatcher {
   /**
    * A set of items to match.
    *
-   * The array keys are the items machine names and the values are the items
+   * The array values are the items machine names and the keys are the items
    * labels.
    *
    * @var array
@@ -58,7 +58,7 @@ class DriverNameMatcher {
       $this->candidates = $candidates;
     }
     else {
-      throw new \Exception("Candidates for identification must be passed as an array with the machine names as the keys and the labels as the values.");
+      throw new \Exception("Candidates for identification must be passed as an array with the labels as the keys and the machine names as the values.");
     }
 
     $this->prefix = $prefix;
@@ -153,12 +153,7 @@ class DriverNameMatcher {
         // If the identification method determines a match, remove the candidate
         // and target from future consideration, and save the result.
         if ($this->$methodFunctionName($identifier, $machineName, $label)) {
-          // $this->candidates = array_filter(
-          // $this->candidates, function ($value, $key) use ($machineName) {
-          // return $value === $machineName;
-          // }, ARRAY_FILTER_USE_BOTH);.
           $matchedCandidates[] = $machineName;
-          // unset($this->candidates[$label]);.
           unset($this->targets[$identifier]);
           $this->results[$machineName] = $value;
           break;
@@ -167,9 +162,9 @@ class DriverNameMatcher {
     }
 
     // Strip out the successfully matched candidates.
-    $this->candidates = array_filter($this->candidates, function ($machineName, $label) use ($matchedCandidates) {
+    $this->candidates = array_filter($this->candidates, function ($machineName) use ($matchedCandidates) {
       return !in_array($machineName, $matchedCandidates);
-    }, ARRAY_FILTER_USE_BOTH);
+    });
   }
 
   /**

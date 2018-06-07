@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit colors="true" bootstrap="web/core/tests/bootstrap.php">
+<phpunit colors="true" bootstrap="vendor/autoload.php">
     <php>
         <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
         <env name="SIMPLETEST_BASE_URL" value="http://127.0.0.1:8888"/>
