@@ -21,7 +21,6 @@ class ListTextHandler extends AbstractHandler {
     else {
       $options = $this->fieldInfo['settings']['allowed_values'];
     }
-    $allowed_values = array();
     foreach ($values as $value) {
       if (array_key_exists($value, $options)) {
         $allowed_values[$value] = $value;
