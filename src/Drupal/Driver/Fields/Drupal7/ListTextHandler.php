@@ -12,6 +12,7 @@ class ListTextHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = array();
+    $allowed_values = array();
     if (!empty($this->fieldInfo['settings']['allowed_values_function'])) {
       $cacheable = TRUE;
       $callback = $this->fieldInfo['settings']['allowed_values_function'];

@@ -238,7 +238,7 @@ class Drupal7 extends AbstractCore {
 
     $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    $_SERVER['REQUEST_METHOD']  = NULL;
+    $_SERVER['REQUEST_METHOD'] = NULL;
 
     $_SERVER['SERVER_SOFTWARE'] = NULL;
     $_SERVER['HTTP_USER_AGENT'] = NULL;
@@ -456,7 +456,7 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type) {
+  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
     $return = array();
     $fields = field_info_field_map();
     foreach ($fields as $field_name => $field) {
@@ -480,6 +480,91 @@ class Drupal7 extends AbstractCore {
    */
   public function clearStaticCaches() {
     drupal_static_reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityCreate($entity_type, $entity) {
+    $info = entity_get_info($entity_type);
+    // If the bundle field is empty, put the inferred bundle value in it.
+    $bundle_key = $info['entity keys']['bundle'];
+    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
+      $entity->$bundle_key = $entity->step_bundle;
+    }
+
+    // Throw an exception if a bundle is specified but does not exist.
+    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
+      $bundles = $info['bundles'];
+      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
+        throw new \Exception("Cannot create entity because provided bundle {$entity->$bundle_key} does not exist.");
+      }
+    }
+    if (empty($entity_type)) {
+      throw new \Exception("You must specify an entity type to create an entity.");
+    }
+
+    $this->expandEntityFields($entity_type, $entity);
+    $createdEntity = entity_create($entity_type, (array) $entity);
+
+    // In D7 it's possible that $createdEntity is not of class Entity, so we
+    // must use entity_save().
+    entity_save($entity_type, $createdEntity);
+
+    list($id) = entity_extract_ids($entity_type, $createdEntity);
+    $createdEntity->id = $id;
+
+    return $createdEntity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, $entity) {
+    // In D7 it's possible that $entity is not of class Entity, so we must use
+    // entity_delete().
+    list($id) = entity_extract_ids($entity_type, $entity);
+    entity_delete($entity_type, $id);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function startCollectingMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function stopCollectingMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clearMail() {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sendMail($body, $subject = '', $to = '', $langcode = '') {
+    // @todo: create a D7 version of this function
+    throw new \Exception('Mail testing is not yet implemented for Drupal 7.');
   }
 
 }

@@ -1,3 +1,9 @@
+<?php
+
+/**
+ * @file
+ */
+?>
 [![Build Status](https://travis-ci.org/jhedstrom/DrupalDriver.svg?branch=master)](https://travis-ci.org/jhedstrom/DrupalDriver)
 
 Provides a collection of light-weight drivers with a common interface for interacting with [Drupal](http://drupal.org). These are generally intended for testing, and are not meant to be API-complete.
@@ -19,7 +25,7 @@ These drivers support Drupal versions 7 and 8.
 ``` json
 {
   "require": {
-    "drupal/drupal-driver": "~1.0"
+    "drupal/drupal-driver": "~2.0"
   }
 }
 ```
@@ -35,7 +41,6 @@ $> php composer.phar install
 <?php
 
 use Drupal\Driver\DrupalDriver;
-use Drupal\Driver\Cores\Drupal8;
 
 require 'vendor/autoload.php';
 
@@ -59,3 +64,6 @@ $node = (object) array(
 );
 $driver->createNode($node);
 ```
+
+### Release notes
+See [CHANGELOG](CHANGELOG.MD).

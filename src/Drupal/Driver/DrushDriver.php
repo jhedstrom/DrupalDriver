@@ -36,6 +36,8 @@ class DrushDriver extends BaseDriver {
 
   /**
    * Track bootstrapping.
+   *
+   * @var bool
    */
   private $bootstrapped = FALSE;
 
@@ -52,6 +54,13 @@ class DrushDriver extends BaseDriver {
    * @var string
    */
   private $arguments = '';
+
+  /**
+   * Tracks legacy drush.
+   *
+   * @var bool
+   */
+  protected static $isLegacyDrush;
 
   /**
    * Set drush alias or root path.
@@ -108,7 +117,32 @@ class DrushDriver extends BaseDriver {
     if (!isset($this->alias) && !isset($this->root)) {
       throw new BootstrapException('A drush alias or root path is required.');
     }
+
+    // Determine if drush version is legacy.
+    if (!isset(self::$isLegacyDrush)) {
+      self::$isLegacyDrush = $this->isLegacyDrush();
+    }
+
     $this->bootstrapped = TRUE;
+  }
+
+  /**
+   * Determine if drush is a legacy version.
+   *
+   * @return bool
+   *   Returns TRUE if drush is older than drush 9.
+   */
+  protected function isLegacyDrush() {
+    try {
+      // Try for a drush 9 version.
+      $version = trim($this->drush('version', [], ['format' => 'string']));
+      return version_compare($version, '9', '<=');
+    }
+    catch (\RuntimeException $e) {
+      // The version of drush is old enough that only `--version` was available,
+      // so this is a legacy version.
+      return TRUE;
+    }
   }
 
   /**
@@ -129,11 +163,27 @@ class DrushDriver extends BaseDriver {
       'password' => $user->pass,
       'mail' => $user->mail,
     );
-    $this->drush('user-create', $arguments, $options);
+    $result = $this->drush('user-create', $arguments, $options);
+    if ($uid = $this->parseUserId($result)) {
+      $user->uid = $uid;
+    }
     if (isset($user->roles) && is_array($user->roles)) {
       foreach ($user->roles as $role) {
         $this->userAddRole($user, $role);
       }
+    }
+  }
+
+  /**
+   * Parse user id from drush user-information output.
+   */
+  protected function parseUserId($info) {
+    // Find the row containing "User ID : xxx".
+    preg_match('/User ID\s+:\s+\d+/', $info, $matches);
+    if (!empty($matches)) {
+      // Extract the ID from the row.
+      list(, $uid) = explode(':', $matches[0]);
+      return (int) $uid;
     }
   }
 
@@ -196,6 +246,7 @@ class DrushDriver extends BaseDriver {
    *
    * @param string $output
    *   The output from Drush.
+   *
    * @return object
    *   The decoded JSON object.
    */
@@ -211,6 +262,13 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function createNode($node) {
+    // Look up author by name.
+    if (isset($node->author)) {
+      $user_info = $this->drush('user-information', array(sprintf('"%s"', $node->author)));
+      if ($uid = $this->parseUserId($user_info)) {
+        $node->uid = $uid;
+      }
+    }
     $result = $this->drush('behat', array('create-node', escapeshellarg(json_encode($node))), array());
     return $this->decodeJsonObject($result);
   }
@@ -247,7 +305,9 @@ class DrushDriver extends BaseDriver {
     // Drush Driver to work with certain built-in Drush capabilities (e.g.
     // creating users) even if the Behat Drush Endpoint is not available.
     try {
-      $result = $this->drush('behat', array('is-field', escapeshellarg(json_encode(array($entity_type, $field_name)))), array());
+      $value = array($entity_type, $field_name);
+      $arguments = array('is-field', escapeshellarg(json_encode($value)));
+      $result = $this->drush('behat', $arguments, array());
       return strpos($result, "true\n") !== FALSE;
     }
     catch (\Exception $e) {
@@ -301,7 +361,12 @@ class DrushDriver extends BaseDriver {
     $arguments = implode(' ', $arguments);
 
     // Disable colored output from drush.
-    $options['nocolor'] = TRUE;
+    if (isset(static::$isLegacyDrush) && static::$isLegacyDrush) {
+      $options['nocolor'] = TRUE;
+    }
+    else {
+      $options['no-ansi'] = NULL;
+    }
     $string_options = $this->parseArguments($options);
 
     $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;

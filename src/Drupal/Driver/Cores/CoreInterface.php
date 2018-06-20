@@ -118,7 +118,7 @@ interface CoreInterface {
    * @param array $permissions
    *   An array of permissions to create the role with.
    *
-   * @return int
+   * @return int|string
    *   The created role name.
    */
   public function roleCreate(array $permissions);
@@ -134,6 +134,8 @@ interface CoreInterface {
   /**
    * Get FieldHandler class.
    *
+   * @param object $entity
+   *   The entity object.
    * @param string $entity_type
    *   Entity type machine name.
    * @param string $field_name
@@ -162,11 +164,14 @@ interface CoreInterface {
    *
    * @param string $entity_type
    *   The entity type for which to return the field types.
+   * @param array $base_fields
+   *   Optional. Define base fields that will be returned in addition to user-
+   *   defined fields.
    *
    * @return array
    *   An associative array of field types, keyed by field name.
    */
-  public function getEntityFieldTypes($entity_type);
+  public function getEntityFieldTypes($entity_type, array $base_fields = array());
 
   /**
    * Creates a language.
@@ -215,5 +220,64 @@ interface CoreInterface {
    *   Value to associate with identifier.
    */
   public function configSet($name, $key, $value);
+
+  /**
+   * Create an entity.
+   *
+   * @param string $entity_type
+   *   Entity type machine name.
+   * @param object $entity
+   *   The field values and properties desired for the new entity.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   A new entity object.
+   */
+  public function entityCreate($entity_type, $entity);
+
+  /**
+   * Delete an entity.
+   */
+  public function entityDelete($entity_type, $entity);
+
+  /**
+   * Enable the test mail collector.
+   */
+  public function startCollectingMail();
+
+  /**
+   * Restore normal operation of outgoing mail.
+   */
+  public function stopCollectingMail();
+
+  /**
+   * Get any mail collected by the test mail collector.
+   *
+   * @return \stdClass[]
+   *   An array of collected emails, each formatted as a Drupal 8
+   *   \Drupal\Core\Mail\MailInterface::mail $message array.
+   */
+  public function getMail();
+
+  /**
+   * Empty the test mail collector store of any collected mail.
+   */
+  public function clearMail();
+
+  /**
+   * Send a mail.
+   *
+   * @param string $body
+   *   The body of the mail.
+   * @param string $subject
+   *   The subject of the mail.
+   * @param string $to
+   *   The recipient's email address, passing PHP email validation filter.
+   * @param string $langcode
+   *   The language used in subject and body.
+   *
+   * @return bool
+   *   Whether the email was sent successfully.
+   */
+  public function sendMail($body, $subject, $to, $langcode);
 
 }
