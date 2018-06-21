@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.0.0 alpha3] 2018-06-21
+### Added
+  * [#89](https://github.com/jhedstrom/DrupalDriver/pull/89): Adds Embridge asset
+    item field handler.
+  * [#184](https://github.com/jhedstrom/DrupalDriver/pull/184): Extract and store
+    uid in DrushDriver::userCreate()
+  * [#185](https://github.com/jhedstrom/DrupalDriver/pull/185): Support for
+    deleting any entity, not just content entities.
 ## [2.0.0 alpha2] 2018-03-21
 ### Added
   * [#126](https://github.com/jhedstrom/DrupalDriver/pull/126): Infer timezone
@@ -53,7 +61,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha2...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha3...HEAD
+[2.0.0 alpha3]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha2...v2.0.0-alpha3
 [2.0.0 alpha2]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha1...v2.0.0-alpha2
 [2.0.0 alpha1]: https://github.com/jhedstrom/DrupalDriver/compare/v1.4.0...v2.0.0-alpha1
 [1.4.0]: https://github.com/jhedstrom/DrupalDriver/compare/v1.3.2...v1.4.0
