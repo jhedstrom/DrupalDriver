@@ -611,17 +611,17 @@ class Drupal8 extends AbstractCore {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
     }
   }
-  
+
   /**
    * Store the original value for a piece of configuration.
-   * 
+   *
    * @param string $name
    *   The name of the configuration.
    * @param mixed $value
    *   The original value of the configuration.
-   * 
+   *
    * @return bool
-   *   Whether or not $value is now stored as the original value for the configuration $name. 
+   *   Whether or not $value is now stored as the original configuration value. 
    */
   protected function storeOriginalConfiguration($name, $value) {
     if (!isset($this->originalConfiguration[$name])) {
