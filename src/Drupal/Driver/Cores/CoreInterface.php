@@ -210,6 +210,19 @@ interface CoreInterface {
   public function configGet($name, $key = '');
 
   /**
+   * Returns the original configuration item.
+   *
+   * @param string $name
+   *   The name of the configuration object to retrieve.
+   * @param string $key
+   *   A string that maps to a key within the configuration data.
+   *
+   * @return mixed
+   *   The original data that was requested.
+   */
+  public function configGetOriginal($name, $key = '');
+
+  /**
    * Sets a value in a configuration object.
    *
    * @param string $name
