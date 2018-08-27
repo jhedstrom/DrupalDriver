@@ -513,8 +513,8 @@ class Drupal8 extends AbstractCore {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $data = $config->getRawData();
 
-    // Save the original values for restoration after.
-    $this->originalConfiguration['system.mail'] = $data;
+    // Save the values for restoration after.
+    $this->storeOriginalConfiguration('system.mail', $data);
 
     // @todo Use a collector that supports html after D#2223967 lands.
     $data['interface'] = ['default' => 'test_mail_collector'];
@@ -576,7 +576,7 @@ class Drupal8 extends AbstractCore {
       $data = $config->getRawData();
 
       // Track original data for restoration.
-      $this->originalConfiguration['mailsystem.settings'] = $data;
+      $this->storeOriginalConfiguration('mailsystem.settings', $data);
 
       // Convert all of the 'senders' to the test collector.
       $data = $this->findMailSystemSenders($data);
@@ -610,6 +610,25 @@ class Drupal8 extends AbstractCore {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
     }
+  }
+  
+  /**
+   * Store the original value for a piece of configuration.
+   * 
+   * @param string $name
+   *   The name of the configuration.
+   * @param mixed $value
+   *   The original value of the configuration.
+   * 
+   * @return bool
+   *   Whether or not $value is now stored as the original value for the configuration $name. 
+   */
+  protected function storeOriginalConfiguration($name, $value) {
+    if (!isset($this->originalConfiguration[$name])) {
+      $this->originalConfiguration[$name] = $value;
+      return TRUE;
+    }
+    return ($this->originalConfiguration[$name] === $value);
   }
 
 }
