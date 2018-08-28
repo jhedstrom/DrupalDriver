@@ -615,20 +615,17 @@ class Drupal8 extends AbstractCore {
   /**
    * Store the original value for a piece of configuration.
    *
+   * If an original value has previously been stored, it is not updated.
+   *
    * @param string $name
    *   The name of the configuration.
    * @param mixed $value
    *   The original value of the configuration.
-   *
-   * @return bool
-   *   Whether or not $value is now stored as the original configuration value.
    */
   protected function storeOriginalConfiguration($name, $value) {
     if (!isset($this->originalConfiguration[$name])) {
       $this->originalConfiguration[$name] = $value;
-      return TRUE;
     }
-    return ($this->originalConfiguration[$name] === $value);
   }
 
 }
