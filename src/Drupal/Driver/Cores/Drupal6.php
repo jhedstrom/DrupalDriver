@@ -495,8 +495,7 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function configGetOriginal($name, $key = '')
-  {
+  public function configGetOriginal($name, $key = '') {
     throw new \Exception('Getting original config is not yet implemented for Drupal 6.');
   }
 
