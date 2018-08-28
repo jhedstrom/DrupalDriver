@@ -460,6 +460,13 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function configGetOriginal($name, $key = '') {
+    return \Drupal::config($name)->getOriginal($key, FALSE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function configSet($name, $key, $value) {
     \Drupal::configFactory()->getEditable($name)
       ->set($key, $value)
