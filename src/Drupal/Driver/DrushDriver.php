@@ -236,7 +236,7 @@ class DrushDriver extends BaseDriver {
         return;
       }
     }
-    return $this->drush('cache:rebuild', $type, array());
+    return $this->drush('cache:rebuild');
   }
 
   /**
