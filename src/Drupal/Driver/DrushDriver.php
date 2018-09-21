@@ -226,8 +226,17 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function clearCache($type = 'all') {
-    $type = array($type);
-    return $this->drush('cache-clear', $type, array());
+    if (self::$isLegacyDrush) {
+      $type = array($type);
+      return $this->drush('cache-clear', $type, array());
+    }
+    if (($type == 'all') || ($type == 'drush')) {
+      $this->drush('cache-clear', array('drush'), array());
+      if ($type == 'drush') {
+        return;
+      }
+    }
+    return $this->drush('cache:rebuild', $type, array());
   }
 
   /**
