@@ -2,6 +2,8 @@
 *.tgz
 *.phar
 composer.lock
+phpunit.xml
 reports
 vendor
 drush
+web

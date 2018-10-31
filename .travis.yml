@@ -1,24 +1,56 @@
 language: php
 
 php:
-  - 5.5
   - 5.6
   - 7.0
   - 7.1
   - 7.2
-  - hhvm
+
+env:
+  global:
+    - PATH=$PATH:/home/travis/.composer/vendor/bin
+  matrix:
+    - TEST=syntax DRUPAL=0
+    - TEST=unit DRUPAL=0
+    - TEST=kernel DRUPAL=8
+    - TEST=behat DRUPAL=7
+    - TEST=behat DRUPAL=8    
 
 matrix:
-  allow_failures:
-    # This is broken at this time due to a phpspec issue.
-    # @see https://github.com/jhedstrom/DrupalDriver/issues/172
-    - php: hhvm
+  include:
+    - php: 5.5
+      env: TEST=syntax DRUPAL=0
+    - php: 5.5
+      env: TEST=unit DRUPAL=0
+    - php: 5.5
+      env: TEST=behat DRUPAL=6
+allow_failures:
+    # Behat tests are not necessarily commit blocking for the driver.
+    - env: TEST=behat DRUPAL=6
+    - env: TEST=behat DRUPAL=7
+    - env: TEST=behat DRUPAL=8    
 
 install:
-  - composer install
+  - composer self-update
+  # This project (drupal/drupal-driver) requires drupal/drupal-extension, but drupal-extension:dev-master 
+  # requires drupal-driver:dev-master. This causes composer installation to fail when travis tests branches
+  # (including forks) other than master. COMPOSER_ROOT_VERSION solves this by always treating the root project
+  # as being drupal-driver/dev-master, whatever the branch actually is.
+  - COMPOSER_ROOT_VERSION=dev-master composer install
+  - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ]]; then COMPOSER_ROOT_VERSION=dev-master composer update phpunit/phpunit --with-dependencies; fi
+
+before_script:
+  - if [[ "${DRUPAL}" == "6" || "${DRUPAL}" == "7" ]]; then composer install-D6orD7; fi
+  - if [[ "${DRUPAL}" == "8" ]]; then composer install-D8; fi
+  - if [[ "${TEST}" == "behat" ]]; then drush runserver :8888  --yes --root=${PWD}/web > ~/debug.txt 2>&1 && sleep 4s; fi &
+  # DriverPluginManagers have a temporary dependence on D8 core, so unit and syntax tests require it for now.
+  - if [[ "${TEST}" == "syntax" || "${TEST}" == "unit" ]]; then COMPOSER_ROOT_VERSION=dev-master composer require drupal/core:^8.5 symfony/dependency-injection:3.4.11 symfony/translation:3.4.11 symfony/console:3.4.11; fi
 
 script:
-  - composer test
+  - composer test-${TEST}
+
+after_failure:
+  - cat ~/debug.txt
 
 # Enable Travis containers.
 sudo: false

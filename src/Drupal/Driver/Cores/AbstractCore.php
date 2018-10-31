@@ -32,11 +32,19 @@ abstract class AbstractCore implements CoreInterface {
   protected $random;
 
   /**
+   * Directory to search for additional project-specific driver plugins.
+   *
+   * @var string
+   */
+  protected $projectPluginRoot;
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct($drupal_root, $uri = 'default', Random $random = NULL) {
+  public function __construct($drupal_root, $uri = 'default', Random $random = NULL, $projectPluginRoot = NULL) {
     $this->drupalRoot = realpath($drupal_root);
     $this->uri = $uri;
+    $this->projectPluginRoot = $projectPluginRoot;
     if (!isset($random)) {
       $random = new Random();
     }

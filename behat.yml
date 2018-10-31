@@ -1,0 +1,80 @@
+default:
+  autoload: %paths.base%/vendor/drupal/drupal-extension/features/bootstrap/
+  suites:
+    default:
+      paths:
+        - %paths.base%/vendor/drupal/drupal-extension/features
+  extensions:
+    Drupal\MinkExtension:
+      goutte: ~
+    Drupal\DrupalExtension:
+      api_driver: "drupal"
+      drupal:
+        # Change this to the absolute path to Drupal install.
+        drupal_root: "web"
+      region_map:
+        content: "#content"
+        footer: "#footer"
+        navigation: "#nav-header"
+        left header: "#header-left"
+        right header: "#header-right"
+        right sidebar: "#aside-region"
+        left sidebar: "#sidebar-first"
+        content: "#content"        
+      selectors:
+        message_selector: '.messages'
+        error_message_selector: '.messages.error'
+        success_message_selector: '.messages.status'
+        warning_message_selector: '.messages.warning'
+
+# Testing D6 using API driver. Assumes a standard Drupal 6 install.
+drupal6:
+  suites:
+    default:
+      contexts:
+        - FeatureContext
+        - Drupal\DrupalExtension\Context\DrupalContext
+        - Drupal\DrupalExtension\Context\MinkContext
+        - Drupal\DrupalExtension\Context\MarkupContext
+      filters:
+        tags: "@d6&&~@javascript"
+  extensions:
+    Behat\MinkExtension:
+      base_url: http://127.0.0.1:8888
+
+# Testing D7 using API driver. Assumes a standard Drupal 7 install.
+drupal7:
+  suites:
+    default:
+      contexts:
+        - FeatureContext
+        - Drupal\DrupalExtension\Context\DrupalContext
+        - Drupal\DrupalExtension\Context\MinkContext
+        - Drupal\DrupalExtension\Context\MarkupContext
+      filters:
+        tags: "@d7&&~@javascript"
+  extensions:
+    Behat\MinkExtension:
+      base_url: http://127.0.0.1:8888        
+
+# Testing D8 using API driver. Assumes a standard Drupal 8 install.
+drupal8:
+  suites:
+    default:
+      contexts:
+        - FeatureContext
+        - Drupal\DrupalExtension\Context\ConfigContext
+        - Drupal\DrupalExtension\Context\DrupalContext
+        - Drupal\DrupalExtension\Context\MinkContext
+        - Drupal\DrupalExtension\Context\MarkupContext
+        - Drupal\DrupalExtension\Context\MessageContext
+        - Drupal\DrupalExtension\Context\MailContext
+        - Drupal\DrupalExtension\Context\RandomContext
+      filters:
+        tags: "@d8&&~@d8wip&&~@javascript"
+  extensions:
+    Behat\MinkExtension:
+      base_url: http://127.0.0.1:8888  
+    Drupal\DrupalExtension:
+      selectors:
+        error_message_selector: '.messages--error'
