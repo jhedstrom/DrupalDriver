@@ -28,7 +28,7 @@ class DatetimeHandler extends AbstractHandler {
         // field value by the step author, assume the default timezone of
         // the Drupal install, and therefore transform it into UTC for storage.
         if (DateTime::createFromFormat('Y-m-d', $value) !== FALSE) {
-          // Handle 'Date only' date type
+          // Handle 'Date only' date type.
           $date = new DateTime($value);
           $formattedDate = $date->format('Y-m-d');
         }
