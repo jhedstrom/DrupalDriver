@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.0.0 alpha6] 2018-09-21
+### Added
+  * [#190](https://github.com/jhedstrom/DrupalDriver/pull/190) Added Drush entity support.
+  * [#168](https://github.com/jhedstrom/DrupalDriver/issues/168) Added ListHandlers for Drupal 8.
+### Changed
+  * [#203](https://github.com/jhedstrom/DrupalDriver/pull/203) Removes testing of HHVM.
 ## [2.0.0 alpha5] 2018-09-21
 ### Fixed
   * [#199](https://github.com/jhedstrom/DrupalDriver/pull/199): Fixes type
@@ -78,7 +84,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha5...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha6...HEAD
+[2.0.0 alpha6]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha5...HEAD
 [2.0.0 alpha5]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha4...v2.0.0-alpha5
 [2.0.0 alpha4]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha3...v2.0.0-alpha4
 [2.0.0 alpha3]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha2...v2.0.0-alpha3
