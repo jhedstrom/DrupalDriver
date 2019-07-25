@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ## [2.0.0 rc1] 2019-07-25
+### Changed
+  * [#207](https://github.com/jhedstrom/DrupalDriver/pull/207) Require PHP 5.6 or higher.
 ## [2.0.0 alpha6] 2018-09-21
 ### Added
   * [#190](https://github.com/jhedstrom/DrupalDriver/pull/190) Added Drush entity support.
