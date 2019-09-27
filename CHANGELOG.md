@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.0.0] 2019-09-27
 ## [2.0.0 rc1] 2019-07-25
 ### Changed
   * [#207](https://github.com/jhedstrom/DrupalDriver/pull/207) Require PHP 5.6 or higher.
@@ -87,7 +88,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-rc1...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-rc1...v2.0.0
 [2.0.0 rc1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha6...v2.0.0-rc1
 [2.0.0 alpha6]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha5...HEAD
 [2.0.0 alpha5]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha4...v2.0.0-alpha5
