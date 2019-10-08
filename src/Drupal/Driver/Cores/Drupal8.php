@@ -13,6 +13,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
+use Drupal\user\RoleInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -168,12 +169,9 @@ class Drupal8 extends AbstractCore {
    */
   public function roleDelete($role_name) {
     $role = user_role_load($role_name);
-
-    if (!$role) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
+    if ($role instanceof RoleInterface) {
+      $role->delete();
     }
-
-    $role->delete();
   }
 
   /**
