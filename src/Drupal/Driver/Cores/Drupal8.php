@@ -10,7 +10,7 @@ use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
-use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\User;
@@ -461,6 +461,13 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
+  public function configGetOriginal($name, $key = '') {
+    return \Drupal::config($name)->getOriginal($key, FALSE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function configSet($name, $key, $value) {
     \Drupal::configFactory()->getEditable($name)
       ->set($key, $value)
@@ -501,8 +508,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    $entity = $entity instanceof ContentEntityInterface ? $entity : entity_load($entity_type, $entity->id);
-    if ($entity instanceof ContentEntityInterface) {
+    $entity = $entity instanceof EntityInterface ? $entity : entity_load($entity_type, $entity->id);
+    if ($entity instanceof EntityInterface) {
       $entity->delete();
     }
   }
@@ -514,8 +521,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $data = $config->getRawData();
 
-    // Save the original values for restoration after.
-    $this->originalConfiguration['system.mail'] = $data;
+    // Save the values for restoration after.
+    $this->storeOriginalConfiguration('system.mail', $data);
 
     // @todo Use a collector that supports html after D#2223967 lands.
     $data['interface'] = ['default' => 'test_mail_collector'];
@@ -577,7 +584,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       $data = $config->getRawData();
 
       // Track original data for restoration.
-      $this->originalConfiguration['mailsystem.settings'] = $data;
+      $this->storeOriginalConfiguration('mailsystem.settings', $data);
 
       // Convert all of the 'senders' to the test collector.
       $data = $this->findMailSystemSenders($data);
@@ -632,6 +639,22 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     }
     catch (\RuntimeException $e) {
       // No more users are logged in.
+    }
+  }
+
+  /**
+   * Store the original value for a piece of configuration.
+   *
+   * If an original value has previously been stored, it is not updated.
+   *
+   * @param string $name
+   *   The name of the configuration.
+   * @param mixed $value
+   *   The original value of the configuration.
+   */
+  protected function storeOriginalConfiguration($name, $value) {
+    if (!isset($this->originalConfiguration[$name])) {
+      $this->originalConfiguration[$name] = $value;
     }
   }
 
