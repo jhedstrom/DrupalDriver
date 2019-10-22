@@ -412,6 +412,13 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function configGetOriginal($name, $key = '') {
+    throw new \Exception('Getting original config is not yet implemented for Drupal 7.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function configSet($name, $key, $value) {
     throw new \Exception('Setting config is not yet implemented for Drupal 7.');
   }
