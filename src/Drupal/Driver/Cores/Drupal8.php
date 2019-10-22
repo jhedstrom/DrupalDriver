@@ -621,7 +621,6 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   }
 
   /**
-<<<<<<< HEAD
    * {@inheritdoc}
    */
   public function login(\stdClass $user) {
