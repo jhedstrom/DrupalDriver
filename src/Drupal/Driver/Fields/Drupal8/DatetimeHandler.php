@@ -4,6 +4,7 @@ namespace Drupal\Driver\Fields\Drupal8;
 
 use DateTime;
 use DateTimeZone;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
  * Datetime field handler for Drupal 8.
@@ -15,7 +16,7 @@ class DatetimeHandler extends AbstractHandler {
    */
   public function expand($values) {
     $siteTimezone = new DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
-    $storageTimezone = new DateTimeZone(DATETIME_STORAGE_TIMEZONE);
+    $storageTimezone = new DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
     foreach ($values as $key => $value) {
       if (strpos($value, "relative:") !== FALSE) {
         $relative = trim(str_replace('relative:', '', $value));
