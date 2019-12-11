@@ -13,7 +13,7 @@ class EntityReferenceHandler extends AbstractHandler {
   public function expand($values) {
     $return = array();
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
-    $entity_definition = \Drupal::entityManager()->getDefinition($entity_type_id);
+    $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
 
     // Determine label field key.
     if ($entity_type_id !== 'user') {
