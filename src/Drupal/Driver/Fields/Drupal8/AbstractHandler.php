@@ -39,8 +39,10 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     if (empty($entity_type)) {
       throw new \Exception("You must specify an entity type in order to parse entity fields.");
     }
-    $entity_manager = \Drupal::entityManager();
-    $fields = $entity_manager->getFieldStorageDefinitions($entity_type);
+
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
     $this->fieldInfo = $fields[$field_name];
 
     // The bundle may be stored either under "step_bundle" or under the name

@@ -163,11 +163,27 @@ class DrushDriver extends BaseDriver {
       'password' => $user->pass,
       'mail' => $user->mail,
     );
-    $this->drush('user-create', $arguments, $options);
+    $result = $this->drush('user-create', $arguments, $options);
+    if ($uid = $this->parseUserId($result)) {
+      $user->uid = $uid;
+    }
     if (isset($user->roles) && is_array($user->roles)) {
       foreach ($user->roles as $role) {
         $this->userAddRole($user, $role);
       }
+    }
+  }
+
+  /**
+   * Parse user id from drush user-information output.
+   */
+  protected function parseUserId($info) {
+    // Find the row containing "User ID : xxx".
+    preg_match('/User ID\s+:\s+\d+/', $info, $matches);
+    if (!empty($matches)) {
+      // Extract the ID from the row.
+      list(, $uid) = explode(':', $matches[0]);
+      return (int) $uid;
     }
   }
 
@@ -210,8 +226,17 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function clearCache($type = 'all') {
-    $type = array($type);
-    return $this->drush('cache-clear', $type, array());
+    if (self::$isLegacyDrush) {
+      $type = array($type);
+      return $this->drush('cache-clear', $type, array());
+    }
+    if (($type == 'all') || ($type == 'drush')) {
+      $this->drush('cache-clear', array('drush'), array());
+      if ($type == 'drush') {
+        return;
+      }
+    }
+    return $this->drush('cache:rebuild');
   }
 
   /**
@@ -245,7 +270,37 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
+  public function createEntity($entity_type, \StdClass $entity) {
+    $options = array(
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+    );
+    $result = $this->drush('behat', array('create-entity', escapeshellarg(json_encode($options))), array());
+    return $this->decodeJsonObject($result);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function entityDelete($entity_type, \StdClass $entity) {
+    $options = array(
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+    );
+    $this->drush('behat', array('delete-entity', escapeshellarg(json_encode($options))), array());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function createNode($node) {
+    // Look up author by name.
+    if (isset($node->author)) {
+      $user_info = $this->drush('user-information', array(sprintf('"%s"', $node->author)));
+      if ($uid = $this->parseUserId($user_info)) {
+        $node->uid = $uid;
+      }
+    }
     $result = $this->drush('behat', array('create-node', escapeshellarg(json_encode($node))), array());
     return $this->decodeJsonObject($result);
   }
