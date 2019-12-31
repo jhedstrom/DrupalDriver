@@ -4,6 +4,7 @@ namespace spec\Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;
 
+use Drupal\Driver\Cores\CoreAuthenticationInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
@@ -22,5 +23,10 @@ class Drupal8Spec extends ObjectBehavior
     function it_should_return_a_random_generator()
     {
         $this->getRandom()->shouldBeAnInstanceOf('Drupal\Component\Utility\Random');
+    }
+
+    function it_is_an_auth_core()
+    {
+        $this->shouldBeAnInstanceOf(CoreAuthenticationInterface::class);
     }
 }

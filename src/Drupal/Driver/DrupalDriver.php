@@ -2,6 +2,7 @@
 
 namespace Drupal\Driver;
 
+use Drupal\Driver\Cores\CoreAuthenticationInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 use Behat\Behat\Tester\Exception\PendingException;
@@ -9,7 +10,7 @@ use Behat\Behat\Tester\Exception\PendingException;
 /**
  * Fully bootstraps Drupal and uses native API calls.
  */
-class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
+class DrupalDriver implements DriverInterface, SubDriverFinderInterface, AuthenticationDriverInterface {
 
   /**
    * Track whether Drupal has been bootstrapped.
@@ -366,6 +367,24 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function sendMail($body, $subject, $to, $langcode) {
     return $this->getCore()->sendMail($body, $subject, $to, $langcode);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function login(\stdClass $user) {
+    if ($this->getCore() instanceof CoreAuthenticationInterface) {
+      $this->getCore()->login($user);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function logout() {
+    if ($this->getCore() instanceof CoreAuthenticationInterface) {
+      $this->getCore()->logout();
+    }
   }
 
 }

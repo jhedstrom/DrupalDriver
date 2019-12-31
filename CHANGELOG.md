@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+  * [#186](https://github.com/jhedstrom/DrupalDriver/issues/168) Provide a method to directly authenticate on Drupal 8.
 ## [2.0.0] 2019-09-27
 ## [2.0.0 rc1] 2019-07-25
 ### Changed

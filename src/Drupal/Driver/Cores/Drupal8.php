@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Drupal 8 core.
  */
-class Drupal8 extends AbstractCore {
+class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
 
   /**
    * Tracks original configuration values.
@@ -629,6 +629,28 @@ class Drupal8 extends AbstractCore {
   protected function stopCollectingMailSystemMail() {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function login(\stdClass $user) {
+    $account = User::load($user->uid);
+    \Drupal::service('account_switcher')->switchTo($account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function logout() {
+    try {
+      while (TRUE) {
+        \Drupal::service('account_switcher')->switchBack();
+      }
+    }
+    catch (\RuntimeException $e) {
+      // No more users are logged in.
     }
   }
 
