@@ -48,10 +48,10 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     // The bundle may be stored either under "step_bundle" or under the name
     // of the entity's bundle key. If both are empty, assume this is a single
     // bundle entity, and therefore make the bundle name the entity type.
-    $bundle_key = $entity_manager->getDefinition($entity_type)->getKey('bundle');
+    $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : (isset($entity->step_bundle) ? $entity->step_bundle : $entity_type);
 
-    $fields = $entity_manager->getFieldDefinitions($entity_type, $bundle);
+    $fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
     $fieldsstring = '';
     foreach ($fields as $key => $value) {
       $fieldsstring = $fieldsstring . ", " . $key;
