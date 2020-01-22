@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-  * [#186](https://github.com/jhedstrom/DrupalDriver/issues/168) Provide a method to directly authenticate on Drupal 8.
+  * [#186](https://github.com/jhedstrom/DrupalDriver/issues/18§) Provide a method to directly authenticate on Drupal 8.
 ### Changed
   * Remove testing on PHP 5.6, added testing on PHP 7.3 and 7.4.
 ## [2.0.0] 2019-09-27
