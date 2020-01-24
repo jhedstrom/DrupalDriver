@@ -313,7 +313,7 @@ class Drupal7 extends AbstractCore {
     }
 
     if (empty($term->vid)) {
-      throw new \Exception(sprintf('No "%s" vocabulary found.'));
+      throw new \Exception(sprintf('No "%s" vocabulary found.', $term->vocabulary_machine_name));
     }
 
     // Attempt to decipher any fields that may be specified.
