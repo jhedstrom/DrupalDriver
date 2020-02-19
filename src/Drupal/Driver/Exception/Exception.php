@@ -8,6 +8,12 @@ use Drupal\Driver\DriverInterface;
  * Drupal driver manager base exception class.
  */
 abstract class Exception extends \Exception {
+
+  /**
+   * The driver where the exception occurred.
+   *
+   * @var \Drupal\Driver\DriverInterface
+   */
   private $driver;
 
   /**
@@ -29,10 +35,10 @@ abstract class Exception extends \Exception {
   }
 
   /**
-   * Returns exception session.
+   * Returns exception driver.
    *
-   * @return Session
-   *   The exception session.
+   * @return \Drupal\Driver\DriverInterface
+   *   The driver where the exception occurred.
    */
   public function getDriver() {
     return $this->driver;

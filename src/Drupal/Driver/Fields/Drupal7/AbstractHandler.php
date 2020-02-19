@@ -19,7 +19,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * The simulated entity.
    *
-   * @var \stdClass
+   * @var object
    */
   protected $entity = NULL;
 
@@ -42,12 +42,12 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *
    * @var array
    */
-  protected $fieldInfo = array();
+  protected $fieldInfo = [];
 
   /**
    * Constructs an AbstractHandler object.
    *
-   * @param \stdClass $entity
+   * @param object $entity
    *   The simulated entity object containing field information.
    * @param string $entity_type
    *   The entity type.
@@ -69,7 +69,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     if ($method == 'expand') {
       $args['values'] = (array) $args['values'];
     }
-    return call_user_func_array(array($this, $method), $args);
+    return call_user_func_array([$this, $method], $args);
   }
 
   /**

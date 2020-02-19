@@ -25,7 +25,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * Constructs an AbstractHandler object.
    *
-   * @param \stdClass $entity
+   * @param object $entity
    *   The simulated entity object containing field information.
    * @param string $entity_type
    *   The entity type.

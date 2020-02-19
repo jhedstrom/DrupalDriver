@@ -11,9 +11,9 @@ class AddressHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     $overrides = $this->fieldConfig->getSettings()['field_overrides'];
-    $addressFields = array(
+    $addressFields = [
       "given_name" => 1,
       "additional_name" => 1,
       "family_name" => 1,
@@ -24,7 +24,7 @@ class AddressHandler extends AbstractHandler {
       "sorting_code" => 1,
       "locality" => 1,
       "administrative_area" => 1,
-    );
+    ];
     // Any overrides that set field inputs to hidden will be skipped.
     foreach ($overrides as $key => $value) {
       preg_match('/[A-Z]/', $key, $matches, PREG_OFFSET_CAPTURE);
@@ -59,7 +59,7 @@ class AddressHandler extends AbstractHandler {
       // instance of the field.
       $return['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
     }
-    return array($return);
+    return [$return];
   }
 
 }

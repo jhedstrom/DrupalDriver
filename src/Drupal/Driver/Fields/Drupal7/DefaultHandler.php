@@ -11,11 +11,11 @@ class DefaultHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     foreach ($values as $value) {
       // Use the column name 'value' by default if the value is not an array.
       if (!is_array($value)) {
-        $value = array('value' => $value);
+        $value = ['value' => $value];
       }
       $return[$this->language][] = $value;
     }
