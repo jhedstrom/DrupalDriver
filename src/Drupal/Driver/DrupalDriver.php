@@ -55,7 +55,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @param string $uri
    *   The URI for the Drupal installation.
    *
-   * @throws BootstrapException
+   * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when the Drupal installation is not found in the given root path.
    */
   public function __construct($drupal_root, $uri) {
@@ -158,7 +158,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   public function getDrupalVersion() {
     if (!isset($this->version)) {
       // Support 6, 7 and 8.
-      $version_constant_paths = array(
+      $version_constant_paths = [
         // Drupal 6.
         '/modules/system/system.module',
         // Drupal 7.
@@ -166,7 +166,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
         // Drupal 8.
         '/autoload.php',
         '/core/includes/bootstrap.inc',
-      );
+      ];
 
       if ($this->drupalRoot === FALSE) {
         throw new BootstrapException('`drupal_root` parameter must be defined.');

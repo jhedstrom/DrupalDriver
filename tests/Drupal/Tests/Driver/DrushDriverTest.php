@@ -3,11 +3,13 @@
 namespace Drupal\Tests\Driver;
 
 use Drupal\Driver\DrushDriver;
+use Drupal\Driver\Exception\BootstrapException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Drush driver.
  */
-class DrushDriverTest extends \PHPUnit_Framework_TestCase {
+class DrushDriverTest extends TestCase {
 
   /**
    * Tests instantiating the driver with only an alias.
@@ -37,10 +39,9 @@ class DrushDriverTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * Tests instantiating the driver with missing alias and root path.
-   *
-   * @expectedException \Drupal\Driver\Exception\BootstrapException
    */
   public function testWithNeither() {
+    $this->expectException(BootstrapException::class);
     new DrushDriver('', '');
   }
 

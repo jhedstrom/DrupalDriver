@@ -42,121 +42,121 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
    *   An array of test data.
    */
   public function dataProvider() {
-    return array(
+    return [
       // Test default text field provided as simple text.
-      array(
+      [
         'DefaultHandler',
-        (object) array('field_text' => 'Text'),
+        (object) ['field_text' => 'Text'],
         'node',
-        array('field_name' => 'field_text'),
-        array('en' => array(array('value' => 'Text'))),
-      ),
+        ['field_name' => 'field_text'],
+        ['en' => [['value' => 'Text']]],
+      ],
 
       // Test default text field provided as array.
-      array(
+      [
         'DefaultHandler',
-        (object) array('field_text' => array('Text')),
+        (object) ['field_text' => ['Text']],
         'node',
-        array('field_name' => 'field_text'),
-        array('en' => array(array('value' => 'Text'))),
-      ),
+        ['field_name' => 'field_text'],
+        ['en' => [['value' => 'Text']]],
+      ],
 
       // Test default field handler using custom field columns.
-      array(
+      [
         'DefaultHandler',
-        (object) array(
-          'field_addressfield' => array(
-            array(
+        (object) [
+          'field_addressfield' => [
+            [
               'country' => 'BE',
               'locality' => 'Brussels',
               'thoroughfare' => 'Grote Markt 1',
               'postal_code' => '1000',
-            ),
-          ),
-        ),
+            ],
+          ],
+        ],
         'node',
-        array('field_name' => 'field_addressfield'),
-        array(
-          'en' => array(
-            array(
+        ['field_name' => 'field_addressfield'],
+        [
+          'en' => [
+            [
               'country' => 'BE',
               'locality' => 'Brussels',
               'thoroughfare' => 'Grote Markt 1',
               'postal_code' => '1000',
-            ),
-          ),
-        ),
-      ),
+            ],
+          ],
+        ],
+      ],
 
       // Test single-value date field provided as simple text.
-      array(
+      [
         'DatetimeHandler',
-        (object) array('field_date' => '2015-01-01 00:00:00'),
+        (object) ['field_date' => '2015-01-01 00:00:00'],
         'node',
-        array('field_name' => 'field_date'),
-        array('en' => array(array('value' => '2015-01-01 00:00:00'))),
-      ),
+        ['field_name' => 'field_date'],
+        ['en' => [['value' => '2015-01-01 00:00:00']]],
+      ],
 
       // Test single-value date field provided as an array.
-      array(
+      [
         'DatetimeHandler',
-        (object) array('field_date' => array('2015-01-01 00:00:00')),
+        (object) ['field_date' => ['2015-01-01 00:00:00']],
         'node',
-        array('field_name' => 'field_date'),
-        array('en' => array(array('value' => '2015-01-01 00:00:00'))),
-      ),
+        ['field_name' => 'field_date'],
+        ['en' => [['value' => '2015-01-01 00:00:00']]],
+      ],
 
       // Test double-value date field. Can only be provided as an array
       // due to array type casting we perform in
       // \Drupal\Driver\Fields\Drupal7\AbstractFieldHandler::__call()
-      array(
+      [
         'DatetimeHandler',
-        (object) array(
-          'field_date' => array(
-            array(
+        (object) [
+          'field_date' => [
+            [
               '2015-01-01 00:00:00',
               '2015-01-02 00:00:00',
-            ),
-          ),
-        ),
+            ],
+          ],
+        ],
         'node',
-        array(
+        [
           'field_name' => 'field_date',
-          'columns' => array('value' => '', 'value2' => ''),
-        ),
-        array(
-          'en' => array(
-            array(
+          'columns' => ['value' => '', 'value2' => ''],
+        ],
+        [
+          'en' => [
+            [
               'value' => '2015-01-01 00:00:00',
               'value2' => '2015-01-02 00:00:00',
-            ),
-          ),
-        ),
-      ),
+            ],
+          ],
+        ],
+      ],
 
       // Test list boolean field with blank 'On' and 'Off' values.
-      array(
+      [
         'ListBooleanHandler',
-        (object) array('field_list_boolean' => array(0)),
+        (object) ['field_list_boolean' => [0]],
         'node',
-        array(
+        [
           'field_name' => 'field_list_boolean',
-          'settings' => array(
-            'allowed_values' => array(
+          'settings' => [
+            'allowed_values' => [
               0 => '',
               1 => '',
-            ),
-          ),
-        ),
-        array(
-          'en' => array(
-            array(
+            ],
+          ],
+        ],
+        [
+          'en' => [
+            [
               'value' => 0,
-            ),
-          ),
-        ),
-      ),
-    );
+            ],
+          ],
+        ],
+      ],
+    ];
   }
 
 }

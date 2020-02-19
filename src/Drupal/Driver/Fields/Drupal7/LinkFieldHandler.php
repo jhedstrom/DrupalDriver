@@ -11,12 +11,12 @@ class LinkFieldHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     foreach ($values as $value) {
-      $return[$this->language][] = array(
+      $return[$this->language][] = [
         'title' => $value[0],
         'url' => $value[1],
-      );
+      ];
     }
     return $return;
   }

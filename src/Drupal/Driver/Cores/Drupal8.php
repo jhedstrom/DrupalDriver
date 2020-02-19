@@ -151,10 +151,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $this->checkPermissions($permissions);
 
     // Create new role.
-    $role = \Drupal::entityTypeManager()->getStorage('user_role')->create(array(
+    $role = \Drupal::entityTypeManager()->getStorage('user_role')->create([
       'id' => $rid,
       'label' => $name,
-    ));
+    ]);
     $result = $role->save();
 
     if ($result === SAVED_NEW) {
@@ -244,7 +244,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
-    user_cancel(array(), $user->uid, 'user_cancel_delete');
+    user_cancel([], $user->uid, 'user_cancel_delete');
   }
 
   /**
@@ -280,11 +280,11 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
         $drupal_base_url = parse_url($this->uri);
       }
       // Fill in defaults.
-      $drupal_base_url += array(
+      $drupal_base_url += [
         'path' => NULL,
         'host' => NULL,
         'port' => NULL,
-      );
+      ];
       $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
 
       if ($drupal_base_url['port']) {
@@ -365,7 +365,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function getExtensionPathList() {
-    $paths = array();
+    $paths = [];
 
     // Get enabled modules.
     foreach (\Drupal::moduleHandler()->getModuleList() as $module) {
@@ -380,7 +380,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    *
    * @param string $entity_type
    *   The entity type for which to return the field types.
-   * @param \stdClass $entity
+   * @param object $entity
    *   Entity object.
    * @param array $base_fields
    *   Base fields to be expanded in addition to user defined fields.
@@ -392,8 +392,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
-    $return = array();
+  public function getEntityFieldTypes($entity_type, array $base_fields = []) {
+    $return = [];
     /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
     $entity_field_manager = \Drupal::service('entity_field.manager');
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);

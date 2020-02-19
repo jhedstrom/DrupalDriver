@@ -13,7 +13,7 @@ class TaxonomyHandler implements FieldHandlerInterface {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $result = array();
+    $result = [];
     $values = (array) $values;
     foreach ($values as $entry) {
       $terms = explode(',', $entry);

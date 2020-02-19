@@ -13,7 +13,7 @@ class FileHandler extends AbstractHandler {
    * Specify files in file fields by their filename.
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
 
     foreach ($values as $value) {
       $query = new \EntityFieldQuery();
@@ -29,12 +29,12 @@ class FileHandler extends AbstractHandler {
         $files = entity_load('file', array_keys($result['file']));
         $file = current($files);
 
-        $return[$this->language][] = array(
+        $return[$this->language][] = [
           'filename' => $file->filename,
           'uri' => $file->uri,
           'fid' => $file->fid,
           'display' => 1,
-        );
+        ];
       }
       else {
         throw new \Exception(sprintf('File with filename "%s" not found.', $value));

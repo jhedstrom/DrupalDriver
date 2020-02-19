@@ -11,7 +11,7 @@ class EntityReferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
 

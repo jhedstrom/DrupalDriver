@@ -62,7 +62,7 @@ class Drupal6 extends AbstractCore {
     }
 
     // Assign authorship if none exists and `author` is passed.
-    if (!isset($node->uid) && !empty($node->author) && ($user = user_load(array('name' => $node->author)))) {
+    if (!isset($node->uid) && !empty($node->author) && ($user = user_load(['name' => $node->author]))) {
       $node->uid = $user->uid;
     }
 
@@ -113,7 +113,7 @@ class Drupal6 extends AbstractCore {
     $account = clone $user;
     // Convert role array to a keyed array.
     if (isset($user->roles)) {
-      $roles = array();
+      $roles = [];
       foreach ($user->roles as $rid) {
         $roles[$rid] = $rid;
       }
@@ -150,7 +150,7 @@ class Drupal6 extends AbstractCore {
     if (!$role) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
     }
-    user_multiple_role_edit(array($user->uid), 'add_role', $role);
+    user_multiple_role_edit([$user->uid], 'add_role', $role);
   }
 
   /**
@@ -242,11 +242,11 @@ class Drupal6 extends AbstractCore {
         $drupal_base_url = parse_url($this->uri);
       }
       // Fill in defaults.
-      $drupal_base_url += array(
+      $drupal_base_url += [
         'path' => NULL,
         'host' => NULL,
         'port' => NULL,
-      );
+      ];
       $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
 
       if ($drupal_base_url['port']) {
@@ -287,7 +287,7 @@ class Drupal6 extends AbstractCore {
   /**
    * Expands properties on the given entity object to the expected structure.
    *
-   * @param \stdClass $entity
+   * @param object $entity
    *   The entity object.
    */
   protected function expandEntityProperties(\stdClass $entity) {
@@ -316,7 +316,7 @@ class Drupal6 extends AbstractCore {
    * @return array
    *   An array of vocabulary objects
    */
-  protected function taxonomyVocabularyLoadMultiple(array $vids = array()) {
+  protected function taxonomyVocabularyLoadMultiple(array $vids = []) {
     $vocabularies = taxonomy_get_vocabularies();
     if ($vids) {
       return array_intersect_key($vocabularies, array_flip($vids));
@@ -341,7 +341,7 @@ class Drupal6 extends AbstractCore {
     if (!isset($term->vid)) {
 
       // Try to load vocabulary by machine name.
-      $vocabularies = $this->taxonomyVocabularyLoadMultiple(array($term->vid));
+      $vocabularies = $this->taxonomyVocabularyLoadMultiple([$term->vid]);
       if (!empty($vocabularies)) {
         $vids = array_keys($vocabularies);
         $term->vid = reset($vids);
@@ -400,7 +400,7 @@ class Drupal6 extends AbstractCore {
    *   value.
    */
   protected function getAllPermissions() {
-    $permissions = array();
+    $permissions = [];
     foreach (module_invoke_all('permission') as $name => $permission) {
       $permissions[$name] = $permission['title'];
     }
@@ -418,7 +418,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function getExtensionPathList() {
-    $paths = array();
+    $paths = [];
 
     // Get enabled modules.
     $modules = $this->getModuleList();
@@ -432,19 +432,19 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = array()) {
+  protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = []) {
     return parent::expandEntityFields($entity_type, $entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
-    $taxonomy_fields = array('taxonomy' => 'taxonomy');
+  public function getEntityFieldTypes($entity_type, array $base_fields = []) {
+    $taxonomy_fields = ['taxonomy' => 'taxonomy'];
     if (!module_exists('content')) {
       return $taxonomy_fields;
     }
-    $return = array();
+    $return = [];
     $fields = content_fields();
     foreach ($fields as $field_name => $field) {
       if ($this->isField($entity_type, $field_name)) {
