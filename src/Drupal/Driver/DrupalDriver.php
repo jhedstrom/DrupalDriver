@@ -190,7 +190,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
       // Extract the major version from VERSION.
       $version_parts = explode('.', $version);
       if (is_numeric($version_parts[0])) {
-        $this->version = (integer) $version_parts[0];
+        $this->version = (integer) $version_parts[0] < 8 ? $version_parts[0] : 8;
       }
       else {
         throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version));
