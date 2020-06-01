@@ -40,10 +40,5 @@
       "Drupal\\Driver": "src/",
       "Drupal\\Tests\\Driver" : "tests/"
     }
-  },
-  "extra": {
-    "branch-alias": {
-      "dev-master": "2.1.x-dev"
-    }
   }
 }
