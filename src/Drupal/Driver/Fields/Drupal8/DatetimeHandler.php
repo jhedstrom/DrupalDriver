@@ -28,9 +28,17 @@ class DatetimeHandler extends AbstractHandler {
         // uses UTC for internal storage. If no timezone is specified in a date
         // field value by the step author, assume the default timezone of
         // the Drupal install, and therefore transform it into UTC for storage.
-        $date = new DateTime($value, $siteTimezone);
-        $date->setTimezone($storageTimezone);
-        $values[$key] = $date->format('Y-m-d\TH:i:s');
+        if (DateTime::createFromFormat('Y-m-d', $value) !== FALSE) {
+          // Handle 'Date only' date type.
+          $date = new DateTime($value);
+          $formattedDate = $date->format('Y-m-d');
+        }
+        else {
+          $date = new DateTime($value, $siteTimezone);
+          $date->setTimezone($storageTimezone);
+          $formattedDate = $date->format('Y-m-d\TH:i:s');
+        }
+        $values[$key] = $formattedDate;
       }
     }
     return $values;
