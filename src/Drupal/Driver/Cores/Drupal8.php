@@ -464,6 +464,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   public function clearStaticCaches() {
     drupal_static_reset();
     \Drupal::service('cache_tags.invalidator')->resetChecksums();
+    foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
+      \Drupal::entityTypeManager()->getAccessControlHandler($definition->id())->resetCache();
+    }
   }
 
   /**
