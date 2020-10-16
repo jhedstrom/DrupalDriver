@@ -11,11 +11,11 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     foreach ($values as $name) {
-      $terms = \Drupal::entityManager()
+      $terms = \Drupal::entityTypeManager()
         ->getStorage('taxonomy_term')
-        ->loadByProperties(array('name' => $name));
+        ->loadByProperties(['name' => $name]);
       if ($terms) {
         $return[] = array_shift($terms)->id();
       }

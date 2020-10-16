@@ -2,6 +2,7 @@
 
 namespace Drupal\Driver;
 
+use Drupal\Driver\Cores\CoreAuthenticationInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 use Behat\Behat\Tester\Exception\PendingException;
@@ -9,7 +10,7 @@ use Behat\Behat\Tester\Exception\PendingException;
 /**
  * Fully bootstraps Drupal and uses native API calls.
  */
-class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
+class DrupalDriver implements DriverInterface, SubDriverFinderInterface, AuthenticationDriverInterface {
 
   /**
    * Track whether Drupal has been bootstrapped.
@@ -54,7 +55,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    * @param string $uri
    *   The URI for the Drupal installation.
    *
-   * @throws BootstrapException
+   * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when the Drupal installation is not found in the given root path.
    */
   public function __construct($drupal_root, $uri) {
@@ -157,7 +158,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
   public function getDrupalVersion() {
     if (!isset($this->version)) {
       // Support 6, 7 and 8.
-      $version_constant_paths = array(
+      $version_constant_paths = [
         // Drupal 6.
         '/modules/system/system.module',
         // Drupal 7.
@@ -165,7 +166,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
         // Drupal 8.
         '/autoload.php',
         '/core/includes/bootstrap.inc',
-      );
+      ];
 
       if ($this->drupalRoot === FALSE) {
         throw new BootstrapException('`drupal_root` parameter must be defined.');
@@ -189,7 +190,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
       // Extract the major version from VERSION.
       $version_parts = explode('.', $version);
       if (is_numeric($version_parts[0])) {
-        $this->version = (integer) $version_parts[0];
+        $this->version = (integer) $version_parts[0] < 8 ? $version_parts[0] : 8;
       }
       else {
         throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version));
@@ -366,6 +367,24 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface {
    */
   public function sendMail($body, $subject, $to, $langcode) {
     return $this->getCore()->sendMail($body, $subject, $to, $langcode);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function login(\stdClass $user) {
+    if ($this->getCore() instanceof CoreAuthenticationInterface) {
+      $this->getCore()->login($user);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function logout() {
+    if ($this->getCore() instanceof CoreAuthenticationInterface) {
+      $this->getCore()->logout();
+    }
   }
 
 }

@@ -25,7 +25,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * Constructs an AbstractHandler object.
    *
-   * @param \stdClass $entity
+   * @param object $entity
    *   The simulated entity object containing field information.
    * @param string $entity_type
    *   The entity type.
@@ -39,17 +39,19 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     if (empty($entity_type)) {
       throw new \Exception("You must specify an entity type in order to parse entity fields.");
     }
-    $entity_manager = \Drupal::entityManager();
-    $fields = $entity_manager->getFieldStorageDefinitions($entity_type);
+
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
     $this->fieldInfo = $fields[$field_name];
 
     // The bundle may be stored either under "step_bundle" or under the name
     // of the entity's bundle key. If both are empty, assume this is a single
     // bundle entity, and therefore make the bundle name the entity type.
-    $bundle_key = $entity_manager->getDefinition($entity_type)->getKey('bundle');
+    $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : (isset($entity->step_bundle) ? $entity->step_bundle : $entity_type);
 
-    $fields = $entity_manager->getFieldDefinitions($entity_type, $bundle);
+    $fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
     $fieldsstring = '';
     foreach ($fields as $key => $value) {
       $fieldsstring = $fieldsstring . ", " . $key;

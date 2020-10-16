@@ -27,11 +27,11 @@ class ImageHandler extends AbstractHandler {
 
     $file->save();
 
-    $return = array(
+    $return = [
       'target_id' => $file->id(),
       'alt' => 'Behat test image',
       'title' => 'Behat test image',
-    );
+    ];
     return $return;
   }
 

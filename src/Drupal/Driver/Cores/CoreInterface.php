@@ -80,7 +80,7 @@ interface CoreInterface {
   /**
    * Add a role to a user.
    *
-   * @param \stdClass $user
+   * @param object $user
    *   The Drupal user object.
    * @param string $role_name
    *   The role name.
@@ -171,12 +171,12 @@ interface CoreInterface {
    * @return array
    *   An associative array of field types, keyed by field name.
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = array());
+  public function getEntityFieldTypes($entity_type, array $base_fields = []);
 
   /**
    * Creates a language.
    *
-   * @param \stdClass $language
+   * @param object $language
    *   An object with the following properties:
    *   - langcode: the langcode of the language to create.
    */
@@ -185,7 +185,7 @@ interface CoreInterface {
   /**
    * Deletes a language.
    *
-   * @param \stdClass $language
+   * @param object $language
    *   An object with the following properties:
    *   - langcode: the langcode of the language to delete.
    */

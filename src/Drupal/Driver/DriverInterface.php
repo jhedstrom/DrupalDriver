@@ -40,7 +40,7 @@ interface DriverInterface {
   /**
    * Adds a role for a user.
    *
-   * @param \stdClass $user
+   * @param object $user
    *   A user object.
    * @param string $role
    *   The role name to assign.
@@ -102,7 +102,7 @@ interface DriverInterface {
   /**
    * Creates a taxonomy term.
    *
-   * @param \stdClass $term
+   * @param object $term
    *   Term object.
    *
    * @return object
@@ -113,7 +113,7 @@ interface DriverInterface {
   /**
    * Deletes a taxonomy term.
    *
-   * @param \stdClass $term
+   * @param object $term
    *   Term object to delete.
    *
    * @return bool
@@ -183,10 +183,10 @@ interface DriverInterface {
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param \stdClass $entity
+   * @param object $entity
    *   The entity to create.
    *
-   * @return \stdClass
+   * @return object
    *   The created entity with `id` set.
    */
   public function createEntity($entity_type, \stdClass $entity);
@@ -196,7 +196,7 @@ interface DriverInterface {
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param \stdClass $entity
+   * @param object $entity
    *   The entity to delete.
    */
   public function entityDelete($entity_type, \stdClass $entity);

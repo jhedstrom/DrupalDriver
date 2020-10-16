@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.1.0]
+### Added
+  * [#186](https://github.com/jhedstrom/DrupalDriver/issues/168) Provide a method to directly authenticate on Drupal 8.
+### Changed
+  * Remove testing on PHP 5.6, added testing on PHP 7.3 and 7.4.
+  * [#214](https://github.com/jhedstrom/DrupalDriver/pull/214) Fix D8 deprectations.
+  * [#224](https://github.com/jhedstrom/DrupalDriver/pull/224) Support Drupal 9.
+### Fixed
+  * [#217](https://github.com/jhedstrom/DrupalDriver/pull/217) Fix fatal error in field handler.
+  * [#219](https://github.com/jhedstrom/DrupalDriver/issues/219) Fix php notice in exception message.
 ## [2.0.0] 2019-09-27
 ## [2.0.0 rc1] 2019-07-25
 ### Changed
@@ -88,7 +98,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-rc1...v2.0.0
 [2.0.0 rc1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha6...v2.0.0-rc1
 [2.0.0 alpha6]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha5...HEAD

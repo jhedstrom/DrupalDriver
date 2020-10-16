@@ -11,8 +11,8 @@ class ListTextHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
-    $allowed_values = array();
+    $return = [];
+    $allowed_values = [];
     if (!empty($this->fieldInfo['settings']['allowed_values_function'])) {
       $cacheable = TRUE;
       $callback = $this->fieldInfo['settings']['allowed_values_function'];
@@ -31,7 +31,7 @@ class ListTextHandler extends AbstractHandler {
       }
     }
     foreach ($values as $value) {
-      $return[$this->language][] = array('value' => $allowed_values[$value]);
+      $return[$this->language][] = ['value' => $allowed_values[$value]];
     }
     return $return;
   }

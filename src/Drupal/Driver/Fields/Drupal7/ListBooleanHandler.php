@@ -11,7 +11,7 @@ class ListBooleanHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     $allowed_values = $this->fieldInfo['settings']['allowed_values'];
     // If values are blank then use keys as value.
     foreach ($allowed_values as $key => $value) {
@@ -21,7 +21,7 @@ class ListBooleanHandler extends AbstractHandler {
     }
     $allowed_values = array_flip($allowed_values);
     foreach ($values as $value) {
-      $return[$this->language][] = array('value' => $allowed_values[$value]);
+      $return[$this->language][] = ['value' => $allowed_values[$value]];
     }
     return $return;
   }

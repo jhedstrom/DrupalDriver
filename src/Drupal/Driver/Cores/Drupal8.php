@@ -14,12 +14,16 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\RoleInterface;
+use Drupal\user\Entity\Role;
+use Drupal\user\Entity\User;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 
 /**
  * Drupal 8 core.
  */
-class Drupal8 extends AbstractCore {
+class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
 
   /**
    * Tracks original configuration values.
@@ -50,7 +54,10 @@ class Drupal8 extends AbstractCore {
     $request = Request::createFromGlobals();
     $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
-    $kernel->prepareLegacyRequest($request);
+    // A route is required for route matching.
+    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
+    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, '<none>');
+    $kernel->preHandle($request);
 
     // Initialise an anonymous session. required for the bootstrap.
     \Drupal::service('session_manager')->start();
@@ -72,7 +79,10 @@ class Drupal8 extends AbstractCore {
     if (!isset($node->type) || !$node->type) {
       throw new \Exception("Cannot create content because it is missing the required property 'type'.");
     }
-    $bundles = \Drupal::entityManager()->getBundleInfo('node');
+
+    /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
+    $bundle_info = \Drupal::service('entity_type.bundle.info');
+    $bundles = $bundle_info->getBundleInfo('node');
     if (!in_array($node->type, array_keys($bundles))) {
       throw new \Exception("Cannot create content because provided content type '$node->type' does not exist.");
     }
@@ -123,7 +133,7 @@ class Drupal8 extends AbstractCore {
     // Clone user object, otherwise user_save() changes the password to the
     // hashed password.
     $this->expandEntityFields('user', $user);
-    $account = entity_create('user', (array) $user);
+    $account = \Drupal::entityTypeManager()->getStorage('user')->create((array) $user);
     $account->save();
 
     // Store UID.
@@ -147,10 +157,10 @@ class Drupal8 extends AbstractCore {
     $this->checkPermissions($permissions);
 
     // Create new role.
-    $role = entity_create('user_role', array(
+    $role = \Drupal::entityTypeManager()->getStorage('user_role')->create([
       'id' => $rid,
       'label' => $name,
-    ));
+    ]);
     $result = $role->save();
 
     if ($result === SAVED_NEW) {
@@ -168,7 +178,8 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function roleDelete($role_name) {
-    $role = user_role_load($role_name);
+    $role = Role::load($role_name);
+
     if ($role instanceof RoleInterface) {
       $role->delete();
     }
@@ -237,7 +248,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
-    user_cancel(array(), $user->uid, 'user_cancel_delete');
+    user_cancel([], $user->uid, 'user_cancel_delete');
   }
 
   /**
@@ -251,11 +262,11 @@ class Drupal8 extends AbstractCore {
       $role_name = $id;
     }
 
-    if (!$role = user_role_load($role_name)) {
+    if (!$role = Role::load($role_name)) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
     }
 
-    $account = \user_load($user->uid);
+    $account = User::load($user->uid);
     $account->addRole($role->id());
     $account->save();
   }
@@ -273,11 +284,11 @@ class Drupal8 extends AbstractCore {
         $drupal_base_url = parse_url($this->uri);
       }
       // Fill in defaults.
-      $drupal_base_url += array(
+      $drupal_base_url += [
         'path' => NULL,
         'host' => NULL,
         'port' => NULL,
-      );
+      ];
       $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
 
       if ($drupal_base_url['port']) {
@@ -358,7 +369,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function getExtensionPathList() {
-    $paths = array();
+    $paths = [];
 
     // Get enabled modules.
     foreach (\Drupal::moduleHandler()->getModuleList() as $module) {
@@ -373,7 +384,7 @@ class Drupal8 extends AbstractCore {
    *
    * @param string $entity_type
    *   The entity type for which to return the field types.
-   * @param \stdClass $entity
+   * @param object $entity
    *   Entity object.
    * @param array $base_fields
    *   Base fields to be expanded in addition to user defined fields.
@@ -385,9 +396,11 @@ class Drupal8 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = array()) {
-    $return = array();
-    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+  public function getEntityFieldTypes($entity_type, array $base_fields = []) {
+    $return = [];
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
     foreach ($fields as $field_name => $field) {
       if ($this->isField($entity_type, $field_name)
         || (in_array($field_name, $base_fields) && $this->isBaseField($entity_type, $field_name))) {
@@ -401,7 +414,9 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
-    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
 
@@ -409,7 +424,9 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function isBaseField($entity_type, $field_name) {
-    $fields = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof BaseFieldDefinition);
   }
 
@@ -476,14 +493,16 @@ class Drupal8 extends AbstractCore {
    */
   public function entityCreate($entity_type, $entity) {
     // If the bundle field is empty, put the inferred bundle value in it.
-    $bundle_key = \Drupal::entityManager()->getDefinition($entity_type)->getKey('bundle');
+    $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
       $entity->$bundle_key = $entity->step_bundle;
     }
 
     // Throw an exception if a bundle is specified but does not exist.
     if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
-      $bundles = \Drupal::entityManager()->getBundleInfo($entity_type);
+      /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
+      $bundle_info = \Drupal::service('entity_type.bundle.info');
+      $bundles = $bundle_info->getBundleInfo($entity_type);
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
         throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
       }
@@ -493,7 +512,7 @@ class Drupal8 extends AbstractCore {
     }
 
     $this->expandEntityFields($entity_type, $entity);
-    $createdEntity = entity_create($entity_type, (array) $entity);
+    $createdEntity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $createdEntity->save();
 
     $entity->id = $createdEntity->id();
@@ -505,7 +524,7 @@ class Drupal8 extends AbstractCore {
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    $entity = $entity instanceof EntityInterface ? $entity : entity_load($entity_type, $entity->id);
+    $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
     if ($entity instanceof EntityInterface) {
       $entity->delete();
     }
@@ -614,6 +633,28 @@ class Drupal8 extends AbstractCore {
   protected function stopCollectingMailSystemMail() {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function login(\stdClass $user) {
+    $account = User::load($user->uid);
+    \Drupal::service('account_switcher')->switchTo($account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function logout() {
+    try {
+      while (TRUE) {
+        \Drupal::service('account_switcher')->switchBack();
+      }
+    }
+    catch (\RuntimeException $e) {
+      // No more users are logged in.
     }
   }
 

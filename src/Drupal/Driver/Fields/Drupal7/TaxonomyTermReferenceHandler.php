@@ -11,13 +11,13 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = array();
+    $return = [];
     foreach ($values as $name) {
       $terms = taxonomy_get_term_by_name($name, $this->getVocab());
       if (!$terms) {
         throw new \Exception(sprintf("No term '%s' exists.", $name));
       }
-      $return[$this->language][] = array('tid' => array_shift($terms)->tid);
+      $return[$this->language][] = ['tid' => array_shift($terms)->tid];
     }
     return $return;
   }
