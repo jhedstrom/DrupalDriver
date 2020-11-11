@@ -137,6 +137,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
 
     // Store UID.
     $user->uid = $account->id();
+
+    // Update user name in case Drupal altered it.
+    $user->name = $account->getUsername();
   }
 
   /**
