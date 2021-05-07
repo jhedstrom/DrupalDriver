@@ -531,7 +531,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function startCollectingMail() {
-    // @todo: create a D6 version of this function
+    // @todo create a D6 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
   }
 
@@ -539,7 +539,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function stopCollectingMail() {
-    // @todo: create a D6 version of this function
+    // @todo create a D6 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
   }
 
@@ -547,7 +547,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function getMail() {
-    // @todo: create a D6 version of this function
+    // @todo create a D6 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
   }
 
@@ -555,7 +555,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function clearMail() {
-    // @todo: create a D6 version of this function
+    // @todo create a D6 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
   }
 
@@ -563,7 +563,7 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function sendMail($body, $subject = '', $to = '', $langcode = '') {
-    // @todo: create a D6 version of this function
+    // @todo create a D6 version of this function
     throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
   }
 

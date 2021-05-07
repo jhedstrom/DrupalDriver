@@ -16,7 +16,7 @@ class ImageHandler extends AbstractHandler {
       throw new \Exception("Error reading file");
     }
 
-    /* @var \Drupal\file\FileInterface $file */
+    /** @var \Drupal\file\FileInterface $file */
     $file = file_save_data(
       $data,
       'public://' . uniqid() . '.jpg');

@@ -275,7 +275,8 @@ class DrushDriver extends BaseDriver {
       'entity_type' => $entity_type,
       'entity' => $entity,
     ];
-    $result = $this->drush('behat', ['create-entity', escapeshellarg(json_encode($options))], []);
+    $result = $this->drush('behat',
+      ['create-entity', escapeshellarg(json_encode($options))], []);
     return $this->decodeJsonObject($result);
   }
 
@@ -287,7 +288,8 @@ class DrushDriver extends BaseDriver {
       'entity_type' => $entity_type,
       'entity' => $entity,
     ];
-    $this->drush('behat', ['delete-entity', escapeshellarg(json_encode($options))], []);
+    $this->drush('behat',
+      ['delete-entity', escapeshellarg(json_encode($options))], []);
   }
 
   /**
@@ -301,7 +303,9 @@ class DrushDriver extends BaseDriver {
         $node->uid = $uid;
       }
     }
-    $result = $this->drush('behat', ['create-node', escapeshellarg(json_encode($node))], []);
+    $result = $this->drush('behat',
+      ['create-node', escapeshellarg(json_encode($node))],
+      []);
     return $this->decodeJsonObject($result);
   }
 
@@ -316,7 +320,11 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function createTerm(\stdClass $term) {
-    $result = $this->drush('behat', ['create-term', escapeshellarg(json_encode($term))], []);
+    $result = $this->drush('behat',
+      [
+        'create-term',
+        escapeshellarg(json_encode($term)),
+      ], []);
     return $this->decodeJsonObject($result);
   }
 
