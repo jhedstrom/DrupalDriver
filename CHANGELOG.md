@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.1.1]
+### Fixed
+  * [#233](https://github.com/jhedstrom/DrupalDriver/pull/233) Prevent PHP warning in Drupal 7.79 and above.
+  * [#232](https://github.com/jhedstrom/DrupalDriver/pull/232) Fix type in ImageHandler.
 ## [2.1.0]
 ### Added
   * [#186](https://github.com/jhedstrom/DrupalDriver/issues/168) Provide a method to directly authenticate on Drupal 8.
@@ -98,7 +102,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-rc1...v2.0.0
 [2.0.0 rc1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-alpha6...v2.0.0-rc1
