@@ -29,7 +29,7 @@
     "test": [
       "composer validate --no-interaction",
       "parallel-lint src spec tests",
-      "phpunit --coverage-html=reports/coverage",
+      "phpunit",
       "phpspec run -f pretty --no-interaction",
       "phpcs --standard=./phpcs-ruleset.xml ."
 
