@@ -40,11 +40,6 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function nodeCreate($node) {
-    // Set original if not set.
-    if (!isset($node->original)) {
-      $node->original = clone $node;
-    }
-
     // Assign authorship if none exists and `author` is passed.
     if (!isset($node->uid) && !empty($node->author) && ($user = user_load_by_name($node->author))) {
       $node->uid = $user->uid;
