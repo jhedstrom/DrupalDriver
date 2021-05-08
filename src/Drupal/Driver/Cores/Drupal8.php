@@ -13,6 +13,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
+use Drupal\user\RoleInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 use Symfony\Cmf\Component\Routing\RouteObjectInterface;
@@ -179,11 +180,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   public function roleDelete($role_name) {
     $role = Role::load($role_name);
 
-    if (!$role) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
+    if ($role instanceof RoleInterface) {
+      $role->delete();
     }
-
-    $role->delete();
   }
 
   /**
