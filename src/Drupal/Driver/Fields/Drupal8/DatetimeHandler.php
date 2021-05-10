@@ -21,14 +21,14 @@ class DatetimeHandler extends AbstractHandler {
         // Get time, convert to ISO 8601 date in GMT/UTC, remove TZ offset.
         $values[$key] = substr(gmdate('c', strtotime($relative)), 0, 19);
       }
-      else {
+      elseif ($this->fieldInfo->getSetting('datetime_type') === 'datetime') {
         // A Drupal install has a default site timezone, but nonetheless
         // uses UTC for internal storage. If no timezone is specified in a date
         // field value by the step author, assume the default timezone of
         // the Drupal install, and therefore transform it into UTC for storage.
         $date = new \DateTime($value, $siteTimezone);
         $date->setTimezone($storageTimezone);
-        $values[$key] = $date->format('Y-m-d\TH:i:s');
+        $values[$key] = $date->format(DateTimeItemInterface::DATETIME_STORAGE_FORMAT);
       }
     }
     return $values;
