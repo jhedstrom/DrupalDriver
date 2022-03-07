@@ -474,6 +474,14 @@ class Drupal6 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function isBaseField($entity_type, $field_name) {
+    // Base fields are only supported in Drupal 8 and higher.
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function languageCreate(\stdClass $language) {
     throw new \Exception('Creating languages is not yet implemented for Drupal 6.');
   }

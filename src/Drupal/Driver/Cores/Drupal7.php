@@ -480,6 +480,14 @@ class Drupal7 extends AbstractCore {
   /**
    * {@inheritdoc}
    */
+  public function isBaseField($entity_type, $field_name) {
+    // Base fields are only supported in Drupal 8 and higher.
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function clearStaticCaches() {
     drupal_static_reset();
   }
