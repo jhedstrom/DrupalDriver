@@ -5,6 +5,11 @@
     <description>DrupalDriver coding standard</description>
 
     <rule ref="./vendor/drupal/coder/coder_sniffer/Drupal">
+        <!-- Ignore the requirement to use the null coalescing operator. This has been introduced in PHP 7.0 but we still support 5.6. -->
+        <exclude name="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator.NullCoalesceOperatorNotUsed" />
+
+        <!-- Ignore the requirement to use the shorthand list syntax. This has been introduced in PHP 7.1 but we still support 5.6. -->
+        <exclude name="SlevomatCodingStandard.PHP.ShortList.LongListUsed" />
     </rule>
 
     <!-- Core drivers need to set a server's remote address. -->
