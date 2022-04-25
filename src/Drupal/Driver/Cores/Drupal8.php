@@ -310,11 +310,6 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     }
 
     $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
-    $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    $_SERVER['REQUEST_METHOD'] = NULL;
-
-    $_SERVER['SERVER_SOFTWARE'] = NULL;
-    $_SERVER['HTTP_USER_AGENT'] = NULL;
 
     $conf_path = DrupalKernel::findSitePath(Request::createFromGlobals());
     $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
