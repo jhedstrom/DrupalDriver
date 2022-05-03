@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\Driver;
 
+use DMS\PHPUnitExtensions\ArraySubset\Assert;
+
 /**
  * Tests the Drupal 7 field handlers.
  */
@@ -32,7 +34,7 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
 
     $field_name = $field['field_name'];
     $expanded_values = $handler->expand($this->values($entity->$field_name));
-    $this->assertArraySubset($expected_values, $expanded_values);
+    Assert::assertArraySubset($expected_values, $expanded_values);
   }
 
   /**
