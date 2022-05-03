@@ -12,18 +12,19 @@
      }
   ],
   "require": {
-    "php": ">=5.6",
-    "symfony/process": "~2.5|~3.0|~4.4",
-    "symfony/dependency-injection": "~2.6|~3.0|~4.4",
-    "drupal/core-utility": "^8.4 || ^9"
+    "php": ">=7.4",
+    "symfony/process": "~2.5|~3.0|~4.4|^6",
+    "symfony/dependency-injection": "~2.6|~3.0|~4.4|^6",
+    "drupal/core-utility": "^8.4 || ^9 || ^10.0.0-alpha1"
   },
   "require-dev": {
     "drupal/coder": "~8.3.0",
-    "phpspec/phpspec": "~2.0 || ~4.0 || ~6.1",
-    "phpunit/phpunit": "~6.0 || ~7.0",
-    "mockery/mockery": "0.9.4",
+    "phpspec/phpspec": "~2.0 || ~4.0 || ~6.1 || dev-main",
+    "phpunit/phpunit": "~6.0 || ~7.0 || ^9",
+    "mockery/mockery": "^0.9.4",
     "drush-ops/behat-drush-endpoint": "*",
-    "jakub-onderka/php-parallel-lint": "^1.0"
+    "php-parallel-lint/php-parallel-lint": "^1.0",
+    "dms/phpunit-arraysubset-asserts": "^0.4.0"
   },
   "scripts": {
     "test": [
@@ -44,6 +45,11 @@
   "extra": {
     "branch-alias": {
       "dev-master": "2.2.x-dev"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
     }
   }
 }
