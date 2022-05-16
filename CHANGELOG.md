@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.2.0]
+### Fixed
+  * [#232](https://github.com/jhedstrom/DrupalDriver/pull/232) Fixes typo in ImageHandler.
+  * [#233](https://github.com/jhedstrom/DrupalDriver/pull/233) Fixes Drupal 7.79 compatibility.
+  * [#244](https://github.com/jhedstrom/DrupalDriver/pull/244) Drupal Coder updates.
+### Added
+  * [#245](https://github.com/jhedstrom/DrupalDriver/pull/245) PHP 8.1 compatibility.
+  * [#247](https://github.com/jhedstrom/DrupalDriver/issues/247) Drupal 10 and PHP 8.1 compatibility.
 ## [2.1.1]
 ### Fixed
   * [#233](https://github.com/jhedstrom/DrupalDriver/pull/233) Prevent PHP warning in Drupal 7.79 and above.
@@ -102,7 +110,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.0.0-rc1...v2.0.0
