@@ -42,11 +42,6 @@
       "Drupal\\Tests\\Driver" : "tests/"
     }
   },
-  "extra": {
-    "branch-alias": {
-      "dev-master": "2.3.x-dev"
-    }
-  },
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
