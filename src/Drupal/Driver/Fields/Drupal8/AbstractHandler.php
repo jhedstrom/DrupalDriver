@@ -35,7 +35,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    * @throws \Exception
    *   Thrown when the given field name does not exist on the entity.
    */
-  public function __construct(\stdClass $entity, $entity_type, $field_name) {
+  public function __construct($entity, $entity_type, $field_name) {
     if (empty($entity_type)) {
       throw new \Exception("You must specify an entity type in order to parse entity fields.");
     }
