@@ -22,7 +22,7 @@
     "drupal/coder": "~8.3.0",
     "phpspec/phpspec": "~2.0 || ~4.0 || ~6.1 || dev-main",
     "phpunit/phpunit": "~6.0 || ~7.0 || ^9",
-    "mockery/mockery": "^0.9.4",
+    "mockery/mockery": "^1.5",
     "drupal/core-composer-scaffold": "^10@beta",
     "drupal/core-recommended": "^10@beta",
     "drupal/mailsystem": "^4.4",
