@@ -32,6 +32,9 @@
     "mglaman/drupal-check": "^1",
     "palantirnet/drupal-rector": "^0.13"
   },
+  "conflict": {
+    "drupal/core": ">=8.0 <9.3"
+  },
   "scripts": {
     "test": [
       "composer validate --no-interaction",
