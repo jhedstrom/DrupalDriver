@@ -33,13 +33,15 @@ class EntityReferenceHandler extends AbstractHandler {
       $target_bundle_key = $entity_definition->getKey('bundle');
     }
 
+
     // The values can either be a direct label reference or a complex array
     // containing multiple properties of the field. For example, the file field
     // contains a target_id, a description and a display property. If the
     // target_id exists as a property, we assume that the other properties are
     // also present. Retrieve all labels and load the entities.
-    $labels = array_map(function ($value) {
-      return is_array($value) && isset($value['target_id']) ? $value['target_id'] : $value;
+    $main_property = $this->fieldInfo->getMainPropertyName();
+    $labels = array_map(function ($value) use ($main_property){
+      return is_array($value) && isset($value[$main_property]) ? $value[$main_property] : $value;
     }, $values);
 
     foreach ((array) $labels as $index => $label) {
@@ -52,8 +54,8 @@ class EntityReferenceHandler extends AbstractHandler {
         $entity_id = array_shift($entities);
         // Replace the entity IDs in the original array so that other properties
         // are not lost.
-        if (is_array($values[$index]) && isset($values[$index]['target_id'])) {
-          $values[$index]['target_id'] = $entity_id;
+        if (is_array($values[$index]) && isset($values[$index][$main_property])) {
+          $values[$index][$main_property] = $entity_id;
         }
         else {
           $values[$index] = $entity_id;
