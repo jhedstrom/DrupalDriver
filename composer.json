@@ -38,7 +38,7 @@
       "parallel-lint src spec tests",
       "phpunit",
       "phpspec run -f pretty --no-interaction",
-      "phpcs --standard=./phpcs-ruleset.xml --ignore=drupal .",
+      "phpcs --standard=./phpcs-ruleset.xml .",
       "./vendor/bin/drupal-check --drupal-root=drupal ./src/Drupal/Driver/Cores/Drupal8.php ./src/Drupal/Driver/Fields/Drupal8",
       "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
       "cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
