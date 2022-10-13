@@ -11,11 +11,8 @@ class EntityReferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = [];
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
-
-    $id_key = $entity_definition->getKey('id');
 
     // Determine label field key.
     if ($entity_type_id !== 'user') {
@@ -36,24 +33,37 @@ class EntityReferenceHandler extends AbstractHandler {
       $target_bundle_key = $entity_definition->getKey('bundle');
     }
 
-    foreach ((array) $values as $value) {
-      $query = \Drupal::entityQuery($entity_type_id);
-      $or = $query->orConditionGroup();
-      $or->condition($id_key, $value)
-        ->condition($label_key, $value);
-      $query->condition($or);
+    // The values can either be a direct label reference or a complex array
+    // containing multiple properties of the field. For example, the file field
+    // contains a target_id, a description and a display property. If the
+    // target_id exists as a property, we assume that the other properties are
+    // also present. Retrieve all labels and load the entities.
+    $labels = array_map(function ($value) {
+      return is_array($value) && isset($value['target_id']) ? $value['target_id'] : $value;
+    }, $values);
+
+    foreach ((array) $labels as $index => $label) {
+      $query = \Drupal::entityQuery($entity_type_id)->condition($label_key, $label);
       $query->accessCheck(FALSE);
       if ($target_bundles && $target_bundle_key) {
         $query->condition($target_bundle_key, $target_bundles, 'IN');
       }
       if ($entities = $query->execute()) {
-        $return[] = array_shift($entities);
+        $entity_id = array_shift($entities);
+        // Replace the entity IDs in the original array so that other properties
+        // are not lost.
+        if (is_array($values[$index]) && isset($values[$index]['target_id'])) {
+          $values[$index]['target_id'] = $entity_id;
+        }
+        else {
+          $values[$index] = $entity_id;
+        }
       }
       else {
-        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $value, $entity_type_id));
+        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $label, $entity_type_id));
       }
     }
-    return $return;
+    return $values;
   }
 
   /**
