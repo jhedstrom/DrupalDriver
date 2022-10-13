@@ -387,12 +387,12 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    *
    * @param string $entity_type
    *   The entity type for which to return the field types.
-   * @param object $entity
+   * @param \StdClass $entity
    *   Entity object.
    * @param array $base_fields
    *   Base fields to be expanded in addition to user defined fields.
    */
-  public function expandEntityBaseFields($entity_type, $entity, array $base_fields) {
+  public function expandEntityBaseFields($entity_type, \StdClass $entity, array $base_fields) {
     $this->expandEntityFields($entity_type, $entity, $base_fields);
   }
 
