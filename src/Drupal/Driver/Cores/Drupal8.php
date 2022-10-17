@@ -53,7 +53,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
     // A route is required for route matching. In order to support Drupal 10
-    // along with 8/9, we use the hadcoded values of RouteObjectInterface
+    // along with 8/9, we use the hardcoded values of RouteObjectInterface
     // constants ROUTE_NAME and ROUTE_OBJECT.
     // @see https://www.drupal.org/node/3151009
     $request->attributes->set('_route_object', new Route('<none>'));
