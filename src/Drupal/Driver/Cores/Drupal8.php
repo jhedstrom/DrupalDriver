@@ -15,7 +15,6 @@ use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
-use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
@@ -53,9 +52,12 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $request = Request::createFromGlobals();
     $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
-    // A route is required for route matching.
-    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
-    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, '<none>');
+    // A route is required for route matching. In order to support Drupal 10
+    // along with 8/9, we use the hadcoded values of RouteObjectInterface
+    // constants ROUTE_NAME and ROUTE_OBJECT.
+    // @see https://www.drupal.org/node/3151009
+    $request->attributes->set('_route_object', new Route('<none>'));
+    $request->attributes->set('_route', '<none>');
     $kernel->preHandle($request);
 
     // Initialise an anonymous session. required for the bootstrap.
