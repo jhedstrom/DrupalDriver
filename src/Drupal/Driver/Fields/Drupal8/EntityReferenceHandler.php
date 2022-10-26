@@ -8,29 +8,47 @@ namespace Drupal\Driver\Fields\Drupal8;
 class EntityReferenceHandler extends AbstractHandler {
 
   /**
+   * @var string
+   */
+  protected $targetEntityTypeId;
+
+  /**
+   * @var string
+   */
+  protected $labelKey;
+
+  /**
+   * @var string|null
+   */
+  protected $targetBundleKey = NULL;
+
+  /**
+   * @var string[]|null
+   */
+  protected $targetBundles = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public function expand($values) {
-    $entity_type_id = $this->fieldInfo->getSetting('target_type');
-    $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
+    $this->targetEntityTypeId = $this->fieldInfo->getSetting('target_type');
 
     // Determine label field key.
-    if ($entity_type_id !== 'user') {
-      $label_key = $entity_definition->getKey('label');
+    if ($this->targetEntityTypeId !== 'user') {
+      $this->labelKey = $this->getEntityTypeKey($this->targetEntityTypeId, 'label');
     }
     else {
       // Entity Definition->getKey('label') returns false for users.
-      $label_key = 'name';
+      $this->labelKey = 'name';
     }
 
-    if (!$label_key && $entity_type_id == 'user') {
-      $label_key = 'name';
+    if (!isset($this->labelKey) && $this->targetEntityTypeId === 'user') {
+      $this->labelKey = 'name';
     }
 
     // Determine target bundle restrictions.
-    $target_bundle_key = NULL;
-    if ($target_bundles = $this->getTargetBundles()) {
-      $target_bundle_key = $entity_definition->getKey('bundle');
+    if ($this->targetBundles = $this->getTargetBundles()) {
+      $this->targetBundleKey = $this->getTargetEntityTypeKey($this->targetEntityTypeId, 'bundle');
     }
 
     // The values can either be a direct label reference or a complex array
@@ -39,45 +57,63 @@ class EntityReferenceHandler extends AbstractHandler {
     // target_id exists as a property, we assume that the other properties are
     // also present. Retrieve all labels and load the entities.
     $main_property = $this->fieldInfo->getMainPropertyName();
+    $values = (array) $values;
     $labels = array_map(function ($value) use ($main_property) {
       return is_array($value) && isset($value[$main_property]) ? $value[$main_property] : $value;
     }, $values);
 
-    foreach ((array) $labels as $index => $label) {
-      $query = \Drupal::entityQuery($entity_type_id)->condition($label_key, $label);
-      $query->accessCheck(FALSE);
-      if ($target_bundles && $target_bundle_key) {
-        $query->condition($target_bundle_key, $target_bundles, 'IN');
-      }
-      if ($entities = $query->execute()) {
-        $entity_id = array_shift($entities);
-        // Replace the entity IDs in the original array so that other properties
-        // are not lost.
-        if (is_array($values[$index]) && isset($values[$index][$main_property])) {
-          $values[$index][$main_property] = $entity_id;
-        }
-        else {
-          $values[$index] = $entity_id;
-        }
+    foreach ($labels as $delta => $label) {
+      $entity_id = $this->getEntityReferenceIdFromLabel($label);
+      // Replace the entity IDs in the original array so that other properties
+      // are not lost.
+      if (is_array($values[$delta]) && isset($values[$delta][$main_property])) {
+        $values[$delta][$main_property] = $entity_id;
       }
       else {
-        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $label, $entity_type_id));
+        $values[$delta] = $entity_id;
       }
     }
+
     return $values;
   }
 
   /**
    * Retrieves bundles for which the field is configured to reference.
    *
-   * @return mixed
+   * @return string[]|null
    *   Array of bundle names, or NULL if not able to determine bundles.
    */
-  protected function getTargetBundles() {
+  protected function getTargetBundles(): ?array {
     $settings = $this->fieldConfig->getSettings();
     if (!empty($settings['handler_settings']['target_bundles'])) {
       return $settings['handler_settings']['target_bundles'];
     }
+    return NULL;
+  }
+
+  /**
+   * Returns the target entity ID given its label.
+   *
+   * @param string $label
+   *   The target entity label.
+   *
+   * @return string|int
+   *   The target entity ID.
+   *
+   * @throws \Exception
+   *   When no target entity exists.
+   */
+  protected function getEntityReferenceIdFromLabel(string $label) {
+    $query = \Drupal::entityQuery($this->targetEntityTypeId)
+      ->accessCheck(FALSE)
+      ->condition($this->labelKey, $label);
+    if ($this->targetBundleKey && $this->targetBundles) {
+      $query->condition($this->targetBundleKey, $this->targetBundles, 'IN');
+    }
+    if ($entities = $query->execute()) {
+      return array_shift($entities);
+    }
+    throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $label, $this->targetEntityTypeId));
   }
 
 }
