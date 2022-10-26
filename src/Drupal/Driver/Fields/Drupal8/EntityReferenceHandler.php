@@ -8,21 +8,29 @@ namespace Drupal\Driver\Fields\Drupal8;
 class EntityReferenceHandler extends AbstractHandler {
 
   /**
+   * The target entity type ID.
+   *
    * @var string
    */
   protected $targetEntityTypeId;
 
   /**
+   * The target entity type label key.
+   *
    * @var string
    */
-  protected $labelKey;
+  protected $targetLabelKey;
 
   /**
+   * The target entity type bundle key.
+   *
    * @var string|null
    */
   protected $targetBundleKey = NULL;
 
   /**
+   * Allowed target entity bundles.
+   *
    * @var string[]|null
    */
   protected $targetBundles = NULL;
@@ -35,15 +43,15 @@ class EntityReferenceHandler extends AbstractHandler {
 
     // Determine label field key.
     if ($this->targetEntityTypeId !== 'user') {
-      $this->labelKey = $this->getEntityTypeKey($this->targetEntityTypeId, 'label');
+      $this->targetLabelKey = $this->getEntityTypeKey($this->targetEntityTypeId, 'label');
     }
     else {
       // Entity Definition->getKey('label') returns false for users.
-      $this->labelKey = 'name';
+      $this->targetLabelKey = 'name';
     }
 
-    if (!isset($this->labelKey) && $this->targetEntityTypeId === 'user') {
-      $this->labelKey = 'name';
+    if (!isset($this->targetLabelKey) && $this->targetEntityTypeId === 'user') {
+      $this->targetLabelKey = 'name';
     }
 
     // Determine target bundle restrictions.
@@ -106,7 +114,7 @@ class EntityReferenceHandler extends AbstractHandler {
   protected function getEntityReferenceIdFromLabel(string $label) {
     $query = \Drupal::entityQuery($this->targetEntityTypeId)
       ->accessCheck(FALSE)
-      ->condition($this->labelKey, $label);
+      ->condition($this->targetLabelKey, $label);
     if ($this->targetBundleKey && $this->targetBundles) {
       $query->condition($this->targetBundleKey, $this->targetBundles, 'IN');
     }

@@ -3,7 +3,6 @@
 namespace Drupal\Driver\Fields\Drupal8;
 
 use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Driver\Fields\FieldHandlerInterface;
 
 /**

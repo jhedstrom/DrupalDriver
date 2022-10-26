@@ -208,7 +208,7 @@ class DrupalFieldHandlerTest extends TestCase {
           'label' => 'filename',
           'bundle' => FALSE,
         ],
-        'samples' =>  [
+        'samples' => [
           'foo.txt' => 1,
           'bar.png' => 5,
           'baz.jpg' => 99,
