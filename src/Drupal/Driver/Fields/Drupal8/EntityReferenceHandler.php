@@ -56,7 +56,7 @@ class EntityReferenceHandler extends AbstractHandler {
 
     // Determine target bundle restrictions.
     if ($this->targetBundles = $this->getTargetBundles()) {
-      $this->targetBundleKey = $this->getTargetEntityTypeKey($this->targetEntityTypeId, 'bundle');
+      $this->targetBundleKey = $this->getEntityTypeKey($this->targetEntityTypeId, 'bundle');
     }
 
     // The values can either be a direct label reference or a complex array
