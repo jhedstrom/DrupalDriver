@@ -165,13 +165,11 @@ class DrupalFieldHandlerTest extends TestCase {
    *   Entity field manager service mock.
    */
   protected function getEntityFieldManagerMock(string $entity_type_id, array $field_settings) {
-    $field_storage_config = \Mockery::mock(FieldStorageConfig::class);
-    $field_storage_config->makePartial();
-    $field_storage_config->__construct([
+    $field_storage_config = \Mockery::mock(FieldStorageConfig::class, [
       'field_name' => $field_settings['field_name'],
       'entity_type' => $entity_type_id,
       'type' => $field_settings['field_type'],
-    ]);
+    ])->makePartial();
     $field_storage_config->shouldReceive('getSetting')->with('target_type')->andReturn($field_settings['target_type']);
     $field_storage_config->shouldReceive('getMainPropertyName')->andReturn($field_settings['main_property']);
 

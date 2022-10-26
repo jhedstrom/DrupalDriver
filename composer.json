@@ -11,17 +11,19 @@
        "email": "jhedstrom@gmail.com"
      }
   ],
+  "minimum-stability": "beta",
   "require": {
     "php": ">=7.4",
     "symfony/process": "~2.5|~3.0|~4.4|^6",
     "symfony/dependency-injection": "~2.6|~3.0|~4.4|^6",
-    "drupal/core-utility": "^8.4 || ^9 || ^10.0.0-alpha1"
+    "drupal/core-utility": "^9.4 || ^10.0"
   },
   "require-dev": {
     "drupal/coder": "~8.3.0",
+    "drupal/core": "^9.4 || ^10.0",
     "phpspec/phpspec": "~2.0 || ~4.0 || ~6.1 || dev-main",
     "phpunit/phpunit": "~6.0 || ~7.0 || ^9",
-    "mockery/mockery": "^0.9.4",
+    "mockery/mockery": "^0.9.4 || ^1.5",
     "drush-ops/behat-drush-endpoint": "*",
     "php-parallel-lint/php-parallel-lint": "^1.0",
     "dms/phpunit-arraysubset-asserts": "^0.4.0"
@@ -33,13 +35,18 @@
       "phpunit",
       "phpspec run -f pretty --no-interaction",
       "phpcs --standard=./phpcs-ruleset.xml ."
-
     ]
   },
   "autoload": {
     "psr-0": {
       "Drupal\\Driver": "src/",
       "Drupal\\Tests\\Driver" : "tests/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Drupal\\": "vendor/drupal/core/lib/Drupal",
+      "Drupal\\field\\": "vendor/drupal/core/modules/field/src"
     }
   },
   "extra": {
