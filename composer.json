@@ -30,7 +30,8 @@
     "php-parallel-lint/php-parallel-lint": "^1.0",
     "dms/phpunit-arraysubset-asserts": "^0.4.0",
     "mglaman/drupal-check": "^1",
-    "palantirnet/drupal-rector": "^0.13"
+    "palantirnet/drupal-rector": "^0.13",
+    "symfony/phpunit-bridge": "^6.1"
   },
   "conflict": {
     "drupal/core": ">=8.0 <9.3"
