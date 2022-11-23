@@ -4,6 +4,7 @@ namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -15,7 +16,6 @@ use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
-use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
@@ -53,9 +53,12 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $request = Request::createFromGlobals();
     $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
-    // A route is required for route matching.
-    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
-    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, '<none>');
+    // A route is required for route matching. In order to support Drupal 10
+    // along with 8/9, we use the hardcoded values of RouteObjectInterface
+    // constants ROUTE_NAME and ROUTE_OBJECT.
+    // @see https://www.drupal.org/node/3151009
+    $request->attributes->set('_route_object', new Route('<none>'));
+    $request->attributes->set('_route', '<none>');
     $kernel->preHandle($request);
 
     // Initialise an anonymous session. required for the bootstrap.
@@ -75,6 +78,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function nodeCreate($node) {
     // Throw an exception if the node type is missing or does not exist.
+    /** @var \Drupal\node\Entity\Node $node */
     if (!isset($node->type) || !$node->type) {
       throw new \Exception("Cannot create content because it is missing the required property 'type'.");
     }
@@ -83,11 +87,12 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $bundle_info = \Drupal::service('entity_type.bundle.info');
     $bundles = $bundle_info->getBundleInfo('node');
     if (!in_array($node->type, array_keys($bundles))) {
-      throw new \Exception("Cannot create content because provided content type '$node->type' does not exist.");
+      throw new \Exception(sprintf('Cannot create content because provided content type %s does not exist.', $node->type));
     }
     // If 'author' is set, remap it to 'uid'.
     if (isset($node->author)) {
       $user = user_load_by_name($node->author);
+      /** @var \Drupal\user\Entity\User $user */
       if ($user) {
         $node->uid = $user->id();
       }
@@ -329,8 +334,13 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $term->vid = $term->vocabulary_machine_name;
 
     if (isset($term->parent)) {
-      $parent = \taxonomy_term_load_multiple_by_name($term->parent, $term->vocabulary_machine_name);
+      $query = \Drupal::entityQuery('taxonomy_term')
+        ->accessCheck(FALSE)
+        ->condition('id', $term->parent)
+        ->condition('vid', $term->vocabulary_machine_name);
+      $parent = $query->execute();
       if (!empty($parent)) {
+        /** @var \Drupal\taxonomy\Entity\Term $parent */
         $parent = reset($parent);
         $term->parent = $parent->id();
       }
@@ -380,12 +390,12 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    *
    * @param string $entity_type
    *   The entity type for which to return the field types.
-   * @param object $entity
+   * @param \StdClass $entity
    *   Entity object.
    * @param array $base_fields
    *   Base fields to be expanded in addition to user defined fields.
    */
-  public function expandEntityBaseFields($entity_type, \stdClass $entity, array $base_fields) {
+  public function expandEntityBaseFields($entity_type, \StdClass $entity, array $base_fields) {
     $this->expandEntityFields($entity_type, $entity, $base_fields);
   }
 
@@ -436,7 +446,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     if (!ConfigurableLanguage::load($langcode)) {
       $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
       if (!$created_language) {
-        throw new InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
+        throw new \InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
       }
       $created_language->save();
       return $language;

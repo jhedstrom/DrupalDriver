@@ -5,5 +5,8 @@ composer.lock
 reports
 vendor
 drush
+/drupal
 
 .phpunit.result.cache
+/.editorconfig
+/.gitattributes

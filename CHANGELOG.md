@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.2.1]
+  * [#250](https://github.com/jhedstrom/DrupalDriver/pull/250) Drupal 10 compatibility.
 ## [2.2.0]
 ### Fixed
   * [#232](https://github.com/jhedstrom/DrupalDriver/pull/232) Fixes typo in ImageHandler.

@@ -1,0 +1,32 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php_version: ["7.4", "8.0", "8.1"]
+        drupal_version: ["9", "10"]
+        exclude:
+          - php_version: "7.4"
+            drupal_version: "10"
+          - php_version: "8.0"
+            drupal_version: "10"
+    env:
+      PHP_VERSION: ${{ matrix.php_version }}
+      DRUPAL_VERSION: ${{ matrix.drupal_version }}
+      DOCKER_USER_ID: "1001"
+    steps:
+      - name: clone
+        uses: actions/checkout@v3
+      - name: docker-compose up -d
+        run: docker-compose up -d
+      - name: composer self-update
+        run: docker-compose exec -T php composer self-update
+      - name: composer require
+        run: docker-compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION}
+      - name: composer install
+        run: docker-compose exec -T php composer install
+      - name: composer test
+        run: docker-compose exec -T php composer test
