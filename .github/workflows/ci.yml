@@ -11,6 +11,8 @@ jobs:
         exclude:
           - php_version: "7.4"
             drupal_version: "10"
+          - php_version: "8.0"
+            drupal_version: "10"
     env:
       PHP_VERSION: ${{ matrix.php_version }}
       DRUPAL_VERSION: ${{ matrix.drupal_version }}
