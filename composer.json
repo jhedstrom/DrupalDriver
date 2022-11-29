@@ -58,8 +58,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Drupal\\": "vendor/drupal/core/lib/Drupal",
-      "Drupal\\field\\": "vendor/drupal/core/modules/field/src"
+      "Drupal\\": "drupal/core/lib/Drupal",
+      "Drupal\\field\\": "drupal/core/modules/field/src"
     }
   },
   "repositories": {
