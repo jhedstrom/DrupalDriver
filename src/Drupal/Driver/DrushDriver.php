@@ -414,7 +414,7 @@ class DrushDriver extends BaseDriver {
     // Add any global arguments.
     $global = $this->getArguments();
 
-    $process = new Process("{$this->binary} {$alias} {$string_options} {$global} {$command} {$arguments}");
+    $process = Process::fromShellCommandline("{$this->binary} {$alias} {$string_options} {$global} {$command} {$arguments}");
     $process->setTimeout(3600);
     $process->run();
 

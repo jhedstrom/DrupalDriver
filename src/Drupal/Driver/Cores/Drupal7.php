@@ -346,7 +346,7 @@ class Drupal7 extends AbstractCore {
 
     // If the language code is not valid then throw an InvalidArgumentException.
     if (!isset($predefined_languages[$language->langcode])) {
-      throw new InvalidArgumentException("There is no predefined language with langcode '{$language->langcode}'.");
+      throw new \InvalidArgumentException("There is no predefined language with langcode '{$language->langcode}'.");
     }
 
     // Enable a language only if it has not been enabled already.

@@ -24,5 +24,6 @@
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/CHANGELOG.md</exclude-pattern>
     <exclude-pattern>*/README.md</exclude-pattern>
+    <exclude-pattern>./drupal/*</exclude-pattern>
 
 </ruleset>

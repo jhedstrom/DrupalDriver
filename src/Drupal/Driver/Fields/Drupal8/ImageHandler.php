@@ -17,9 +17,7 @@ class ImageHandler extends AbstractHandler {
     }
 
     /** @var \Drupal\file\FileInterface $file */
-    $file = file_save_data(
-      $data,
-      'public://' . uniqid() . '.jpg');
+    $file = \Drupal::service('file.repository')->writeData($data, 'public://' . uniqid() . '.jpg');
 
     if (FALSE === $file) {
       throw new \Exception("Error saving file");
