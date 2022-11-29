@@ -333,7 +333,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   public function termCreate(\stdClass $term) {
     $term->vid = $term->vocabulary_machine_name;
 
-    if (isset($term->parent)) {
+    if (!empty($term->parent)) {
       $query = \Drupal::entityQuery('taxonomy_term')
         ->accessCheck(FALSE)
         ->condition('id', $term->parent)
