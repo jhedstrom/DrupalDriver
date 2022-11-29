@@ -11,7 +11,6 @@
        "email": "jhedstrom@gmail.com"
      }
   ],
-  "minimum-stability": "beta",
   "require": {
     "php": ">=7.4",
     "symfony/process": "~2.5|~3.0|~4.4|^6",
@@ -69,6 +68,7 @@
     }
   },
   "prefer-stable": true,
+  "minimum-stability": "beta",
   "extra": {
     "branch-alias": {
       "dev-master": "2.3.x-dev"
