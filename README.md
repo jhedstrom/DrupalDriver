@@ -65,5 +65,13 @@ $node = (object) array(
 $driver->createNode($node);
 ```
 
+### Contributing
+
+Features and bug fixes are welcome! First-time contributors can jump in with the
+issues tagged [good first issue](https://github.com/jhedstrom/DrupalDriver/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+See [CONTRIBUTING.md](https://github.com/jhedstrom/DrupalDriver/blob/master/CONTRIBUTING.md) for more information.
+
 ### Release notes
+
 See [CHANGELOG](CHANGELOG.MD).
