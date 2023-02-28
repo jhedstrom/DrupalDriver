@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   * [#232](https://github.com/jhedstrom/DrupalDriver/pull/232) Fix type in ImageHandler.
 ## [2.1.0]
 ### Added
-  * [#186](https://github.com/jhedstrom/DrupalDriver/issues/168) Provide a method to directly authenticate on Drupal 8.
+  * [#186](https://github.com/jhedstrom/DrupalDriver/issues/186) Provide a method to directly authenticate on Drupal 8.
 ### Changed
   * Remove testing on PHP 5.6, added testing on PHP 7.3 and 7.4.
   * [#214](https://github.com/jhedstrom/DrupalDriver/pull/214) Fix D8 deprectations.
