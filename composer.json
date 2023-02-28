@@ -37,16 +37,24 @@
     "drupal/core": ">=8.0 <9.3"
   },
   "scripts": {
-    "test": [
-      "composer validate --no-interaction",
-      "parallel-lint src spec tests",
-      "phpunit",
-      "phpspec run -f pretty --no-interaction",
-      "phpcs --standard=./phpcs-ruleset.xml .",
-      "./vendor/bin/drupal-check --drupal-root=drupal ./src/Drupal/Driver/Cores/Drupal8.php ./src/Drupal/Driver/Fields/Drupal8",
+    "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
+    "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text",
+    "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
+    "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
+    "drupal-check": "XDEBUG_MODE=off drupal-check --drupal-root=drupal ./src/Drupal/Driver/Cores/Drupal8.php ./src/Drupal/Driver/Fields/Drupal8",
+    "rector": [
       "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
-      "cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
-      "cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8 --dry-run"
+      "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
+      "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8 --dry-run"
+    ],
+    "test": [
+      "XDEBUG_MODE=off composer validate --no-interaction",
+      "@lint",
+      "@phpunit",
+      "@phpspec",
+      "@phpcs",
+      "@drupal-check",
+      "@rector"
     ]
   },
   "autoload": {
