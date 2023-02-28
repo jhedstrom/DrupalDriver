@@ -15,6 +15,8 @@ class EntityReferenceHandler extends AbstractHandler {
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
 
+    $id_key = $entity_definition->getKey('id');
+
     // Determine label field key.
     if ($entity_type_id !== 'user') {
       $label_key = $entity_definition->getKey('label');
@@ -35,7 +37,11 @@ class EntityReferenceHandler extends AbstractHandler {
     }
 
     foreach ((array) $values as $value) {
-      $query = \Drupal::entityQuery($entity_type_id)->condition($label_key, $value);
+      $query = \Drupal::entityQuery($entity_type_id);
+      $or = $query->orConditionGroup();
+      $or->condition($id_key, $value)
+        ->condition($label_key, $value);
+      $query->condition($or);
       $query->accessCheck(FALSE);
       if ($target_bundles && $target_bundle_key) {
         $query->condition($target_bundle_key, $target_bundles, 'IN');
