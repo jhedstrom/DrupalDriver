@@ -160,6 +160,19 @@ interface CoreInterface {
   public function isField($entity_type, $field_name);
 
   /**
+   * Checks if the specified field is a Drupal base field.
+   *
+   * @param string $entity_type
+   *   The entity type to check.
+   * @param string $field_name
+   *   The field name to check.
+   *
+   * @return bool
+   *   TRUE if the given field is a base field, FALSE otherwise.
+   */
+  public function isBaseField($entity_type, $field_name);
+
+  /**
    * Returns array of field types for the specified entity.
    *
    * @param string $entity_type

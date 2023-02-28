@@ -288,6 +288,13 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
+  public function isBaseField($entity_type, $field_name) {
+    return $this->getCore()->isBaseField($entity_type, $field_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function languageCreate($language) {
     return $this->getCore()->languageCreate($language);
   }

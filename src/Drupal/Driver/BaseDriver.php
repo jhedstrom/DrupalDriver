@@ -136,6 +136,13 @@ abstract class BaseDriver implements DriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function isBaseField($entity_type, $field_name) {
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function configGet($name, $key) {
     throw new UnsupportedDriverActionException($this->errorString('config get'), $this);
   }
