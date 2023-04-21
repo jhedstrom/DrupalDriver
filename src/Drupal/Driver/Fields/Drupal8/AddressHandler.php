@@ -49,6 +49,12 @@ class AddressHandler extends AbstractHandler {
           $return[$k] = $value;
           break;
         }
+        // If the value array contains keys for the address fields array, use
+        // the keyed value.
+        elseif (isset($value[$k])) {
+          $return[$k] = $value[$k];
+          continue;
+        }
         if ($idx < count($value)) {
           // Gracefully handle users providing too few field component values.
           $return[$k] = $value[$idx];
