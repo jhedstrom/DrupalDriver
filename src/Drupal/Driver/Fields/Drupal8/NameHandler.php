@@ -14,7 +14,6 @@ class NameHandler implements FieldHandlerInterface {
    */
   public function expand($values) {
     $values = preg_split("/, /", $values);
-    print_r($values);
     return [
       'family' => $values[0],
       'given' => $values[1],
