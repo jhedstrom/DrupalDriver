@@ -97,13 +97,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
         $node->uid = $user->id();
       }
     }
-    $this->expandEntityFields('node', $node);
-    $entity = Node::create((array) $node);
-    $entity->save();
 
-    $node->nid = $entity->id();
-
-    return $node;
+    return $this->entityCreate('node', $node);
   }
 
   /**
@@ -134,14 +129,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       $user->status = 1;
     }
 
-    // Clone user object, otherwise user_save() changes the password to the
-    // hashed password.
-    $this->expandEntityFields('user', $user);
-    $account = \Drupal::entityTypeManager()->getStorage('user')->create((array) $user);
-    $account->save();
-
-    // Store UID.
-    $user->uid = $account->id();
+    return $this->entityCreate('user', $user);
   }
 
   /**
@@ -344,12 +332,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       }
     }
 
-    $this->expandEntityFields('taxonomy_term', $term);
-    $entity = Term::create((array) $term);
-    $entity->save();
-
-    $term->tid = $entity->id();
-    return $term;
+    return $this->entityCreate('taxonomy_term', $term);
   }
 
   /**
@@ -381,20 +364,6 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     }
 
     return $paths;
-  }
-
-  /**
-   * Expands specified base fields on the entity object.
-   *
-   * @param string $entity_type
-   *   The entity type for which to return the field types.
-   * @param \StdClass $entity
-   *   Entity object.
-   * @param array $base_fields
-   *   Base fields to be expanded in addition to user defined fields.
-   */
-  public function expandEntityBaseFields($entity_type, \StdClass $entity, array $base_fields) {
-    $this->expandEntityFields($entity_type, $entity, $base_fields);
   }
 
   /**
@@ -496,31 +465,56 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function entityCreate($entity_type, $entity) {
-    // If the bundle field is empty, put the inferred bundle value in it.
-    $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
-    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
-      $entity->$bundle_key = $entity->step_bundle;
-    }
-
-    // Throw an exception if a bundle is specified but does not exist.
-    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
-      /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
-      $bundle_info = \Drupal::service('entity_type.bundle.info');
-      $bundles = $bundle_info->getBundleInfo($entity_type);
-      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
-      }
-    }
     if (empty($entity_type)) {
       throw new \Exception("You must specify an entity type to create an entity.");
     }
 
-    $this->expandEntityFields($entity_type, $entity);
-    $createdEntity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
+    $entity_type_definition = \Drupal::entityTypeManager()
+      ->getDefinition($entity_type);
+    $id_key = $entity_type_definition
+      ->getKey('id');
+    $bundle_key = $entity_type_definition
+      ->getKey('bundle');
+
+    // If the bundle field is empty, put the inferred bundle value in it.
+    // Try first for step_bundle. Use entity type as last resort.
+    if (!isset($entity->$bundle_key)) {
+      $entity->$bundle_key = $entity->step_bundle ?? $entity_type;
+    }
+
+    // Throw an exception if a bundle is specified but does not exist.
+    if (isset($entity->$bundle_key)) {
+      $bundles = \Drupal::service('entity_type.bundle.info')
+        ->getBundleInfo($entity_type);
+      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
+        throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
+      }
+    }
+
+    // Determine which base fields are set on the source entity object so we
+    // can include them when expanding field values.
+    $base_fields = [];
+    foreach (array_keys(\Drupal::service('entity_field.manager')->getBaseFieldDefinitions($entity_type)) as $base_field_name) {
+      // The bundle field does not need expanding, so we exclude it even if set.
+      if (property_exists($entity, $base_field_name) && $base_field_name !== $bundle_key) {
+        $base_fields[] = $base_field_name;
+      }
+    }
+
+    // Expand all fields that are set on the source entity object into a new
+    // values object we'll use to create the actual entity. This keeps the
+    // source entity object in the simpler format expected by related methods.
+    $values = clone $entity;
+    $this->expandEntityFields($entity_type, $values, $base_fields);
+
+    // Create the new entity.
+    $createdEntity = \Drupal::entityTypeManager()
+      ->getStorage($entity_type)
+      ->create((array) $values);
     $createdEntity->save();
 
-    $entity->id = $createdEntity->id();
-
+    // Store the ID of the new entity into our source entity and return it.
+    $entity->$id_key = $createdEntity->id();
     return $entity;
   }
 
@@ -528,7 +522,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, $entity) {
-    $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
+    $id_key = \Drupal::entityTypeManager()
+      ->getDefinition($entity_type)
+      ->getKey('id');
+    $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->$id_key);
     if ($entity instanceof EntityInterface) {
       $entity->delete();
     }
