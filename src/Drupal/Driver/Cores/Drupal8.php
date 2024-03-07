@@ -91,11 +91,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     }
     // If 'author' is set, remap it to 'uid'.
     if (isset($node->author)) {
-      $user = user_load_by_name($node->author);
-      /** @var \Drupal\user\Entity\User $user */
-      if ($user) {
-        $node->uid = $user->id();
-      }
+      $node->uid = $node->author;
     }
 
     return $this->entityCreate('node', $node);
