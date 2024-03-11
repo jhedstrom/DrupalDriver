@@ -71,14 +71,15 @@ class DrushDriver extends BaseDriver {
    *   The root path of the Drupal install. This is an alternative to using
    *   aliases.
    * @param string $binary
-   *   The path to the drush binary.
+   *   The path to the drush binary. Defaults to the Drush instance installed
+   *   on the project-level.
    * @param \Drupal\Component\Utility\Random $random
    *   Random generator.
    *
    * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when a required parameter is missing.
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
+  public function __construct($alias = NULL, $root_path = NULL, $binary = '', Random $random = NULL) {
     if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
@@ -90,6 +91,11 @@ class DrushDriver extends BaseDriver {
     }
     else {
       throw new BootstrapException('A drush alias or root path is required.');
+    }
+
+    if ($binary === '') {
+      global $_composer_bin_dir;
+      $binary = $_composer_bin_dir . '/drush';
     }
 
     $this->binary = $binary;
