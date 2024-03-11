@@ -71,14 +71,15 @@ class DrushDriver extends BaseDriver {
    *   The root path of the Drupal install. This is an alternative to using
    *   aliases.
    * @param string $binary
-   *   The path to the drush binary.
+   *   The path to the drush binary. Defaults to the Drush instance installed
+   *   on the project-level.
    * @param \Drupal\Component\Utility\Random $random
    *   Random generator.
    *
    * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when a required parameter is missing.
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
+  public function __construct($alias = NULL, $root_path = NULL, $binary = '', Random $random = NULL) {
     if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
@@ -92,6 +93,20 @@ class DrushDriver extends BaseDriver {
       throw new BootstrapException('A drush alias or root path is required.');
     }
 
+    if ($binary === '') {
+      global $_composer_bin_dir;
+
+      $binary = $_composer_bin_dir . '/drush';
+      if (!file_exists($binary)) {
+        trigger_error("Using the Drush Driver without Drush installed at the project level is deprecated in Drupal Driver 2.2.3 and will be removed in 3.0.0. Please ensure Drush is installed on the project level by running 'composer require drush/drush'.", E_USER_DEPRECATED);
+        $binary = 'drush';
+      }
+    }
+
+    if ($binary === 'drush') {
+      trigger_error("Relying on the globally installed Drush binary via Drush Launcher is deprecated in Drupal Driver 2.2.3 and will be removed in 3.0.0. Please ensure Drush is installed on the project level by running 'composer require drush/drush'.", E_USER_DEPRECATED);
+    }
+        
     $this->binary = $binary;
 
     if (!isset($random)) {
