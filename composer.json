@@ -37,7 +37,7 @@
   },
   "scripts": {
     "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
-    "phpunit-configuration": "hpunit --migrate-configuration",
+    "phpunit-configuration": "phpunit --migrate-configuration",
     "phpunit": "XDEBUG_MODE=coverage phpunit",
     "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
     "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
