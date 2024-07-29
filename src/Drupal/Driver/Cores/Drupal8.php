@@ -262,18 +262,19 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function userAddRole(\stdClass $user, $role_name) {
     // Allow both machine and human role names.
-    $roles = user_role_names();
-    $id = array_search($role_name, $roles);
-    if (FALSE !== $id) {
-      $role_name = $id;
-    }
-
-    if (!$role = Role::load($role_name)) {
+    $query = \Drupal::entityQuery('user_role');
+    $conditions = $query->orConditionGroup()
+      ->condition('id', $role_name)
+      ->condition('label', $role_name);
+    $rids = $query
+      ->condition($conditions)
+      ->execute();
+    if (!$rids) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
     }
 
     $account = User::load($user->uid);
-    $account->addRole($role->id());
+    $account->addRole(reset($rids));
     $account->save();
   }
 
