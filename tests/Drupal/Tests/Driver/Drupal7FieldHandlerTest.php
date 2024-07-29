@@ -7,7 +7,7 @@ use DMS\PHPUnitExtensions\ArraySubset\Assert;
 /**
  * Tests the Drupal 7 field handlers.
  */
-class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
+class Drupal7FieldHandlerTest extends FieldHandlerAbstractTestBase {
 
   /**
    * Tests the field handlers.
