@@ -25,7 +25,7 @@
     "mockery/mockery": "^1.5",
     "drupal/core-composer-scaffold": "^8.4 || ^9 || ^10 || ^11",
     "drupal/core-recommended": "^8.4 || ^9 || ^10 || ^11",
-    "drupal/mailsystem": "^4.4",
+    "drupal/mailsystem": "^4.4 || 4.x-dev",
     "drush-ops/behat-drush-endpoint": "*",
     "php-parallel-lint/php-parallel-lint": "^1.0",
     "dms/phpunit-arraysubset-asserts": "^0.4.0",

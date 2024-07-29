@@ -9,8 +9,6 @@ jobs:
         include:
           - php_version: "7.4"
             drupal_version: "9"
-          - php_version: "8.1"
-            drupal_version: "10.3"
           - php_version: "8.2"
             drupal_version: "10"
           - php_version: "8.3"
