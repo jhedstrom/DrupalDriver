@@ -37,7 +37,8 @@
   },
   "scripts": {
     "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
-    "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text",
+    "phpunit-configuration": "hpunit --migrate-configuration",
+    "phpunit": "XDEBUG_MODE=coverage phpunit",
     "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
     "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
     "rector": [
@@ -48,6 +49,7 @@
     "test": [
       "XDEBUG_MODE=off composer validate --no-interaction",
       "@lint",
+      "@phpunit-configuration",
       "@phpunit",
       "@phpspec",
       "@phpcs",
