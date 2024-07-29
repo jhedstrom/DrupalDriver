@@ -43,7 +43,7 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTest {
    * @return array
    *   An array of test data.
    */
-  public function dataProvider() {
+  public static function dataProvider() {
     return [
       // Test default text field provided as simple text.
       [
