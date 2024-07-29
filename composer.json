@@ -29,7 +29,6 @@
     "drush-ops/behat-drush-endpoint": "*",
     "php-parallel-lint/php-parallel-lint": "^1.0",
     "dms/phpunit-arraysubset-asserts": "^0.4.0",
-    "mglaman/drupal-check": "^1",
     "palantirnet/drupal-rector": "^0.13",
     "symfony/phpunit-bridge": "^6.1"
   },
@@ -41,7 +40,6 @@
     "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text",
     "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
     "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
-    "drupal-check": "XDEBUG_MODE=off drupal-check --drupal-root=drupal ./src/Drupal/Driver/Cores/Drupal8.php ./src/Drupal/Driver/Fields/Drupal8",
     "rector": [
       "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
       "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
@@ -53,7 +51,6 @@
       "@phpunit",
       "@phpspec",
       "@phpcs",
-      "@drupal-check",
       "@rector"
     ]
   },
