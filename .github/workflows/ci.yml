@@ -30,5 +30,8 @@ jobs:
         run: docker-compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-recommended:^${DRUPAL_VERSION}
       - name: composer install
         run: docker-compose exec -T php composer install
+      - name: composer phpunit-configuration
+        run: docker-compose exec -T php phpunit --migrate-configuration
+        if: "${{ matrix.drupal_version == '11'}}"
       - name: composer test
         run: docker-compose exec -T php composer test
