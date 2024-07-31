@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Base class for field handler tests.
  */
-abstract class FieldHandlerAbstractTest extends TestCase {
+abstract class FieldHandlerAbstractTestBase extends TestCase {
 
   /**
    * {@inheritdoc}

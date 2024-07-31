@@ -21,15 +21,14 @@
     "composer/installers": "^2.1",
     "drupal/coder": "~8.3.0",
     "phpspec/phpspec": "~2.0 || ~4.0 || ~6.1 || dev-main",
-    "phpunit/phpunit": "~6.0 || ~7.0 || ^9",
+    "phpunit/phpunit": "~6.0 || ~7.0 || ^9 || ^10",
     "mockery/mockery": "^1.5",
-    "drupal/core-composer-scaffold": "^8.4 || ^9 || ^10@beta",
-    "drupal/core-recommended": "^8.4 || ^9 || ^10@beta",
-    "drupal/mailsystem": "^4.4",
+    "drupal/core-composer-scaffold": "^8.4 || ^9 || ^10 || ^11",
+    "drupal/core-recommended": "^8.4 || ^9 || ^10 || ^11",
+    "drupal/mailsystem": "^4.4 || 4.x-dev",
     "drush-ops/behat-drush-endpoint": "*",
     "php-parallel-lint/php-parallel-lint": "^1.0",
-    "dms/phpunit-arraysubset-asserts": "^0.4.0",
-    "mglaman/drupal-check": "^1",
+    "dms/phpunit-arraysubset-asserts": "^0.4.0 || ^0.5.0",
     "palantirnet/drupal-rector": "^0.13",
     "symfony/phpunit-bridge": "^6.1"
   },
@@ -38,10 +37,9 @@
   },
   "scripts": {
     "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
-    "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text",
+    "phpunit": "XDEBUG_MODE=coverage phpunit",
     "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
     "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
-    "drupal-check": "XDEBUG_MODE=off drupal-check --drupal-root=drupal ./src/Drupal/Driver/Cores/Drupal8.php ./src/Drupal/Driver/Fields/Drupal8",
     "rector": [
       "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
       "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
@@ -53,7 +51,6 @@
       "@phpunit",
       "@phpspec",
       "@phpcs",
-      "@drupal-check",
       "@rector"
     ]
   },

@@ -6,15 +6,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php_version: ["7.4", "8.0", "8.1", "8.2"]
-        drupal_version: ["9", "10"]
-        exclude:
+        include:
           - php_version: "7.4"
-            drupal_version: "10"
-          - php_version: "8.0"
-            drupal_version: "10"
-          - php_version: "8.2"
             drupal_version: "9"
+          - php_version: "8.2"
+            drupal_version: "10"
+          - php_version: "8.3"
+            drupal_version: "10"
+          - php_version: "8.3"
+            drupal_version: "11"
     env:
       PHP_VERSION: ${{ matrix.php_version }}
       DRUPAL_VERSION: ${{ matrix.drupal_version }}
@@ -27,8 +27,11 @@ jobs:
       - name: composer self-update
         run: docker-compose exec -T php composer self-update
       - name: composer require
-        run: docker-compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION}
+        run: docker-compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-recommended:^${DRUPAL_VERSION}
       - name: composer install
         run: docker-compose exec -T php composer install
+      - name: composer phpunit-configuration
+        run: docker-compose exec -T php phpunit --migrate-configuration
+        if: "${{ matrix.drupal_version == '11'}}"
       - name: composer test
         run: docker-compose exec -T php composer test
