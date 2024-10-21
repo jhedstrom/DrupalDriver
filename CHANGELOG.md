@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [2.3.0]
+### Added
+  * [#241](https://github.com/jhedstrom/DrupalDriver/pull/241) - Allow Entity Reference Field Handler to Reference by ID
+  * [#261](https://github.com/jhedstrom/DrupalDriver/pull/261) - Broaden compatibility with symfony/process
+  * [#265](https://github.com/jhedstrom/DrupalDriver/pull/265) - PHP 8.2 testing
+  * [#275](https://github.com/jhedstrom/DrupalDriver/pull/275) - Initial Drupal 11 support
+  * [#276](https://github.com/jhedstrom/DrupalDriver/pull/276) - Drupal 11 support
 ## [2.2.2]
 ### Added
   * [#258](https://github.com/jhedstrom/DrupalDriver/pull/258) Document testing of the Drupal Driver locally for contributors.
