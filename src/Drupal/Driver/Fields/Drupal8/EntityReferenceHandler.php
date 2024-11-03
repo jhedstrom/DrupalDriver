@@ -39,7 +39,10 @@ class EntityReferenceHandler extends AbstractHandler {
     foreach ((array) $values as $value) {
       $query = \Drupal::entityQuery($entity_type_id);
       $or = $query->orConditionGroup();
-      $or->condition($id_key, $value)
+      $id_group = $query->andConditionGroup()
+        ->condition($id_key, $value)
+        ->condition($id_key, 0, '<>');
+      $or->condition($id_group)
         ->condition($label_key, $value);
       $query->condition($or);
       $query->accessCheck(FALSE);
