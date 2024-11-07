@@ -36,12 +36,18 @@ class EntityReferenceHandler extends AbstractHandler {
       $target_bundle_key = $entity_definition->getKey('bundle');
     }
 
+    // Determine the id key type (can be an integer or string).
+    $id_definition = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions($entity_type_id)[$id_key];
+    $id_type = $id_definition->getType();
+
     foreach ((array) $values as $value) {
       $query = \Drupal::entityQuery($entity_type_id);
-      $or = $query->orConditionGroup();
-      $or->condition($id_key, $value)
-        ->condition($label_key, $value);
-      $query->condition($or);
+      // Provide for the use of numeric entity ids.
+      if ($id_type === 'integer' && is_numeric($value)) {
+        $query->condition($id_key, $value);
+      } else {
+        $query->condition($label_key, $value);
+      }
       $query->accessCheck(FALSE);
       if ($target_bundles && $target_bundle_key) {
         $query->condition($target_bundle_key, $target_bundles, 'IN');
