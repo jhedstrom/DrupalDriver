@@ -23,15 +23,15 @@ jobs:
       - name: clone
         uses: actions/checkout@v3
       - name: docker-compose up -d
-        run: docker-compose up -d
+        run: docker compose up -d
       - name: composer self-update
-        run: docker-compose exec -T php composer self-update
+        run: docker compose exec -T php composer self-update
       - name: composer require
-        run: docker-compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-recommended:^${DRUPAL_VERSION}
+        run: docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-recommended:^${DRUPAL_VERSION}
       - name: composer install
-        run: docker-compose exec -T php composer install
+        run: docker compose exec -T php composer install
       - name: composer phpunit-configuration
-        run: docker-compose exec -T php phpunit --migrate-configuration
+        run: docker compose exec -T php phpunit --migrate-configuration
         if: "${{ matrix.drupal_version == '11'}}"
       - name: composer test
-        run: docker-compose exec -T php composer test
+        run: docker compose exec -T php composer test
