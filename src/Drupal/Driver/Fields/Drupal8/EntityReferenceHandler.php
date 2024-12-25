@@ -26,10 +26,6 @@ class EntityReferenceHandler extends AbstractHandler {
       $label_key = 'name';
     }
 
-    if (!$label_key && $entity_type_id == 'user') {
-      $label_key = 'name';
-    }
-
     // Determine target bundle restrictions.
     $target_bundle_key = NULL;
     if ($target_bundles = $this->getTargetBundles()) {
