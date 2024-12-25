@@ -43,9 +43,14 @@ class EntityReferenceHandler extends AbstractHandler {
     foreach ((array) $values as $value) {
       $query = \Drupal::entityQuery($entity_type_id);
       // Provide for the use of numeric entity ids.
-      if ($id_type === 'integer' && is_numeric($value)) {
-        $query->condition($id_key, $value);
-      } else {
+      if ($id_type === 'integer' && ctype_digit($value)) {
+        $or = $query->orConditionGroup();
+        $or
+          ->condition($id_key, $value)
+          ->condition($label_key, $value);
+        $query->condition($or);
+      }
+      else {
         $query->condition($label_key, $value);
       }
       $query->accessCheck(FALSE);
