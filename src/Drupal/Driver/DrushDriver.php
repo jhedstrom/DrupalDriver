@@ -78,7 +78,7 @@ class DrushDriver extends BaseDriver {
    * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when a required parameter is missing.
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', Random $random = NULL) {
+  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', ?Random $random = NULL) {
     if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');

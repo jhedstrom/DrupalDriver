@@ -19,7 +19,7 @@ interface CoreInterface {
    * @param \Drupal\Component\Utility\Random $random
    *   Random string generator.
    */
-  public function __construct($drupal_root, $uri = 'default', Random $random = NULL);
+  public function __construct($drupal_root, $uri = 'default', ?Random $random = NULL);
 
   /**
    * Return random generator.
