@@ -9,7 +9,7 @@ Testing is performed automatically in Github Actions when a PR is submitted. To 
 Configure your test environment:
 
 ```
-export PHP_VERSION=8.4
+export PHP_VERSION=8.3
 export DRUPAL_VERSION=11
 export DOCKER_USER_ID=${UID}
 ```
