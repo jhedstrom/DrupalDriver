@@ -34,7 +34,7 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function __construct($drupal_root, $uri = 'default', Random $random = NULL) {
+  public function __construct($drupal_root, $uri = 'default', ?Random $random = NULL) {
     $this->drupalRoot = realpath($drupal_root);
     $this->uri = $uri;
     if (!isset($random)) {
