@@ -196,9 +196,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function processBatch() {
     $this->validateDrupalSite();
-    $batch =& batch_get();
-    $batch['progressive'] = FALSE;
-    batch_process();
+    if ($batch =& batch_get()) {
+      $batch['progressive'] = FALSE;
+      batch_process();
+    }
   }
 
   /**
