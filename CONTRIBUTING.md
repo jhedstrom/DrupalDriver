@@ -19,7 +19,7 @@ Prepare environment for testing:
 ```
 docker compose up -d
 docker compose exec -T php composer self-update
-docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupalcore:^${DRUPAL_VERSION}
+docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION}
 docker compose exec -T php composer install
 ```
 
