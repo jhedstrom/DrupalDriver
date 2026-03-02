@@ -1,96 +1,102 @@
 {
-  "name": "drupal/drupal-driver",
-  "type": "library",
-  "description": "A collection of reusable Drupal drivers",
-  "keywords": ["drupal", "web", "test"],
-  "homepage": "http://github.com/jhedstrom/DrupalDriver",
-  "license": "GPL-2.0-or-later",
-  "authors": [
-     {
-       "name": "Jonathan Hedstrom",
-       "email": "jhedstrom@gmail.com"
-     }
-  ],
-  "require": {
-    "php": ">=7.4",
-    "symfony/process": "~2.5 || ~3.0 || ~4.4 || ^6 || ^7",
-    "symfony/dependency-injection": "~2.6 || ~3.0 || ~4.4 || ^6 || ^7.1",
-    "drupal/core-utility": "^8.4 || ^9 || ^10 || ^11"
-  },
-  "require-dev": {
-    "composer/installers": "^2.1",
-    "drupal/coder": "~8.3.0",
-    "phpspec/phpspec": "~2.0 || ~4.0 || ~6.1 || ~7.5 || dev-main",
-    "phpunit/phpunit": "~6.0 || ~7.0 || ^9 || ^10",
-    "mockery/mockery": "^1.5",
-    "drupal/core-composer-scaffold": "^8.4 || ^9 || ^10 || ^11",
-    "drupal/core-recommended": "^8.4 || ^9 || ^10 || ^11",
-    "drupal/mailsystem": "^4.4 || 4.x-dev",
-    "drush-ops/behat-drush-endpoint": "*",
-    "php-parallel-lint/php-parallel-lint": "^1.0",
-    "dms/phpunit-arraysubset-asserts": "^0.4.0 || ^0.5.0",
-    "palantirnet/drupal-rector": "^0.20",
-    "symfony/phpunit-bridge": "^6.1"
-  },
-  "conflict": {
-    "drupal/core": ">=8.0 <9.3"
-  },
-  "scripts": {
-    "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
-    "phpunit": "XDEBUG_MODE=coverage phpunit",
-    "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
-    "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
-    "rector": [
-      "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
-      "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
-      "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8 --dry-run"
+    "name": "drupal/drupal-driver",
+    "description": "A collection of reusable Drupal drivers",
+    "license": "GPL-2.0-or-later",
+    "type": "library",
+    "keywords": [
+        "drupal",
+        "web",
+        "test"
     ],
-    "test": [
-      "XDEBUG_MODE=off composer validate --no-interaction",
-      "@lint",
-      "@phpunit",
-      "@phpspec",
-      "@phpcs",
-      "@rector"
-    ]
-  },
-  "autoload": {
-    "psr-0": {
-      "Drupal\\Driver": "src/",
-      "Drupal\\Tests\\Driver" : "tests/"
-    }
-  },
-  "repositories": {
-    "drupal": {
-      "type": "composer",
-      "url": "https://packages.drupal.org/8"
-    }
-  },
-  "prefer-stable": true,
-  "minimum-stability": "beta",
-  "extra": {
-    "branch-alias": {
-      "dev-master": "2.3.x-dev"
+    "authors": [
+        {
+            "name": "Jonathan Hedstrom",
+            "email": "jhedstrom@gmail.com"
+        }
+    ],
+    "homepage": "http://github.com/jhedstrom/DrupalDriver",
+    "require": {
+        "php": ">=7.4",
+        "drupal/core-utility": "^8.4 || ^9 || ^10 || ^11",
+        "symfony/dependency-injection": "^2.6 || ^3.0 || ^4.4 || ^6 || ^7.1",
+        "symfony/process": "^2.5 || ^3.0 || ^4.4 || ^6 || ^7"
     },
-    "installer-paths": {
-      "drupal/core": [
-        "type:drupal-core"
-      ],
-      "drupal/modules/{$name}": [
-        "type:drupal-module"
-      ]
+    "require-dev": {
+        "composer/installers": "^2.1",
+        "dms/phpunit-arraysubset-asserts": "^0.4.0 || ^0.5.0",
+        "drupal/coder": "~8.3.0",
+        "drupal/core-composer-scaffold": "^8.4 || ^9 || ^10 || ^11",
+        "drupal/core-recommended": "^8.4 || ^9 || ^10 || ^11",
+        "drupal/mailsystem": "^4.4 || 4.x-dev",
+        "drush-ops/behat-drush-endpoint": "*",
+        "ergebnis/composer-normalize": "^2.50",
+        "mockery/mockery": "^1.5",
+        "palantirnet/drupal-rector": "^0.20",
+        "php-parallel-lint/php-parallel-lint": "^1.0",
+        "phpspec/phpspec": "^2.0 || ^4.0 || ^6.1 || ^7.5 || dev-main",
+        "phpunit/phpunit": "^6.0 || ^7.0 || ^9 || ^10",
+        "symfony/phpunit-bridge": "^6.1"
     },
-    "drupal-scaffold": {
-      "locations": {
-        "web-root": "drupal/"
-      }
+    "conflict": {
+        "drupal/core": ">=8.0 <9.3"
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    },
+    "minimum-stability": "beta",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-0": {
+            "Drupal\\Driver": "src/",
+            "Drupal\\Tests\\Driver": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "drupal/core-composer-scaffold": true,
+            "ergebnis/composer-normalize": true
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.3.x-dev"
+        },
+        "drupal-scaffold": {
+            "locations": {
+                "web-root": "drupal/"
+            }
+        },
+        "installer-paths": {
+            "drupal/core": [
+                "type:drupal-core"
+            ],
+            "drupal/modules/{$name}": [
+                "type:drupal-module"
+            ]
+        }
+    },
+    "scripts": {
+        "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
+        "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
+        "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
+        "phpunit": "XDEBUG_MODE=coverage phpunit",
+        "rector": [
+            "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
+            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
+            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8 --dry-run"
+        ],
+        "test": [
+            "XDEBUG_MODE=off composer validate --no-interaction",
+            "@lint",
+            "@phpunit",
+            "@phpspec",
+            "@phpcs",
+            "@rector"
+        ]
     }
-  },
-  "config": {
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
-      "drupal/core-composer-scaffold": true,
-      "composer/installers": true
-    }
-  }
 }
