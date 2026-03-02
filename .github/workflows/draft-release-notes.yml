@@ -22,9 +22,5 @@ jobs:
     steps:
       - name: Draft release notes
         uses: release-drafter/release-drafter@v6
-        with:
-          tag: ${{ steps.version.outputs.version }}
-          name: ${{ steps.version.outputs.version }}
-          version: ${{ steps.version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
