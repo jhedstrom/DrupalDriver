@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.4.0]
+### Added
+  * [#299](https://github.com/jhedstrom/DrupalDriver/pull/299) Added PHP 8.4 to CI test matrix.
+  * [#300](https://github.com/jhedstrom/DrupalDriver/pull/300) Added release drafter CI workflow.
+### Changed
+  * [#282](https://github.com/jhedstrom/DrupalDriver/pull/282) Switch from `docker-compose` to `docker compose`.
+  * [#288](https://github.com/jhedstrom/DrupalDriver/pull/288) Removed unsupported PHP versions and updated testing instructions.
+  * [#297](https://github.com/jhedstrom/DrupalDriver/pull/297) Updated formatting of the CI config.
+  * [#298](https://github.com/jhedstrom/DrupalDriver/pull/298) Normalised `composer.json`.
+### Fixed
+  * [#286](https://github.com/jhedstrom/DrupalDriver/pull/286) Fixed PHP 8.4 nullable types warnings.
+## [2.3.0]
+### Added
+  * [#275](https://github.com/jhedstrom/DrupalDriver/pull/275) Drupal 11 support.
+  * [#276](https://github.com/jhedstrom/DrupalDriver/pull/276) Drupal 11 testing and fixes.
+  * [#243](https://github.com/jhedstrom/DrupalDriver/pull/243) Exposed `::isBaseField()`.
+  * [#241](https://github.com/jhedstrom/DrupalDriver/pull/241) Allow entity reference field handler to reference by ID.
+  * [#263](https://github.com/jhedstrom/DrupalDriver/pull/263) Added PHPUnit code coverage, refactored composer scripts.
+  * [#265](https://github.com/jhedstrom/DrupalDriver/pull/265) Test on PHP 8.2.
+### Changed
+  * [#261](https://github.com/jhedstrom/DrupalDriver/pull/261) Broadened compatibility with `symfony/process`.
 ## [2.2.2]
 ### Added
   * [#258](https://github.com/jhedstrom/DrupalDriver/pull/258) Document testing of the Drupal Driver locally for contributors.
@@ -117,7 +137,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.2...v2.4.0
+[2.3.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.2...v2.3.0
 [2.2.2]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.1.1...v2.2.0
