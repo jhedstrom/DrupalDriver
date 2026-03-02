@@ -1,35 +1,53 @@
-name: ci
-on: [push, pull_request]
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
 jobs:
   tests:
+    name: PHP ${{ matrix.php_version }}, Drupal ${{ matrix.drupal_version }}
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
         include:
-          - php_version: "8.2"
-            drupal_version: "10"
-          - php_version: "8.3"
-            drupal_version: "10"
-          - php_version: "8.3"
-            drupal_version: "11"
+          - php_version: '8.2'
+            drupal_version: '10'
+          - php_version: '8.3'
+            drupal_version: '10'
+          - php_version: '8.3'
+            drupal_version: '11'
+
     env:
       PHP_VERSION: ${{ matrix.php_version }}
       DRUPAL_VERSION: ${{ matrix.drupal_version }}
-      DOCKER_USER_ID: "1001"
+      DOCKER_USER_ID: '1001'
+
     steps:
-      - name: clone
-        uses: actions/checkout@v3
-      - name: docker-compose up -d
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Start Docker containers
         run: docker compose up -d
-      - name: composer self-update
+
+      - name: Update Composer
         run: docker compose exec -T php composer self-update
-      - name: composer require
-        run: docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-recommended:^${DRUPAL_VERSION}
-      - name: composer install
+
+      - name: Add Drupal core dependency
+        run: docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
+
+      - name: Install Composer dependencies
         run: docker compose exec -T php composer install
-      - name: composer phpunit-configuration
+
+      - name: Migrate PHPUnit configuration
         run: docker compose exec -T php phpunit --migrate-configuration
         if: "${{ matrix.drupal_version == '11'}}"
-      - name: composer test
+
+      - name: Run tests
         run: docker compose exec -T php composer test
