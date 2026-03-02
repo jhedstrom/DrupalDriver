@@ -36,14 +36,23 @@ jobs:
       - name: Start Docker containers
         run: docker compose up -d
 
+      - name: Configure git safe directory
+        run: docker compose exec -T php git config --global --add safe.directory /var/www/html
+
       - name: Update Composer
         run: docker compose exec -T php composer self-update
+
+      - name: Install Composer dependencies
+        run: docker compose exec -T php composer install
+
+      - name: Check composer.json is normalized
+        run: docker compose exec -T php composer normalize --dry-run
 
       - name: Add Drupal core dependency
         run: docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
 
-      - name: Install Composer dependencies
-        run: docker compose exec -T php composer install
+      - name: Update Composer dependencies
+        run: docker compose exec -T php composer update --with-all-dependencies
 
       - name: Migrate PHPUnit configuration
         run: docker compose exec -T php phpunit --migrate-configuration
