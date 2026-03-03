@@ -28,7 +28,13 @@ class DatetimeHandler extends AbstractHandler {
         // the Drupal install, and therefore transform it into UTC for storage.
         $date = new \DateTime($value, $siteTimezone);
         $date->setTimezone($storageTimezone);
-        $values[$key] = $date->format('Y-m-d\TH:i:s');
+        if ($this->fieldInfo->getSetting('datetime_type') === 'date') {
+          $format = DateTimeItemInterface::DATE_STORAGE_FORMAT;
+        }
+        else {
+          $format = DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
+        }
+        $values[$key] = $date->format($format);
       }
     }
     return $values;
