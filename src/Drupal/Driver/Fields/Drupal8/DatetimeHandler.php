@@ -2,6 +2,8 @@
 
 namespace Drupal\Driver\Fields\Drupal8;
 
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
@@ -17,19 +19,23 @@ class DatetimeHandler extends AbstractHandler {
     $storageTimezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
     foreach ($values as $key => $value) {
       if (strpos($value, "relative:") !== FALSE) {
-        $relative = trim(str_replace('relative:', '', $value));
-        // Get time, convert to ISO 8601 date in GMT/UTC, remove TZ offset.
-        $values[$key] = substr(gmdate('c', strtotime($relative)), 0, 19);
+        $value = trim(str_replace('relative:', '', $value));
+      }
+
+      if ($this->fieldInfo->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE) {
+        // A date only value should be in the format used for date storage but
+        // in the site timezone.
+        $date = new DrupalDateTime($value, $siteTimezone);
+        $format = DateTimeItemInterface::DATE_STORAGE_FORMAT;
       }
       else {
-        // A Drupal install has a default site timezone, but nonetheless
-        // uses UTC for internal storage. If no timezone is specified in a date
-        // field value by the step author, assume the default timezone of
-        // the Drupal install, and therefore transform it into UTC for storage.
-        $date = new \DateTime($value, $siteTimezone);
+        // A datetime value is assumed to be provided in the site timezone and
+        // must be transformed into the storage timezone.
+        $date = new DrupalDateTime($value, $siteTimezone);
         $date->setTimezone($storageTimezone);
-        $values[$key] = $date->format('Y-m-d\TH:i:s');
+        $format = DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
       }
+      $values[$key] = $date->format($format);
     }
     return $values;
   }
