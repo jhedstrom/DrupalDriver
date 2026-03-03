@@ -11,19 +11,20 @@ class AddressHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return = [];
+    $return_values = [];
     $overrides = $this->fieldConfig->getSettings()['field_overrides'];
     $addressFields = [
-      "given_name" => 1,
-      "additional_name" => 1,
-      "family_name" => 1,
-      "organization" => 1,
-      "address_line1" => 1,
-      "address_line2" => 1,
-      "postal_code" => 1,
-      "sorting_code" => 1,
-      "locality" => 1,
-      "administrative_area" => 1,
+      'given_name',
+      'additional_name',
+      'family_name',
+      'organization',
+      'address_line1',
+      'address_line2',
+      'postal_code',
+      'sorting_code',
+      'locality',
+      'administrative_area',
+      'country_code',
     ];
     // Any overrides that set field inputs to hidden will be skipped.
     foreach ($overrides as $key => $value) {
@@ -34,32 +35,50 @@ class AddressHandler extends AbstractHandler {
       else {
         $fieldName = $key;
       }
-      if ($value['override'] == 'hidden') {
-        unset($addressFields[$fieldName]);
+      if ($value['override'] === 'hidden') {
+        $removeKey = array_search($fieldName, $addressFields, TRUE);
+        unset($addressFields[$removeKey]);
       }
     }
-    // The remaining field components will be populated in order, using
-    // values as they are ordered in feature step.
+    // Re-index the Address Fields.
+    $addressFields = array_values($addressFields);
     foreach ($values as $value) {
-      $idx = 0;
-      foreach ($addressFields as $k => $v) {
-        // If the values array contains only one item, assign it to the first
-        // field component and break.
-        if (is_string($value)) {
-          $return[$k] = $value;
-          break;
-        }
-        if ($idx < count($value)) {
-          // Gracefully handle users providing too few field component values.
-          $return[$k] = $value[$idx];
-          $idx++;
+      $return_value = [];
+      // If this delta value is a string, assign it to the first address
+      // sub-field and move onto next delta.
+      if (is_string($value)) {
+        $firstSubField = reset($addressFields);
+        $return_value[$firstSubField] = $value;
+        continue;
+      }
+      if (is_array($value)) {
+        $idx = 0;
+        foreach ($value as $k => $v) {
+          // If this key is a valid address sub-field, set it as-is.
+          if (in_array($k, $addressFields, TRUE)) {
+            $return_value[$k] = $v;
+          }
+          // Otherwise if the key is numeric, add the value sequentially
+          // in the order of the available address sub-fields.
+          elseif (is_numeric($k)) {
+            $key = $addressFields[$idx];
+            $return_value[$key] = $v;
+            $idx++;
+          }
+          // Otherwise the key is invalid, throw error.
+          else {
+            throw new \RuntimeException("Invalid Address sub-field key: '$k'");
+          }
         }
       }
-      // Set the country code to the first available as configured in this
-      // instance of the field.
-      $return['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
+      // If the country code has not been set yet, set it to the first
+      // available country as configured in this instance of the field.
+      if (!isset($return_value['country_code'])) {
+        $return_value['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
+      }
+      $return_values[] = $return_value;
     }
-    return [$return];
+    return $return_values;
   }
 
 }
