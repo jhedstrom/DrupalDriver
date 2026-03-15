@@ -135,7 +135,16 @@ class DrushDriver extends BaseDriver {
   protected function isLegacyDrush() {
     try {
       // Try for a drush 9 version.
-      $version = trim($this->drush('version', [], ['format' => 'string']));
+      $output = trim($this->drush('version', [], ['format' => 'string']));
+      // On PHP 8.4, deprecation warnings from Drush dependencies may be
+      // written to stdout before the version string. Extract the actual
+      // version number from the output to avoid misdetection.
+      if (preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches)) {
+        $version = $matches[1];
+      }
+      else {
+        $version = $output;
+      }
       return version_compare($version, '9', '<=');
     }
     catch (\RuntimeException $e) {
