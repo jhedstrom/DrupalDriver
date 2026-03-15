@@ -45,4 +45,76 @@ class DrushDriverTest extends TestCase {
     new DrushDriver('', '');
   }
 
+  /**
+   * Tests `isLegacyDrush()` correctly detects version from noisy output.
+   *
+   * @dataProvider dataProviderIsLegacyDrush
+   */
+  public function testIsLegacyDrush($drush_output, $expected) {
+    $driver = new TestDrushDriver('alias');
+    $driver->drushOutput = $drush_output;
+    $result = $driver->callIsLegacyDrush();
+    $this->assertSame($expected, $result);
+  }
+
+  /**
+   * Data provider for testIsLegacyDrush().
+   */
+  public function dataProviderIsLegacyDrush() {
+    return [
+      'clean modern version' => [
+        "12.5.2.0\n",
+        FALSE,
+      ],
+      'deprecation warnings before version' => [
+        "Deprecated: Drush\\Drush::shell(): Implicitly marking parameter \$env as nullable\nDeprecated: Consolidation\\Config\\Config::__construct(): ...\n12.5.2.0\n",
+        FALSE,
+      ],
+      'drush 9 version' => [
+        "9.7.2\n",
+        FALSE,
+      ],
+      'legacy drush version' => [
+        "8.4.12\n",
+        TRUE,
+      ],
+      'legacy version with noise' => [
+        "Some warning output\n8.1.0\n",
+        TRUE,
+      ],
+      'three-part modern version' => [
+        "13.0.0\n",
+        FALSE,
+      ],
+    ];
+  }
+
+}
+
+/**
+ * Testable subclass that stubs the `drush()` method.
+ */
+class TestDrushDriver extends DrushDriver {
+
+  /**
+   * The output to return from `drush()`.
+   *
+   * @var string
+   */
+  public $drushOutput = '';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function drush($command, array $arguments = [], array $options = []) {
+    return $this->drushOutput;
+  }
+
+  /**
+   * Exposes `isLegacyDrush()` for testing.
+   */
+  public function callIsLegacyDrush() {
+    return $this->isLegacyDrush();
+  }
+
 }
