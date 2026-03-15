@@ -120,6 +120,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function runCron() {
+    $_SERVER['REQUEST_TIME'] = time();
+    \Drupal::request()->server->set('REQUEST_TIME', $_SERVER['REQUEST_TIME']);
     return \Drupal::service('cron')->run();
   }
 
