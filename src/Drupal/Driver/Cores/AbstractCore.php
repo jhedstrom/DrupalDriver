@@ -81,6 +81,9 @@ abstract class AbstractCore implements CoreInterface {
     $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
     foreach ($field_types as $field_name => $type) {
       if (isset($entity->$field_name)) {
+        // Consistently expand into an array of field values.
+        $entity->$field_name = !isset($entity->$field_name[0]) ? [$entity->$field_name] : $entity->$field_name;
+        // Expand array of field values using appropriate field handler.
         $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
           ->expand($entity->$field_name);
       }
