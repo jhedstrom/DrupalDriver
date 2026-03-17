@@ -405,9 +405,11 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function getEntityFieldTypes($entity_type, array $base_fields = []) {
     $return = [];
-    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
-    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $entity_field_manager = $this->getEntityFieldManager();
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
+    if (!empty($base_fields)) {
+      $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
+    }
     foreach ($fields as $field_name => $field) {
       if ($this->isField($entity_type, $field_name)
         || (in_array($field_name, $base_fields) && $this->isBaseField($entity_type, $field_name))) {
@@ -421,9 +423,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function isField($entity_type, $field_name) {
-    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
-    $entity_field_manager = \Drupal::service('entity_field.manager');
-    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
+    $fields = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
 
@@ -431,10 +431,18 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function isBaseField($entity_type, $field_name) {
-    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
-    $entity_field_manager = \Drupal::service('entity_field.manager');
-    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
-    return (isset($fields[$field_name]) && $fields[$field_name] instanceof BaseFieldDefinition);
+    $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
+    return isset($base_fields[$field_name]);
+  }
+
+  /**
+   * Returns the entity field manager service.
+   *
+   * @return \Drupal\Core\Entity\EntityFieldManagerInterface
+   *   The entity field manager.
+   */
+  protected function getEntityFieldManager() {
+    return \Drupal::service('entity_field.manager');
   }
 
   /**
