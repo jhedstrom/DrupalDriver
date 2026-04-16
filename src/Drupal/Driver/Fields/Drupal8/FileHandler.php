@@ -5,5 +5,39 @@ namespace Drupal\Driver\Fields\Drupal8;
 /**
  * File field handler for Drupal 8.
  */
-class FileHandler extends EntityReferenceHandler {
+class FileHandler extends AbstractHandler {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function expand($values) {
+    $return = [];
+    foreach ((array) $values as $value) {
+      $file_path = is_array($value) ? $value['target_id'] ?? $value[0] : $value;
+      $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
+      $data = file_get_contents($file_path);
+
+      if ($data === FALSE) {
+        throw new \Exception(sprintf('Error reading file %s.', $file_path));
+      }
+
+      /** @var \Drupal\file\FileInterface $file */
+      $file = \Drupal::service('file.repository')
+        ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
+
+      if ($file === FALSE) {
+        throw new \Exception('Error saving file.');
+      }
+
+      $file->save();
+
+      $return[] = [
+        'target_id' => $file->id(),
+        'display' => is_array($value) ? ($value['display'] ?? 1) : 1,
+        'description' => is_array($value) ? ($value['description'] ?? '') : '',
+      ];
+    }
+    return $return;
+  }
+
 }
