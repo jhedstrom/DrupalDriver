@@ -61,6 +61,20 @@ class LinkHandlerTest extends TestCase {
         [['title' => 'Link', 'uri' => 'https://example.com']],
         [['title' => 'Link', 'uri' => 'https://example.com', 'options' => []]],
       ],
+      'uri-only string' => [
+        ['https://example.com'],
+        [['uri' => 'https://example.com', 'options' => []]],
+      ],
+      'mixed uri-only and full' => [
+        [
+          'https://first.com',
+          ['title' => 'Second', 'uri' => 'https://second.com'],
+        ],
+        [
+          ['uri' => 'https://first.com', 'options' => []],
+          ['title' => 'Second', 'uri' => 'https://second.com', 'options' => []],
+        ],
+      ],
     ];
   }
 
