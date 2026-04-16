@@ -29,6 +29,7 @@
     "require-dev": {
         "composer/installers": "^2.1",
         "dms/phpunit-arraysubset-asserts": "^0.4.0 || ^0.5.0",
+        "drevops/phpcs-standard": "^0.7.0",
         "drupal/coder": "~8.3.0",
         "drupal/core-composer-scaffold": "^8.4 || ^9 || ^10 || ^11",
         "drupal/core-recommended": "^8.4 || ^9 || ^10 || ^11",
@@ -40,8 +41,7 @@
         "php-parallel-lint/php-parallel-lint": "^1.0",
         "phpspec/phpspec": "^2.0 || ^4.0 || ^6.1 || ^7.5 || dev-main",
         "phpunit/phpunit": "^6.0 || ^7.0 || ^9 || ^10",
-        "symfony/phpunit-bridge": "^6.1",
-        "drevops/phpcs-standard": "^0.7.0"
+        "symfony/phpunit-bridge": "^6.1"
     },
     "conflict": {
         "drupal/core": ">=8.0 <9.3"
