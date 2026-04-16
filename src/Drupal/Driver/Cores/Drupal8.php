@@ -549,6 +549,20 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
+  public function moduleInstall($module_name) {
+    \Drupal::service('module_installer')->install([$module_name]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    \Drupal::service('module_installer')->uninstall([$module_name]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function startCollectingMail() {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $data = $config->getRawData();

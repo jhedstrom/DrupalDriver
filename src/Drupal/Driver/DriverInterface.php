@@ -255,4 +255,20 @@ interface DriverInterface {
    */
   public function sendMail($body, $subject, $to, $langcode);
 
+  /**
+   * Installs a module.
+   *
+   * @param string $module_name
+   *   The machine name of the module to install.
+   */
+  public function moduleInstall($module_name);
+
+  /**
+   * Uninstalls a module.
+   *
+   * @param string $module_name
+   *   The machine name of the module to uninstall.
+   */
+  public function moduleUninstall($module_name);
+
 }

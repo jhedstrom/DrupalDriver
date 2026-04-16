@@ -379,6 +379,20 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
+  public function moduleInstall($module_name) {
+    $this->getCore()->moduleInstall($module_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    $this->getCore()->moduleUninstall($module_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function login(\stdClass $user) {
     if ($this->getCore() instanceof CoreAuthenticationInterface) {
       $this->getCore()->login($user);
