@@ -575,4 +575,19 @@ class Drupal6 extends AbstractCore {
     throw new \Exception('Mail testing is not yet implemented for Drupal 6.');
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall($module_name) {
+    module_enable([$module_name]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall($module_name) {
+    module_disable([$module_name]);
+    drupal_uninstall_module([$module_name]);
+  }
+
 }
