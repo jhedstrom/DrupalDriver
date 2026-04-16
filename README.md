@@ -1,54 +1,49 @@
-<?php
+<h1 align="center">Drupal Driver</h1>
 
-/**
- * @file
- */
-?>
-[![Build Status](https://github.com/jhedstrom/DrupalDriver/actions/workflows/ci.yml/badge.svg)](https://github.com/jhedstrom/DrupalDriver/actions/workflows/ci.yml)
+<div align="center">
 
-Provides a collection of light-weight drivers with a common interface for interacting with [Drupal](http://drupal.org). These are generally intended for testing, and are not meant to be API-complete.
+[![Latest Stable Version](https://poser.pugx.org/drupal/drupal-driver/v/stable.svg)](https://packagist.org/packages/drupal/drupal-driver)
+[![Total Downloads](https://poser.pugx.org/drupal/drupal-driver/downloads.svg)](https://packagist.org/packages/drupal/drupal-driver)
+[![License](https://poser.pugx.org/drupal/drupal-driver/license.svg)](https://packagist.org/packages/drupal/drupal-driver)
 
-[Read the full documentation](http://drupal-drivers.readthedocs.org)
+[![ci](https://github.com/jhedstrom/DrupalDriver/actions/workflows/ci.yml/badge.svg)](https://github.com/jhedstrom/DrupalDriver/actions/workflows/ci.yml)
+[![GitHub Issues](https://img.shields.io/github/issues/jhedstrom/DrupalDriver.svg)](https://github.com/jhedstrom/DrupalDriver/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/jhedstrom/DrupalDriver.svg)](https://github.com/jhedstrom/DrupalDriver/pulls)
+</div>
 
-[![Latest Stable Version](https://poser.pugx.org/drupal/drupal-driver/v/stable.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Total Downloads](https://poser.pugx.org/drupal/drupal-driver/downloads.svg)](https://packagist.org/packages/drupal/drupal-driver) [![License](https://poser.pugx.org/drupal/drupal-driver/license.svg)](https://packagist.org/packages/drupal/drupal-driver) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/jhedstrom/DrupalDriver/?branch=master)
+A collection of lightweight drivers with a common interface for
+interacting with [Drupal](https://www.drupal.org). These are generally
+intended for testing and are not meant to be API-complete.
 
-### Drivers
+> **Note:** We are actively working on version 3.x which will drop
+> Drupal 6/7 support, modernise the codebase, and introduce integration
+> testing. See the
+> [3.x epic](https://github.com/jhedstrom/DrupalDriver/issues/312)
+> for details and progress.
 
-These drivers support Drupal versions 7 and 8.
+## Drivers
 
-* Blackbox
-* Direct Drupal API bootstrap
-* Drush
+| Driver | Description |
+| --- | --- |
+| **Blackbox** | No Drupal bootstrap. Interacts only through HTTP. |
+| **Drupal API** | Bootstraps Drupal directly in PHP for programmatic access to entities, fields, users, and configuration. |
+| **Drush** | Interacts with Drupal through the [Drush](https://www.drush.org) command line tool. |
 
-### Installation
+## Installation
 
-``` json
-{
-  "require": {
-    "drupal/drupal-driver": "~2.0"
-  }
-}
+```shell
+composer require drupal/drupal-driver
 ```
 
-``` bash
-$> curl -sS http://getcomposer.org/installer | php
-$> php composer.phar install
-```
+## Usage
 
-### Usage
-
-``` php
-<?php
-
+```php
 use Drupal\Driver\DrupalDriver;
 
 require 'vendor/autoload.php';
 
-// Path to Drupal.
-$path = './drupal-8';
-
-// Host.
-$uri = 'http://d8.devl';
+$path = './web';           // Path to Drupal root.
+$uri  = 'http://my-site';  // Site URI.
 
 $driver = new DrupalDriver($path, $uri);
 $driver->setCoreFromVersion();
@@ -57,21 +52,31 @@ $driver->setCoreFromVersion();
 $driver->bootstrap();
 
 // Create a node.
-$node = (object) array(
+$node = (object) [
   'type' => 'article',
   'uid' => 1,
   'title' => $driver->getRandom()->name(),
-);
+];
 $driver->createNode($node);
 ```
 
-### Contributing
+## Credits
 
-Features and bug fixes are welcome! First-time contributors can jump in with the
-issues tagged [good first issue](https://github.com/jhedstrom/DrupalDriver/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+ * Originally developed by [Jonathan Hedstrom](https://github.com/jhedstrom)
+ * Maintainers
+   * [Alex Skrypnyk](https://github.com/AlexSkrypnyk)
+   * [All contributors](https://github.com/jhedstrom/DrupalDriver/graphs/contributors)
 
-See [CONTRIBUTING.md](https://github.com/jhedstrom/DrupalDriver/blob/master/CONTRIBUTING.md) for more information.
+## Additional resources
 
-### Release notes
+ * [Drupal Driver documentation](https://drupal-drivers.readthedocs.org)
+
+## Release notes
 
 See [CHANGELOG](CHANGELOG.MD).
+
+## Contributing
+
+Features and bug fixes are welcome!
+
+See [CONTRIBUTING.md](https://github.com/jhedstrom/DrupalDriver/blob/master/CONTRIBUTING.md) for more information.
