@@ -92,12 +92,43 @@ class DrushDriver extends BaseDriver {
       throw new BootstrapException('A drush alias or root path is required.');
     }
 
+    // When the default 'drush' binary is used, try to resolve the
+    // project-level Drush binary first.
+    if ($binary === 'drush') {
+      $binary = $this->resolveProjectDrush($binary);
+    }
+
     $this->binary = $binary;
 
     if (!isset($random)) {
       $random = new Random();
     }
     $this->random = $random;
+  }
+
+  /**
+   * Resolves the project-level Drush binary path.
+   *
+   * @param string $fallback
+   *   The fallback binary path if project-level Drush is not found.
+   *
+   * @return string
+   *   The resolved binary path.
+   */
+  protected function resolveProjectDrush($fallback) {
+    // Try Composer's runtime bin directory.
+    $composer_bin = getenv('COMPOSER_BIN_DIR');
+    if ($composer_bin && file_exists($composer_bin . '/drush')) {
+      return $composer_bin . '/drush';
+    }
+
+    // Try common vendor/bin location relative to working directory.
+    $cwd = getcwd();
+    if ($cwd && file_exists($cwd . '/vendor/bin/drush')) {
+      return $cwd . '/vendor/bin/drush';
+    }
+
+    return $fallback;
   }
 
   /**
