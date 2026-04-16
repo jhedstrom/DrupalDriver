@@ -1,6 +1,5 @@
 *.phar
 *.tgz
-/.gitattributes
 /.phpunit.result.cache
 /composer.lock
 /drupal
