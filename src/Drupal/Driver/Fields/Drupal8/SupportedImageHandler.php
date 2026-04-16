@@ -16,7 +16,7 @@ class SupportedImageHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return_values = [];
+    $returnValues = [];
 
     // Standardize single/multi-value input.
     if (is_string($values) || isset($values['target_id'])) {
@@ -24,9 +24,9 @@ class SupportedImageHandler extends AbstractHandler {
     }
 
     foreach ($values as $value) {
-      $file_path = (string) ($value['target_id'] ?? $value);
-      $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
-      $data = file_get_contents((string) $file_path);
+      $filePath = (string) ($value['target_id'] ?? $value);
+      $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+      $data = file_get_contents((string) $filePath);
 
       if ($data === FALSE) {
         throw new \Exception("Error reading file");
@@ -34,7 +34,7 @@ class SupportedImageHandler extends AbstractHandler {
 
       /** @var \Drupal\file\FileInterface $file */
       $file = \Drupal::service('file.repository')
-        ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
+        ->writeData($data, 'public://' . uniqid() . '.' . $fileExtension);
 
       if ($file === FALSE) {
         throw new \Exception("Error saving file");
@@ -42,7 +42,7 @@ class SupportedImageHandler extends AbstractHandler {
 
       $file->save();
 
-      $return_values[] = [
+      $returnValues[] = [
         'target_id' => $file->id(),
         'alt' => $value['alt'] ?? NULL,
         'title' => $value['title'] ?? NULL,
@@ -53,7 +53,7 @@ class SupportedImageHandler extends AbstractHandler {
       ];
     }
 
-    return $return_values;
+    return $returnValues;
   }
 
 }

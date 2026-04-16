@@ -25,4 +25,5 @@ class TimeHandler extends AbstractHandler {
 
     return $values;
   }
+
 }

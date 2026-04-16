@@ -11,7 +11,7 @@ class AddressHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $return_values = [];
+    $returnValues = [];
     $overrides = $this->fieldConfig->getSettings()['field_overrides'];
     $addressFields = [
       'given_name',
@@ -43,13 +43,13 @@ class AddressHandler extends AbstractHandler {
     // Re-index the address fields.
     $addressFields = array_values($addressFields);
     foreach ($values as $value) {
-      $return_value = [];
+      $returnValue = [];
       // If this delta value is a string, assign it to the first address
       // sub-field and move onto next delta.
       if (is_string($value)) {
         $firstSubField = reset($addressFields);
-        $return_value[$firstSubField] = $value;
-        $return_values[] = $return_value;
+        $returnValue[$firstSubField] = $value;
+        $returnValues[] = $returnValue;
         continue;
       }
       if (is_array($value)) {
@@ -57,13 +57,13 @@ class AddressHandler extends AbstractHandler {
         foreach ($value as $k => $v) {
           // If this key is a valid address sub-field, set it as-is.
           if (in_array($k, $addressFields, TRUE)) {
-            $return_value[$k] = $v;
+            $returnValue[$k] = $v;
           }
           // Otherwise if the key is numeric, add the value sequentially
           // in the order of the available address sub-fields.
           elseif (is_numeric($k)) {
             $key = $addressFields[$idx];
-            $return_value[$key] = $v;
+            $returnValue[$key] = $v;
             $idx++;
           }
           else {
@@ -73,12 +73,12 @@ class AddressHandler extends AbstractHandler {
       }
       // If the country code has not been set, use the first available country
       // as configured in this field instance.
-      if (!isset($return_value['country_code'])) {
-        $return_value['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
+      if (!isset($returnValue['country_code'])) {
+        $returnValue['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
       }
-      $return_values[] = $return_value;
+      $returnValues[] = $returnValue;
     }
-    return $return_values;
+    return $returnValues;
   }
 
 }

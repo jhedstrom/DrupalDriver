@@ -3,8 +3,6 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
-use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -83,9 +81,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       throw new \Exception("Cannot create content because it is missing the required property 'type'.");
     }
 
-    /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
-    $bundle_info = \Drupal::service('entity_type.bundle.info');
-    $bundles = $bundle_info->getBundleInfo('node');
+    /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundleInfo */
+    $bundleInfo = \Drupal::service('entity_type.bundle.info');
+    $bundles = $bundleInfo->getBundleInfo('node');
     if (!in_array($node->type, array_keys($bundles))) {
       throw new \Exception(sprintf('Cannot create content because provided content type %s does not exist.', $node->type));
     }
@@ -225,9 +223,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    *   Array of permission names.
    */
   protected function convertPermissions(array &$permissions) {
-    $all_permissions = $this->getAllPermissions();
+    $allPermissions = $this->getAllPermissions();
 
-    foreach ($all_permissions as $name => $definition) {
+    foreach ($allPermissions as $name => $definition) {
       $key = array_search($definition['title'], $permissions);
       if (FALSE !== $key) {
         $permissions[$key] = $name;
@@ -285,27 +283,27 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
       // Fake the necessary HTTP headers that Drupal needs:
-      $drupal_base_url = parse_url($this->uri);
+      $drupalBaseUrl = parse_url($this->uri);
       // If there's no url scheme set, add http:// and re-parse the url
       // so the host and path values are set accurately.
-      if (!array_key_exists('scheme', $drupal_base_url)) {
-        $drupal_base_url = parse_url($this->uri);
+      if (!array_key_exists('scheme', $drupalBaseUrl)) {
+        $drupalBaseUrl = parse_url($this->uri);
       }
       // Fill in defaults.
-      $drupal_base_url += [
+      $drupalBaseUrl += [
         'path' => NULL,
         'host' => NULL,
         'port' => NULL,
       ];
-      $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
+      $_SERVER['HTTP_HOST'] = $drupalBaseUrl['host'];
 
-      if ($drupal_base_url['port']) {
-        $_SERVER['HTTP_HOST'] .= ':' . $drupal_base_url['port'];
+      if ($drupalBaseUrl['port']) {
+        $_SERVER['HTTP_HOST'] .= ':' . $drupalBaseUrl['port'];
       }
-      $_SERVER['SERVER_PORT'] = $drupal_base_url['port'];
+      $_SERVER['SERVER_PORT'] = $drupalBaseUrl['port'];
 
-      if (array_key_exists('path', $drupal_base_url)) {
-        $_SERVER['PHP_SELF'] = $drupal_base_url['path'] . '/index.php';
+      if (array_key_exists('path', $drupalBaseUrl)) {
+        $_SERVER['PHP_SELF'] = $drupalBaseUrl['path'] . '/index.php';
       }
       else {
         $_SERVER['PHP_SELF'] = '/index.php';
@@ -318,14 +316,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
 
     $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
 
-    $conf_path = DrupalKernel::findSitePath(Request::createFromGlobals());
-    $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
-    if (!file_exists($conf_file)) {
-      throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
+    $confPath = DrupalKernel::findSitePath(Request::createFromGlobals());
+    $confFile = $this->drupalRoot . "/$conf_path/settings.php";
+    if (!file_exists($confFile)) {
+      throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $confFile));
     }
-    $drushrc_file = $this->drupalRoot . "/$conf_path/drushrc.php";
-    if (file_exists($drushrc_file)) {
-      require_once $drushrc_file;
+    $drushrcFile = $this->drupalRoot . "/$conf_path/drushrc.php";
+    if (file_exists($drushrcFile)) {
+      require_once $drushrcFile;
     }
   }
 
@@ -340,9 +338,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
         ->accessCheck(FALSE)
         ->condition('name', $term->parent)
         ->condition('vid', $term->vocabulary_machine_name);
-      $parent_terms = $query->execute();
-      if (!empty($parent_terms)) {
-        $term->parent = reset($parent_terms);
+      $parentTerms = $query->execute();
+      if (!empty($parentTerms)) {
+        $term->parent = reset($parentTerms);
       }
     }
 
@@ -404,15 +402,15 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function getEntityFieldTypes($entity_type, array $base_fields = []) {
     $return = [];
-    $entity_field_manager = $this->getEntityFieldManager();
-    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
+    $entityFieldManager = $this->getEntityFieldManager();
+    $fields = $entityFieldManager->getFieldStorageDefinitions($entity_type);
     if (!empty($base_fields)) {
-      $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
+      $fields += $entityFieldManager->getBaseFieldDefinitions($entity_type);
     }
-    foreach ($fields as $field_name => $field) {
-      if ($this->isField($entity_type, $field_name)
-        || (in_array($field_name, $base_fields) && $this->isBaseField($entity_type, $field_name))) {
-        $return[$field_name] = $field->getType();
+    foreach ($fields as $fieldName => $field) {
+      if ($this->isField($entity_type, $fieldName)
+        || (in_array($fieldName, $base_fields) && $this->isBaseField($entity_type, $fieldName))) {
+        $return[$fieldName] = $field->getType();
       }
     }
     return $return;
@@ -430,8 +428,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function isBaseField($entity_type, $field_name) {
-    $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
-    return isset($base_fields[$field_name]);
+    $baseFields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
+    return isset($baseFields[$field_name]);
   }
 
   /**
@@ -452,11 +450,11 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
 
     // Enable a language only if it has not been enabled already.
     if (!ConfigurableLanguage::load($langcode)) {
-      $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
-      if (!$created_language) {
+      $createdLanguage = ConfigurableLanguage::createFromLangcode($language->langcode);
+      if (!$createdLanguage) {
         throw new \InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
       }
-      $created_language->save();
+      $createdLanguage->save();
       return $language;
     }
 
@@ -467,8 +465,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function languageDelete(\stdClass $language) {
-    $configurable_language = ConfigurableLanguage::load($language->langcode);
-    $configurable_language->delete();
+    $configurableLanguage = ConfigurableLanguage::load($language->langcode);
+    $configurableLanguage->delete();
   }
 
   /**
@@ -510,17 +508,17 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function entityCreate($entity_type, $entity) {
     // If the bundle field is empty, put the inferred bundle value in it.
-    $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
-    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
-      $entity->$bundle_key = $entity->step_bundle;
+    $bundleKey = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
+    if (!isset($entity->$bundleKey) && isset($entity->step_bundle)) {
+      $entity->$bundleKey = $entity->step_bundle;
     }
 
     // Throw an exception if a bundle is specified but does not exist.
-    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
-      /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
-      $bundle_info = \Drupal::service('entity_type.bundle.info');
-      $bundles = $bundle_info->getBundleInfo($entity_type);
-      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
+    if (isset($entity->$bundleKey) && ($entity->$bundleKey !== NULL)) {
+      /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundleInfo */
+      $bundleInfo = \Drupal::service('entity_type.bundle.info');
+      $bundles = $bundleInfo->getBundleInfo($entity_type);
+      if (!in_array($entity->$bundleKey, array_keys($bundles))) {
         throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
       }
     }

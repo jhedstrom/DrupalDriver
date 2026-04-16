@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\Driver;
 
-use Drupal;
 use Drupal\Core\CronInterface;
 use Drupal\Driver\Cores\Drupal8;
 use PHPUnit\Framework\TestCase;
@@ -45,24 +44,24 @@ class Drupal8Test extends TestCase {
    */
   public function testRunCronRefreshesRequestTime() {
     $before = time();
-    $stale_time = $before - 60;
+    $staleTime = $before - 60;
 
     // Create a real Symfony Request with a stale REQUEST_TIME.
     $request = new Request();
-    $request->server->set('REQUEST_TIME', $stale_time);
-    $_SERVER['REQUEST_TIME'] = $stale_time;
+    $request->server->set('REQUEST_TIME', $staleTime);
+    $_SERVER['REQUEST_TIME'] = $staleTime;
 
     // Mock the cron service.
     $cron = $this->createMock(CronInterface::class);
     $cron->method('run')->willReturn(TRUE);
 
     // Wire a container with request_stack and cron service.
-    $request_stack = new RequestStack();
-    $request_stack->push($request);
+    $requestStack = new RequestStack();
+    $requestStack->push($request);
     $container = new ContainerBuilder();
-    $container->set('request_stack', $request_stack);
+    $container->set('request_stack', $requestStack);
     $container->set('cron', $cron);
-    Drupal::setContainer($container);
+    \Drupal::setContainer($container);
 
     // Use __DIR__ as a dummy drupal root (runCron does not use it).
     $core = new Drupal8(__DIR__, 'default');

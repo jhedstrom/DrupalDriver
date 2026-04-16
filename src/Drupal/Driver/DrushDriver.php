@@ -117,9 +117,9 @@ class DrushDriver extends BaseDriver {
    */
   protected function resolveProjectDrush($fallback) {
     // Try Composer's runtime bin directory.
-    $composer_bin = getenv('COMPOSER_BIN_DIR');
-    if ($composer_bin && file_exists($composer_bin . '/drush')) {
-      return $composer_bin . '/drush';
+    $composerBin = getenv('COMPOSER_BIN_DIR');
+    if ($composerBin && file_exists($composerBin . '/drush')) {
+      return $composerBin . '/drush';
     }
 
     // Try common vendor/bin location relative to working directory.
@@ -356,8 +356,8 @@ class DrushDriver extends BaseDriver {
   public function createNode($node) {
     // Look up author by name.
     if (isset($node->author)) {
-      $user_info = $this->drush('user-information', [sprintf('"%s"', $node->author)]);
-      if ($uid = $this->parseUserId($user_info)) {
+      $userInfo = $this->drush('user-information', [sprintf('"%s"', $node->author)]);
+      if ($uid = $this->parseUserId($userInfo)) {
         $node->uid = $uid;
       }
     }
@@ -465,7 +465,7 @@ class DrushDriver extends BaseDriver {
     else {
       $options['no-ansi'] = NULL;
     }
-    $string_options = $this->parseArguments($options);
+    $stringOptions = $this->parseArguments($options);
 
     $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;
 

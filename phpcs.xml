@@ -39,8 +39,9 @@
         <exclude-pattern>*/spec/*</exclude-pattern>
     </rule>
 
+    <!-- Strict types deferred to v3.x. -->
     <rule ref="Generic.PHP.RequireStrictTypes">
-        <exclude-pattern>*/spec/*</exclude-pattern>
+        <severity>0</severity>
     </rule>
 
     <rule ref="DrevOps.NamingConventions.LocalVariableNaming">

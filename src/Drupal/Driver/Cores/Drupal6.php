@@ -28,14 +28,14 @@ class Drupal6 extends AbstractCore {
     }
 
     // Bootstrap Drupal.
-    $current_path = getcwd();
+    $currentPath = getcwd();
     chdir(DRUPAL_ROOT);
     drupal_bootstrap(DRUPAL_BOOTSTRAP_CONFIGURATION);
     if (empty($GLOBALS['db_url'])) {
       throw new BootstrapException('Missing database setting, verify the database configuration in settings.php.');
     }
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-    chdir($current_path);
+    chdir($currentPath);
   }
 
   /**
@@ -43,17 +43,17 @@ class Drupal6 extends AbstractCore {
    */
   public function clearCache() {
     // Need to change into the Drupal root directory or the registry explodes.
-    $current_path = getcwd();
+    $currentPath = getcwd();
     chdir(DRUPAL_ROOT);
     drupal_flush_all_caches();
-    chdir($current_path);
+    chdir($currentPath);
   }
 
   /**
    * {@inheritdoc}
    */
   public function nodeCreate($node) {
-    $current_path = getcwd();
+    $currentPath = getcwd();
     chdir(DRUPAL_ROOT);
 
     // Set original if not set.
@@ -80,7 +80,7 @@ class Drupal6 extends AbstractCore {
 
     node_save($node);
 
-    chdir($current_path);
+    chdir($currentPath);
     return $node;
 
   }
@@ -129,10 +129,10 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function userDelete(\stdClass $user) {
-    $current_path = getcwd();
+    $currentPath = getcwd();
     chdir(DRUPAL_ROOT);
     user_delete((array) $user, $user->uid);
-    chdir($current_path);
+    chdir($currentPath);
   }
 
   /**
@@ -201,9 +201,9 @@ class Drupal6 extends AbstractCore {
    */
   public function roleCreate(array $permissions) {
     // Verify permissions exist.
-    $all_permissions = module_invoke_all('perm');
+    $allPermissions = module_invoke_all('perm');
     foreach ($permissions as $name) {
-      $search = array_search($name, $all_permissions);
+      $search = array_search($name, $allPermissions);
       if (!$search) {
         throw new \RuntimeException(sprintf("No permission '%s' exists.", $name));
       }
@@ -235,27 +235,27 @@ class Drupal6 extends AbstractCore {
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
       // Fake the necessary HTTP headers that Drupal needs:
-      $drupal_base_url = parse_url($this->uri);
+      $drupalBaseUrl = parse_url($this->uri);
       // If there's no url scheme set, add http:// and re-parse the url
       // so the host and path values are set accurately.
-      if (!array_key_exists('scheme', $drupal_base_url)) {
-        $drupal_base_url = parse_url($this->uri);
+      if (!array_key_exists('scheme', $drupalBaseUrl)) {
+        $drupalBaseUrl = parse_url($this->uri);
       }
       // Fill in defaults.
-      $drupal_base_url += [
+      $drupalBaseUrl += [
         'path' => NULL,
         'host' => NULL,
         'port' => NULL,
       ];
-      $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
+      $_SERVER['HTTP_HOST'] = $drupalBaseUrl['host'];
 
-      if ($drupal_base_url['port']) {
-        $_SERVER['HTTP_HOST'] .= ':' . $drupal_base_url['port'];
+      if ($drupalBaseUrl['port']) {
+        $_SERVER['HTTP_HOST'] .= ':' . $drupalBaseUrl['port'];
       }
-      $_SERVER['SERVER_PORT'] = $drupal_base_url['port'];
+      $_SERVER['SERVER_PORT'] = $drupalBaseUrl['port'];
 
-      if (array_key_exists('path', $drupal_base_url)) {
-        $_SERVER['PHP_SELF'] = $drupal_base_url['path'] . '/index.php';
+      if (array_key_exists('path', $drupalBaseUrl)) {
+        $_SERVER['PHP_SELF'] = $drupalBaseUrl['path'] . '/index.php';
       }
       else {
         $_SERVER['PHP_SELF'] = '/index.php';
@@ -273,14 +273,14 @@ class Drupal6 extends AbstractCore {
     $_SERVER['SERVER_SOFTWARE'] = NULL;
     $_SERVER['HTTP_USER_AGENT'] = NULL;
 
-    $conf_path = conf_path(TRUE, TRUE);
-    $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
-    if (!file_exists($conf_file)) {
-      throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
+    $confPath = conf_path(TRUE, TRUE);
+    $confFile = $this->drupalRoot . "/$conf_path/settings.php";
+    if (!file_exists($confFile)) {
+      throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $confFile));
     }
-    $drushrc_file = $this->drupalRoot . "/$conf_path/drushrc.php";
-    if (file_exists($drushrc_file)) {
-      require_once $drushrc_file;
+    $drushrcFile = $this->drupalRoot . "/$conf_path/drushrc.php";
+    if (file_exists($drushrcFile)) {
+      require_once $drushrcFile;
     }
   }
 
@@ -365,19 +365,19 @@ class Drupal6 extends AbstractCore {
     $this->expandEntityFields('taxonomy_term', $term);
 
     // Protect against a failure from hook_taxonomy_term_insert() in pathauto.
-    $current_path = getcwd();
+    $currentPath = getcwd();
     chdir(DRUPAL_ROOT);
-    $term_array = (array) $term;
-    \taxonomy_save_term($term_array);
-    chdir($current_path);
+    $termArray = (array) $term;
+    \taxonomy_save_term($termArray);
+    chdir($currentPath);
 
     // Loading a term by name returns an array of term objects, but there should
     // only be one matching term in a testing context, so take the first match
     // by reset()'ing $matches.
     $matches = \taxonomy_get_term_by_name($term->name);
-    $saved_term = reset($matches);
+    $savedTerm = reset($matches);
 
-    return $saved_term;
+    return $savedTerm;
   }
 
   /**
@@ -440,19 +440,19 @@ class Drupal6 extends AbstractCore {
    * {@inheritdoc}
    */
   public function getEntityFieldTypes($entity_type, array $base_fields = []) {
-    $taxonomy_fields = ['taxonomy' => 'taxonomy'];
+    $taxonomyFields = ['taxonomy' => 'taxonomy'];
     if (!module_exists('content')) {
-      return $taxonomy_fields;
+      return $taxonomyFields;
     }
     $return = [];
     $fields = content_fields();
-    foreach ($fields as $field_name => $field) {
-      if ($this->isField($entity_type, $field_name)) {
-        $return[$field_name] = $field['type'];
+    foreach ($fields as $fieldName => $field) {
+      if ($this->isField($entity_type, $fieldName)) {
+        $return[$fieldName] = $field['type'];
       }
     }
 
-    $return += $taxonomy_fields;
+    $return += $taxonomyFields;
 
     return $return;
   }

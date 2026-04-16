@@ -55,15 +55,15 @@ abstract class AbstractCore implements CoreInterface {
    */
   public function getFieldHandler($entity, $entity_type, $field_name) {
     $reflection = new \ReflectionClass($this);
-    $core_namespace = $reflection->getShortName();
-    $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
-    $camelized_type = Container::camelize($field_types[$field_name]);
-    $default_class = sprintf('\Drupal\Driver\Fields\%s\DefaultHandler', $core_namespace);
-    $class_name = sprintf('\Drupal\Driver\Fields\%s\%sHandler', $core_namespace, $camelized_type);
-    if (class_exists($class_name)) {
-      return new $class_name($entity, $entity_type, $field_name);
+    $coreNamespace = $reflection->getShortName();
+    $fieldTypes = $this->getEntityFieldTypes($entity_type, [$field_name]);
+    $camelizedType = Container::camelize($fieldTypes[$field_name]);
+    $defaultClass = sprintf('\Drupal\Driver\Fields\%s\DefaultHandler', $coreNamespace);
+    $className = sprintf('\Drupal\Driver\Fields\%s\%sHandler', $coreNamespace, $camelizedType);
+    if (class_exists($className)) {
+      return new $className($entity, $entity_type, $field_name);
     }
-    return new $default_class($entity, $entity_type, $field_name);
+    return new $defaultClass($entity, $entity_type, $field_name);
   }
 
   /**
@@ -78,11 +78,11 @@ abstract class AbstractCore implements CoreInterface {
    *   defined fields.
    */
   protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = []) {
-    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
-    foreach ($field_types as $field_name => $type) {
-      if (isset($entity->$field_name)) {
-        $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
-          ->expand($entity->$field_name);
+    $fieldTypes = $this->getEntityFieldTypes($entity_type, $base_fields);
+    foreach ($fieldTypes as $fieldName => $type) {
+      if (isset($entity->$fieldName)) {
+        $entity->$fieldName = $this->getFieldHandler($entity, $entity_type, $fieldName)
+          ->expand($entity->$fieldName);
       }
     }
   }

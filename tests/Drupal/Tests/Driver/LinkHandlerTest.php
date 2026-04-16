@@ -41,7 +41,12 @@ class LinkHandlerTest extends TestCase {
       ],
       'numeric indices with options' => [
         [['My link', 'https://example.com', 'target=_blank&rel=nofollow']],
-        [['title' => 'My link', 'uri' => 'https://example.com', 'options' => ['target' => '_blank', 'rel' => 'nofollow']]],
+        [[
+          'title' => 'My link',
+          'uri' => 'https://example.com',
+          'options' => ['target' => '_blank', 'rel' => 'nofollow'],
+        ],
+        ],
       ],
       'named keys with options' => [
         [['title' => 'My link', 'uri' => 'https://example.com', 'options' => 'target=_blank']],
