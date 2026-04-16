@@ -44,11 +44,7 @@
         <severity>0</severity>
     </rule>
 
-    <rule ref="DrevOps.NamingConventions.LocalVariableNaming">
-        <exclude-pattern>*/spec/*</exclude-pattern>
-    </rule>
-
-    <rule ref="DrevOps.NamingConventions.ParameterNaming">
+    <rule ref="DrevOps">
         <exclude-pattern>*/spec/*</exclude-pattern>
     </rule>
 
