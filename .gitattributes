@@ -1,0 +1,16 @@
+# Ignore files for distribution archives.
+/.artifacts      export-ignore
+/.editorconfig   export-ignore
+/.gitattributes  export-ignore
+/.github         export-ignore
+/.gitignore      export-ignore
+/CONTRIBUTING.md export-ignore
+/doc             export-ignore
+/docker-compose.yml export-ignore
+/drupal          export-ignore
+/drush           export-ignore
+/phpcs-ruleset.xml export-ignore
+/phpunit.xml.dist export-ignore
+/recipes         export-ignore
+/spec            export-ignore
+/tests           export-ignore

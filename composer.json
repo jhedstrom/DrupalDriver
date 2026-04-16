@@ -72,6 +72,9 @@
             "dev-master": "2.3.x-dev"
         },
         "drupal-scaffold": {
+            "file-mapping": {
+                "[project-root]/.gitattributes": false
+            },
             "locations": {
                 "web-root": "drupal/"
             }
