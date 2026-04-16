@@ -40,7 +40,8 @@
         "php-parallel-lint/php-parallel-lint": "^1.0",
         "phpspec/phpspec": "^2.0 || ^4.0 || ^6.1 || ^7.5 || dev-main",
         "phpunit/phpunit": "^6.0 || ^7.0 || ^9 || ^10",
-        "symfony/phpunit-bridge": "^6.1"
+        "symfony/phpunit-bridge": "^6.1",
+        "drevops/phpcs-standard": "^0.7.0"
     },
     "conflict": {
         "drupal/core": ">=8.0 <9.3"
@@ -89,22 +90,22 @@
         }
     },
     "scripts": {
-        "lint": "XDEBUG_MODE=off parallel-lint src spec tests",
-        "phpcs": "XDEBUG_MODE=off phpcs --standard=./phpcs-ruleset.xml .",
-        "phpspec": "XDEBUG_MODE=off phpspec run -f pretty --no-interaction",
-        "phpunit": "XDEBUG_MODE=coverage phpunit",
-        "rector": [
+        "lint": [
+            "XDEBUG_MODE=off parallel-lint src spec tests",
+            "XDEBUG_MODE=off phpcs",
             "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
             "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
             "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8 --dry-run"
         ],
+        "lint-fix": [
+            "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
+            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php",
+            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8",
+            "XDEBUG_MODE=off phpcbf"
+        ],
         "test": [
-            "XDEBUG_MODE=off composer validate --no-interaction",
-            "@lint",
-            "@phpunit",
-            "@phpspec",
-            "@phpcs",
-            "@rector"
+            "XDEBUG_MODE=off phpunit",
+            "XDEBUG_MODE=off phpspec run -f pretty --no-interaction"
         ]
     }
 }
