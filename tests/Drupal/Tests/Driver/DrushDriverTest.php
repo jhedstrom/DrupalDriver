@@ -58,6 +58,41 @@ class DrushDriverTest extends TestCase {
   }
 
   /**
+   * Tests 'parseUserId()' correctly extracts UID from drush output.
+   *
+   * @dataProvider dataProviderParseUserId
+   */
+  public function testParseUserId($drush_output, $expected) {
+    $driver = new TestDrushDriver('alias');
+    $result = $driver->callParseUserId($drush_output);
+    $this->assertSame($expected, $result);
+  }
+
+  /**
+   * Data provider for testParseUserId().
+   */
+  public function dataProviderParseUserId() {
+    return [
+      'legacy key-value format' => [
+        "User ID   :   550895\nUser name :   test\n",
+        550895,
+      ],
+      'drush 12 table format' => [
+        " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  550895    test        test@ex.co  authenticated   1            \n --------- ----------- ----------- --------------- ------------- \n",
+        550895,
+      ],
+      'no user id present' => [
+        "Some random output\n",
+        NULL,
+      ],
+      'drush 12 table uid 1' => [
+        " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  1         admin       a@ex.co     administrator   1            \n --------- ----------- ----------- --------------- ------------- \n",
+        1,
+      ],
+    ];
+  }
+
+  /**
    * Data provider for testIsLegacyDrush().
    */
   public function dataProviderIsLegacyDrush() {
@@ -115,6 +150,13 @@ class TestDrushDriver extends DrushDriver {
    */
   public function callIsLegacyDrush() {
     return $this->isLegacyDrush();
+  }
+
+  /**
+   * Exposes `parseUserId()` for testing.
+   */
+  public function callParseUserId($info) {
+    return $this->parseUserId($info);
   }
 
 }

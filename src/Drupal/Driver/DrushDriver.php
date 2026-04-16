@@ -216,14 +216,32 @@ class DrushDriver extends BaseDriver {
 
   /**
    * Parse user id from drush user-information output.
+   *
+   * Supports both the legacy key-value format ("User ID : 123") and the
+   * Drush 12+ table format where the ID is the first numeric value in the
+   * data row.
    */
   protected function parseUserId($info) {
-    // Find the row containing "User ID : xxx".
-    preg_match('/User ID\s+:\s+\d+/', $info, $matches);
-    if (!empty($matches)) {
-      // Extract the ID from the row.
-      list(, $uid) = explode(':', $matches[0]);
-      return (int) $uid;
+    // Legacy format: "User ID : 123".
+    if (preg_match('/User ID\s+:\s+(\d+)/', $info, $matches)) {
+      return (int) $matches[1];
+    }
+
+    // Drush 12+ table format: extract the first numeric value from the first
+    // data row (the row after the header separator).
+    if (preg_match('/User ID/', $info)) {
+      $lines = explode("\n", trim($info));
+      foreach ($lines as $line) {
+        // Skip header, separator, and empty lines.
+        $trimmed = trim($line, " \t\n\r\0\x0B-");
+        if ($trimmed === '' || str_contains($trimmed, 'User ID')) {
+          continue;
+        }
+        // The first column in the data row is the User ID.
+        if (preg_match('/^\s*(\d+)\s/', $line, $matches)) {
+          return (int) $matches[1];
+        }
+      }
     }
   }
 
