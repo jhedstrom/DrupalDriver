@@ -34,7 +34,7 @@ class SupportedImageHandler extends AbstractHandler {
 
       /** @var \Drupal\file\FileInterface $file */
       $file = \Drupal::service('file.repository')
-        ->writeData($data, 'public://' . uniqid() . ".$file_extension");
+        ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
 
       if ($file === FALSE) {
         throw new \Exception("Error saving file");
