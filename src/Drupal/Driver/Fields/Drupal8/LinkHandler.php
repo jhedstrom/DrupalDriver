@@ -13,12 +13,16 @@ class LinkHandler extends AbstractHandler {
   public function expand($values) {
     $return = [];
     foreach ($values as $value) {
+      // Support URI-only string values.
+      if (is_string($value)) {
+        $value = ['uri' => $value];
+      }
       // Support both named keys (title, uri, options) and numeric indices.
-      $return_value = [
+      $return_value = array_filter([
         'title' => $value['title'] ?? $value[0] ?? NULL,
         'uri' => $value['uri'] ?? $value[1] ?? NULL,
         'options' => [],
-      ];
+      ], fn ($v) => $v !== NULL);
       // 'options' is required to be an array, otherwise the utility class
       // Drupal\Core\Utility\UnroutedUrlAssembler::assemble() will complain.
       $options = $value['options'] ?? $value[2] ?? NULL;
