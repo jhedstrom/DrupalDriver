@@ -12,6 +12,11 @@
         {
             "name": "Jonathan Hedstrom",
             "email": "jhedstrom@gmail.com"
+        },
+        {
+            "name": "Alex Skrypnyk",
+            "email": "alex@drevops.com",
+            "role": "Maintainer"
         }
     ],
     "homepage": "http://github.com/jhedstrom/DrupalDriver",
