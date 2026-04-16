@@ -186,11 +186,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   public function roleDelete($role_name) {
     $role = Role::load($role_name);
 
-    if (!$role) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
+    if ($role) {
+      $role->delete();
     }
-
-    $role->delete();
   }
 
   /**
