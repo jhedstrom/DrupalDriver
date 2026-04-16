@@ -20,7 +20,7 @@ class TimeHandler extends AbstractHandler {
 
       // Support anything that can be passed to strtotime.
       $midnight = strtotime('today midnight');
-      return strtotime($value) - $midnight;;
+      return strtotime($value) - $midnight;
     }, $values);
 
     return $values;
