@@ -13,17 +13,17 @@ class FileHandler extends AbstractHandler {
   public function expand($values) {
     $return = [];
     foreach ((array) $values as $value) {
-      $filePath = is_array($value) ? $value['target_id'] ?? $value[0] : $value;
-      $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
-      $data = file_get_contents($filePath);
+      $file_path = is_array($value) ? $value['target_id'] ?? $value[0] : $value;
+      $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
+      $data = file_get_contents($file_path);
 
       if ($data === FALSE) {
-        throw new \Exception(sprintf('Error reading file %s.', $filePath));
+        throw new \Exception(sprintf('Error reading file %s.', $file_path));
       }
 
       /** @var \Drupal\file\FileInterface $file */
       $file = \Drupal::service('file.repository')
-        ->writeData($data, 'public://' . uniqid() . '.' . $fileExtension);
+        ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
 
       if ($file === FALSE) {
         throw new \Exception('Error saving file.');

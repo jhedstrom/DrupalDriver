@@ -32,9 +32,9 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTestBase {
   public function testFieldHandlers($class_name, $entity, $entity_type, array $field, array $expected_values) {
     $handler = $this->getMockHandler($class_name, $entity, $entity_type, $field);
 
-    $fieldName = $field['field_name'];
-    $expandedValues = $handler->expand($this->values($entity->$fieldName));
-    Assert::assertArraySubset($expected_values, $expandedValues);
+    $field_name = $field['field_name'];
+    $expanded_values = $handler->expand($this->values($entity->$field_name));
+    Assert::assertArraySubset($expected_values, $expanded_values);
   }
 
   /**

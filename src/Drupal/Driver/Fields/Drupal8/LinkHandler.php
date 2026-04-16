@@ -18,7 +18,7 @@ class LinkHandler extends AbstractHandler {
         $value = ['uri' => $value];
       }
       // Support both named keys (title, uri, options) and numeric indices.
-      $returnValue = array_filter([
+      $return_value = array_filter([
         'title' => $value['title'] ?? $value[0] ?? NULL,
         'uri' => $value['uri'] ?? $value[1] ?? NULL,
         'options' => [],
@@ -27,9 +27,9 @@ class LinkHandler extends AbstractHandler {
       // Drupal\Core\Utility\UnroutedUrlAssembler::assemble() will complain.
       $options = $value['options'] ?? $value[2] ?? NULL;
       if ($options) {
-        parse_str($options, $returnValue['options']);
+        parse_str($options, $return_value['options']);
       }
-      $return[] = $returnValue;
+      $return[] = $return_value;
     }
     return $return;
   }

@@ -45,16 +45,10 @@
     </rule>
 
     <rule ref="DrevOps.NamingConventions.LocalVariableNaming">
-        <properties>
-            <property name="format" value="camelCase"/>
-        </properties>
         <exclude-pattern>*/spec/*</exclude-pattern>
     </rule>
 
     <rule ref="DrevOps.NamingConventions.ParameterNaming">
-        <properties>
-            <property name="format" value="camelCase"/>
-        </properties>
         <exclude-pattern>*/spec/*</exclude-pattern>
     </rule>
 

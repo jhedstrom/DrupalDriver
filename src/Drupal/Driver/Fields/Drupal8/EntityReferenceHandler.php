@@ -12,53 +12,53 @@ class EntityReferenceHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = [];
-    $entityTypeId = $this->fieldInfo->getSetting('target_type');
-    $entityDefinition = \Drupal::entityTypeManager()->getDefinition($entityTypeId);
+    $entity_type_id = $this->fieldInfo->getSetting('target_type');
+    $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
 
-    $idKey = $entityDefinition->getKey('id');
+    $id_key = $entity_definition->getKey('id');
 
     // Determine label field key.
-    if ($entityTypeId !== 'user') {
-      $labelKey = $entityDefinition->getKey('label');
+    if ($entity_type_id !== 'user') {
+      $label_key = $entity_definition->getKey('label');
     }
     else {
       // Entity Definition->getKey('label') returns false for users.
-      $labelKey = 'name';
+      $label_key = 'name';
     }
 
-    if (!$labelKey && $entityTypeId == 'user') {
-      $labelKey = 'name';
+    if (!$label_key && $entity_type_id == 'user') {
+      $label_key = 'name';
     }
 
     // Determine target bundle restrictions.
-    $targetBundleKey = NULL;
-    if ($targetBundles = $this->getTargetBundles()) {
-      $targetBundleKey = $entityDefinition->getKey('bundle');
+    $target_bundle_key = NULL;
+    if ($target_bundles = $this->getTargetBundles()) {
+      $target_bundle_key = $entity_definition->getKey('bundle');
     }
 
     foreach ((array) $values as $value) {
-      $query = \Drupal::entityQuery($entityTypeId);
-      $isNumericId = is_int($value) || (is_string($value) && ctype_digit($value));
-      if ($labelKey) {
+      $query = \Drupal::entityQuery($entity_type_id);
+      $is_numeric_id = is_int($value) || (is_string($value) && ctype_digit($value));
+      if ($label_key) {
         $or = $query->orConditionGroup();
-        if ($isNumericId) {
-          $or->condition($idKey, (int) $value);
+        if ($is_numeric_id) {
+          $or->condition($id_key, (int) $value);
         }
-        $or->condition($labelKey, $value);
+        $or->condition($label_key, $value);
         $query->condition($or);
       }
       else {
-        $query->condition($idKey, $value);
+        $query->condition($id_key, $value);
       }
       $query->accessCheck(FALSE);
-      if ($targetBundles && $targetBundleKey) {
-        $query->condition($targetBundleKey, $targetBundles, 'IN');
+      if ($target_bundles && $target_bundle_key) {
+        $query->condition($target_bundle_key, $target_bundles, 'IN');
       }
       if ($entities = $query->execute()) {
         $return[] = array_shift($entities);
       }
       else {
-        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $value, $entityTypeId));
+        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $value, $entity_type_id));
       }
     }
     return $return;

@@ -16,10 +16,10 @@ abstract class ListHandlerBase extends AbstractHandler {
     $return = [];
 
     // Load allowed values from field storage.
-    $allowedValues = $this->fieldInfo->getSetting('allowed_values');
+    $allowed_values = $this->fieldInfo->getSetting('allowed_values');
     foreach ((array) $values as $value) {
       // Determine if a label matching the value is found.
-      $key = array_search($value, $allowedValues);
+      $key = array_search($value, $allowed_values);
       if ($key !== FALSE) {
         // Set the return to use the key instead of the value.
         $return[] = $key;

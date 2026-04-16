@@ -15,8 +15,8 @@ class DaterangeHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $siteTimezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
-    $storageTimezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
+    $site_timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
+    $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
     $return = [];
 
     foreach ($values as $value) {
@@ -25,8 +25,8 @@ class DaterangeHandler extends AbstractHandler {
       $end = $value['end_value'] ?? $value[1] ?? NULL;
 
       $return[] = [
-        'value' => $start ? $this->formatDate($start, $siteTimezone, $storageTimezone) : NULL,
-        'end_value' => $end ? $this->formatDate($end, $siteTimezone, $storageTimezone) : NULL,
+        'value' => $start ? $this->formatDate($start, $site_timezone, $storage_timezone) : NULL,
+        'end_value' => $end ? $this->formatDate($end, $site_timezone, $storage_timezone) : NULL,
       ];
     }
 

@@ -158,7 +158,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   public function getDrupalVersion() {
     if (!isset($this->version)) {
       // Support 6, 7 and 8.
-      $versionConstantPaths = [
+      $version_constant_paths = [
         // Drupal 6.
         '/modules/system/system.module',
         // Drupal 7.
@@ -172,7 +172,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
         throw new BootstrapException('`drupal_root` parameter must be defined.');
       }
 
-      foreach ($versionConstantPaths as $path) {
+      foreach ($version_constant_paths as $path) {
         if (file_exists($this->drupalRoot . $path)) {
           require_once $this->drupalRoot . $path;
         }
@@ -188,9 +188,9 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
       }
 
       // Extract the major version from VERSION.
-      $versionParts = explode('.', $version);
-      if (is_numeric($versionParts[0])) {
-        $this->version = (integer) $versionParts[0] < 8 ? $versionParts[0] : 8;
+      $version_parts = explode('.', $version);
+      if (is_numeric($version_parts[0])) {
+        $this->version = (integer) $version_parts[0] < 8 ? $version_parts[0] : 8;
       }
       else {
         throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version));

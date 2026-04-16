@@ -161,11 +161,11 @@ class Drupal7 extends AbstractCore {
   public function roleCreate(array $permissions) {
 
     // Both machine name and permission title are allowed.
-    $allPermissions = $this->getAllPermissions();
+    $all_permissions = $this->getAllPermissions();
 
     foreach ($permissions as $key => $name) {
-      if (!isset($allPermissions[$name])) {
-        $search = array_search($name, $allPermissions);
+      if (!isset($all_permissions[$name])) {
+        $search = array_search($name, $all_permissions);
         if (!$search) {
           throw new \RuntimeException(sprintf("No permission '%s' exists.", $name));
         }
@@ -200,27 +200,27 @@ class Drupal7 extends AbstractCore {
   public function validateDrupalSite() {
     if ('default' !== $this->uri) {
       // Fake the necessary HTTP headers that Drupal needs:
-      $drupalBaseUrl = parse_url($this->uri);
+      $drupal_base_url = parse_url($this->uri);
       // If there's no url scheme set, add http:// and re-parse the url
       // so the host and path values are set accurately.
-      if (!array_key_exists('scheme', $drupalBaseUrl)) {
-        $drupalBaseUrl = parse_url($this->uri);
+      if (!array_key_exists('scheme', $drupal_base_url)) {
+        $drupal_base_url = parse_url($this->uri);
       }
       // Fill in defaults.
-      $drupalBaseUrl += [
+      $drupal_base_url += [
         'path' => NULL,
         'host' => NULL,
         'port' => NULL,
       ];
-      $_SERVER['HTTP_HOST'] = $drupalBaseUrl['host'];
+      $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
 
-      if ($drupalBaseUrl['port']) {
-        $_SERVER['HTTP_HOST'] .= ':' . $drupalBaseUrl['port'];
+      if ($drupal_base_url['port']) {
+        $_SERVER['HTTP_HOST'] .= ':' . $drupal_base_url['port'];
       }
-      $_SERVER['SERVER_PORT'] = $drupalBaseUrl['port'];
+      $_SERVER['SERVER_PORT'] = $drupal_base_url['port'];
 
-      if (array_key_exists('path', $drupalBaseUrl)) {
-        $_SERVER['PHP_SELF'] = $drupalBaseUrl['path'] . '/index.php';
+      if (array_key_exists('path', $drupal_base_url)) {
+        $_SERVER['PHP_SELF'] = $drupal_base_url['path'] . '/index.php';
       }
       else {
         $_SERVER['PHP_SELF'] = '/index.php';
@@ -238,14 +238,14 @@ class Drupal7 extends AbstractCore {
     $_SERVER['SERVER_SOFTWARE'] = NULL;
     $_SERVER['HTTP_USER_AGENT'] = NULL;
 
-    $confPath = conf_path(TRUE, TRUE);
-    $confFile = $this->drupalRoot . "/$conf_path/settings.php";
-    if (!file_exists($confFile)) {
-      throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $confFile));
+    $conf_path = conf_path(TRUE, TRUE);
+    $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
+    if (!file_exists($conf_file)) {
+      throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
     }
-    $drushrcFile = $this->drupalRoot . "/$conf_path/drushrc.php";
-    if (file_exists($drushrcFile)) {
-      require_once $drushrcFile;
+    $drushrc_file = $this->drupalRoot . "/$conf_path/drushrc.php";
+    if (file_exists($drushrc_file)) {
+      require_once $drushrc_file;
     }
   }
 
@@ -342,16 +342,16 @@ class Drupal7 extends AbstractCore {
     include_once DRUPAL_ROOT . '/includes/locale.inc';
 
     // Get all predefined languages, regardless if they are enabled or not.
-    $predefinedLanguages = _locale_get_predefined_list();
+    $predefined_languages = _locale_get_predefined_list();
 
     // If the language code is not valid then throw an InvalidArgumentException.
-    if (!isset($predefinedLanguages[$language->langcode])) {
+    if (!isset($predefined_languages[$language->langcode])) {
       throw new \InvalidArgumentException("There is no predefined language with langcode '{$language->langcode}'.");
     }
 
     // Enable a language only if it has not been enabled already.
-    $enabledLanguages = locale_language_list();
-    if (!isset($enabledLanguages[$language->langcode])) {
+    $enabled_languages = locale_language_list();
+    if (!isset($enabled_languages[$language->langcode])) {
       locale_add_language($language->langcode);
       return $language;
     }
@@ -461,9 +461,9 @@ class Drupal7 extends AbstractCore {
   public function getEntityFieldTypes($entity_type, array $base_fields = []) {
     $return = [];
     $fields = field_info_field_map();
-    foreach ($fields as $fieldName => $field) {
+    foreach ($fields as $field_name => $field) {
       if (array_key_exists($entity_type, $field['bundles'])) {
-        $return[$fieldName] = $field['type'];
+        $return[$field_name] = $field['type'];
       }
     }
     return $return;
@@ -498,15 +498,15 @@ class Drupal7 extends AbstractCore {
   public function entityCreate($entity_type, $entity) {
     $info = entity_get_info($entity_type);
     // If the bundle field is empty, put the inferred bundle value in it.
-    $bundleKey = $info['entity keys']['bundle'];
-    if (!isset($entity->$bundleKey) && isset($entity->step_bundle)) {
-      $entity->$bundleKey = $entity->step_bundle;
+    $bundle_key = $info['entity keys']['bundle'];
+    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
+      $entity->$bundle_key = $entity->step_bundle;
     }
 
     // Throw an exception if a bundle is specified but does not exist.
-    if (isset($entity->$bundleKey) && ($entity->$bundleKey !== NULL)) {
+    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
       $bundles = $info['bundles'];
-      if (!in_array($entity->$bundleKey, array_keys($bundles))) {
+      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
         throw new \Exception("Cannot create entity because provided bundle {$entity->$bundle_key} does not exist.");
       }
     }
@@ -515,16 +515,16 @@ class Drupal7 extends AbstractCore {
     }
 
     $this->expandEntityFields($entity_type, $entity);
-    $createdEntity = entity_create($entity_type, (array) $entity);
+    $created_entity = entity_create($entity_type, (array) $entity);
 
     // In D7 it's possible that $createdEntity is not of class Entity, so we
     // must use entity_save().
-    entity_save($entity_type, $createdEntity);
+    entity_save($entity_type, $created_entity);
 
-    [$id] = entity_extract_ids($entity_type, $createdEntity);
-    $createdEntity->id = $id;
+    [$id] = entity_extract_ids($entity_type, $created_entity);
+    $created_entity->id = $id;
 
-    return $createdEntity;
+    return $created_entity;
   }
 
   /**

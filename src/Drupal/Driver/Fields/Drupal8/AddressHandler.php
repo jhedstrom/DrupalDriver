@@ -11,9 +11,9 @@ class AddressHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $returnValues = [];
+    $return_values = [];
     $overrides = $this->fieldConfig->getSettings()['field_overrides'];
-    $addressFields = [
+    $address_fields = [
       'given_name',
       'additional_name',
       'family_name',
@@ -30,40 +30,40 @@ class AddressHandler extends AbstractHandler {
     foreach ($overrides as $key => $value) {
       preg_match('/[A-Z]/', $key, $matches, PREG_OFFSET_CAPTURE);
       if (count($matches) > 0) {
-        $fieldName = strtolower(substr_replace($key, '_', $matches[0][1], 0));
+        $field_name = strtolower(substr_replace($key, '_', $matches[0][1], 0));
       }
       else {
-        $fieldName = $key;
+        $field_name = $key;
       }
       if ($value['override'] === 'hidden') {
-        $removeKey = array_search($fieldName, $addressFields, TRUE);
-        unset($addressFields[$removeKey]);
+        $remove_key = array_search($field_name, $address_fields, TRUE);
+        unset($address_fields[$remove_key]);
       }
     }
     // Re-index the address fields.
-    $addressFields = array_values($addressFields);
+    $address_fields = array_values($address_fields);
     foreach ($values as $value) {
-      $returnValue = [];
+      $return_value = [];
       // If this delta value is a string, assign it to the first address
       // sub-field and move onto next delta.
       if (is_string($value)) {
-        $firstSubField = reset($addressFields);
-        $returnValue[$firstSubField] = $value;
-        $returnValues[] = $returnValue;
+        $first_sub_field = reset($address_fields);
+        $return_value[$first_sub_field] = $value;
+        $return_values[] = $return_value;
         continue;
       }
       if (is_array($value)) {
         $idx = 0;
         foreach ($value as $k => $v) {
           // If this key is a valid address sub-field, set it as-is.
-          if (in_array($k, $addressFields, TRUE)) {
-            $returnValue[$k] = $v;
+          if (in_array($k, $address_fields, TRUE)) {
+            $return_value[$k] = $v;
           }
           // Otherwise if the key is numeric, add the value sequentially
           // in the order of the available address sub-fields.
           elseif (is_numeric($k)) {
-            $key = $addressFields[$idx];
-            $returnValue[$key] = $v;
+            $key = $address_fields[$idx];
+            $return_value[$key] = $v;
             $idx++;
           }
           else {
@@ -73,12 +73,12 @@ class AddressHandler extends AbstractHandler {
       }
       // If the country code has not been set, use the first available country
       // as configured in this field instance.
-      if (!isset($returnValue['country_code'])) {
-        $returnValue['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
+      if (!isset($return_value['country_code'])) {
+        $return_value['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
       }
-      $returnValues[] = $returnValue;
+      $return_values[] = $return_value;
     }
-    return $returnValues;
+    return $return_values;
   }
 
 }

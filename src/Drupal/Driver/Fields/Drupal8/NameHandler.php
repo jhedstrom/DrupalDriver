@@ -28,18 +28,18 @@ class NameHandler extends AbstractHandler {
       }
 
       if (is_array($value)) {
-        $returnValue = [];
+        $return_value = [];
         $idx = 0;
         foreach ($value as $k => $v) {
           if (in_array($k, $components, TRUE)) {
-            $returnValue[$k] = $v;
+            $return_value[$k] = $v;
           }
           elseif (is_numeric($k) && isset($components[$idx])) {
-            $returnValue[$components[$idx]] = $v;
+            $return_value[$components[$idx]] = $v;
             $idx++;
           }
         }
-        $return[] = $returnValue;
+        $return[] = $return_value;
       }
     }
 

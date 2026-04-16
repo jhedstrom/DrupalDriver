@@ -98,11 +98,11 @@ namespace Drupal\Tests\Driver {
       $core = $this->createTestCore();
       $result = $core->getEntityFieldTypes('node', $base_fields_arg);
 
-      foreach ($expected_fields as $fieldName) {
-        $this->assertArrayHasKey($fieldName, $result, "Expected '$field_name' in result.");
+      foreach ($expected_fields as $field_name) {
+        $this->assertArrayHasKey($field_name, $result, "Expected '$field_name' in result.");
       }
-      foreach ($unexpected_fields as $fieldName) {
-        $this->assertArrayNotHasKey($fieldName, $result, "Did not expect '$field_name' in result.");
+      foreach ($unexpected_fields as $field_name) {
+        $this->assertArrayNotHasKey($field_name, $result, "Did not expect '$field_name' in result.");
       }
     }
 
@@ -142,36 +142,36 @@ namespace Drupal\Tests\Driver {
      */
     protected function createTestCore() {
       // Non-computed base field.
-      $titleField = $this->createMock(BaseFieldDefinition::class);
-      $titleField->method('getType')->willReturn('string');
+      $title_field = $this->createMock(BaseFieldDefinition::class);
+      $title_field->method('getType')->willReturn('string');
 
       // Computed base field (not in getFieldStorageDefinitions).
-      $moderationStateField = $this->createMock(BaseFieldDefinition::class);
-      $moderationStateField->method('getType')->willReturn('string');
+      $moderation_state_field = $this->createMock(BaseFieldDefinition::class);
+      $moderation_state_field->method('getType')->willReturn('string');
 
       // Configurable field — use stub that passes instanceof FieldStorageConfig.
-      $fieldTags = new FieldStorageConfig('entity_reference');
+      $field_tags = new FieldStorageConfig('entity_reference');
 
-      $entityFieldManager = $this->createMock(EntityFieldManagerInterface::class);
+      $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
 
       // getFieldStorageDefinitions: returns non-computed base fields + configurable fields.
-      $entityFieldManager->method('getFieldStorageDefinitions')
+      $entity_field_manager->method('getFieldStorageDefinitions')
         ->with('node')
         ->willReturn([
-          'title' => $titleField,
-          'field_tags' => $fieldTags,
+          'title' => $title_field,
+          'field_tags' => $field_tags,
         ]);
 
       // getBaseFieldDefinitions: returns ALL base fields (computed + non-computed).
-      $entityFieldManager->method('getBaseFieldDefinitions')
+      $entity_field_manager->method('getBaseFieldDefinitions')
         ->with('node')
         ->willReturn([
-          'title' => $titleField,
-          'moderation_state' => $moderationStateField,
+          'title' => $title_field,
+          'moderation_state' => $moderation_state_field,
         ]);
 
       $core = new TestDrupal8Core(__DIR__, 'default');
-      $core->setEntityFieldManager($entityFieldManager);
+      $core->setEntityFieldManager($entity_field_manager);
       return $core;
     }
 

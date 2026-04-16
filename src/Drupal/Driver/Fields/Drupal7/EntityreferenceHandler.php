@@ -11,21 +11,21 @@ class EntityreferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $entityType = $this->fieldInfo['settings']['target_type'];
-    $entityInfo = entity_get_info($entityType);
+    $entity_type = $this->fieldInfo['settings']['target_type'];
+    $entity_info = entity_get_info($entity_type);
     // For users set label to username.
-    if ($entityType == 'user') {
-      $entityInfo['entity keys']['label'] = 'name';
+    if ($entity_type == 'user') {
+      $entity_info['entity keys']['label'] = 'name';
     }
 
     $return = [];
     foreach ($values as $value) {
-      $targetId = db_select($entityInfo['base table'], 't')
-        ->fields('t', [$entityInfo['entity keys']['id']])
-        ->condition('t.' . $entityInfo['entity keys']['label'], $value)
+      $target_id = db_select($entity_info['base table'], 't')
+        ->fields('t', [$entity_info['entity keys']['id']])
+        ->condition('t.' . $entity_info['entity keys']['label'], $value)
         ->execute()->fetchField();
-      if ($targetId) {
-        $return[$this->language][] = ['target_id' => $targetId];
+      if ($target_id) {
+        $return[$this->language][] = ['target_id' => $target_id];
       }
     }
     return $return;

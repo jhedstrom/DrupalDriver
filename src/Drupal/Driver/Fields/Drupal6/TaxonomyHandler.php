@@ -19,16 +19,16 @@ class TaxonomyHandler implements FieldHandlerInterface {
       $terms = explode(',', $entry);
       foreach ($terms as $term) {
         // Try to split things out in order to find optional specified vocabs.
-        $termNameOrTid = '';
+        $term_name_or_tid = '';
         $parts = explode(':', $term);
         if (count($parts) == 1) {
-          $termNameOrTid = $term;
+          $term_name_or_tid = $term;
         }
         elseif (count($parts) == 2) {
-          $termNameOrTid = $term;
+          $term_name_or_tid = $term;
         }
-        if ($termList = taxonomy_get_term_by_name($termNameOrTid)) {
-          $term = reset($termList);
+        if ($term_list = taxonomy_get_term_by_name($term_name_or_tid)) {
+          $term = reset($term_list);
           $result[] = $term;
         }
       }

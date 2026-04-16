@@ -44,22 +44,22 @@ class Drupal8Test extends TestCase {
    */
   public function testRunCronRefreshesRequestTime() {
     $before = time();
-    $staleTime = $before - 60;
+    $stale_time = $before - 60;
 
     // Create a real Symfony Request with a stale REQUEST_TIME.
     $request = new Request();
-    $request->server->set('REQUEST_TIME', $staleTime);
-    $_SERVER['REQUEST_TIME'] = $staleTime;
+    $request->server->set('REQUEST_TIME', $stale_time);
+    $_SERVER['REQUEST_TIME'] = $stale_time;
 
     // Mock the cron service.
     $cron = $this->createMock(CronInterface::class);
     $cron->method('run')->willReturn(TRUE);
 
     // Wire a container with request_stack and cron service.
-    $requestStack = new RequestStack();
-    $requestStack->push($request);
+    $request_stack = new RequestStack();
+    $request_stack->push($request);
     $container = new ContainerBuilder();
-    $container->set('request_stack', $requestStack);
+    $container->set('request_stack', $request_stack);
     $container->set('cron', $cron);
     \Drupal::setContainer($container);
 

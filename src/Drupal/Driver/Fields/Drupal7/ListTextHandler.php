@@ -12,7 +12,7 @@ class ListTextHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = [];
-    $allowedValues = [];
+    $allowed_values = [];
     if (!empty($this->fieldInfo['settings']['allowed_values_function'])) {
       $cacheable = TRUE;
       $callback = $this->fieldInfo['settings']['allowed_values_function'];
@@ -23,15 +23,15 @@ class ListTextHandler extends AbstractHandler {
     }
     foreach ($values as $value) {
       if (array_key_exists($value, $options)) {
-        $allowedValues[$value] = $value;
+        $allowed_values[$value] = $value;
       }
       elseif (in_array($value, $options)) {
         $key = array_search($value, $options);
-        $allowedValues[$value] = $key;
+        $allowed_values[$value] = $key;
       }
     }
     foreach ($values as $value) {
-      $return[$this->language][] = ['value' => $allowedValues[$value]];
+      $return[$this->language][] = ['value' => $allowed_values[$value]];
     }
     return $return;
   }

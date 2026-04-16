@@ -12,16 +12,16 @@ class ListBooleanHandler extends AbstractHandler {
    */
   public function expand($values) {
     $return = [];
-    $allowedValues = $this->fieldInfo['settings']['allowed_values'];
+    $allowed_values = $this->fieldInfo['settings']['allowed_values'];
     // If values are blank then use keys as value.
-    foreach ($allowedValues as $key => $value) {
+    foreach ($allowed_values as $key => $value) {
       if ($value == '') {
-        $allowedValues[$key] = $key;
+        $allowed_values[$key] = $key;
       }
     }
-    $allowedValues = array_flip($allowedValues);
+    $allowed_values = array_flip($allowed_values);
     foreach ($values as $value) {
-      $return[$this->language][] = ['value' => $allowedValues[$value]];
+      $return[$this->language][] = ['value' => $allowed_values[$value]];
     }
     return $return;
   }
