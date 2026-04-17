@@ -71,10 +71,6 @@ $driver->createNode($node);
    * [Alex Skrypnyk](https://github.com/AlexSkrypnyk)
    * [All contributors](https://github.com/jhedstrom/DrupalDriver/graphs/contributors)
 
-## Additional resources
-
- * [Drupal Driver documentation](https://drupal-drivers.readthedocs.org)
-
 ## Release notes
 
 See [GitHub Releases](https://github.com/jhedstrom/DrupalDriver/releases).
