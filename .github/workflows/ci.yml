@@ -18,32 +18,31 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      PHP_VERSION: '8.4'
-      DRUPAL_VERSION: '11'
-      DOCKER_USER_ID: '1001'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Start Docker containers
-        run: docker compose up -d
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-      - name: Configure git safe directory
-        run: docker compose exec -T php git config --global --add safe.directory /var/www/html
-
-      - name: Update Composer
-        run: docker compose exec -T php composer self-update
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, pdo_sqlite
+          coverage: none
 
       - name: Install Composer dependencies
-        run: docker compose exec -T php composer install
+        run: composer install
 
       - name: Check composer.json is normalized
-        run: docker compose exec -T php composer normalize --dry-run
+        run: composer normalize --dry-run
 
       - name: Lint
-        run: docker compose exec -T php composer lint
+        run: composer lint
 
   tests:
     name: PHP ${{ matrix.php_version }}, Drupal ${{ matrix.drupal_version }}, Deps ${{ matrix.deps }}
@@ -88,45 +87,47 @@ jobs:
             deps: 'lowest'
 
     env:
-      PHP_VERSION: ${{ matrix.php_version }}
       DRUPAL_VERSION: ${{ matrix.drupal_version }}
-      DOCKER_USER_ID: '1001'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Start Docker containers
-        run: docker compose up -d
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
 
-      - name: Configure git safe directory
-        run: docker compose exec -T php git config --global --add safe.directory /var/www/html
-
-      - name: Update Composer
-        run: docker compose exec -T php composer self-update
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php_version }}
+          extensions: gd, pdo_sqlite
+          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
 
       - name: Add Drupal core dependency
-        run: docker compose exec -u ${DOCKER_USER_ID} -T php composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
+        run: composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
 
       - name: Install Composer dependencies
         run: |
           if [[ "${{ matrix.deps }}" == "lowest" ]]; then
-            docker compose exec -T php composer update --with-all-dependencies --prefer-lowest --prefer-stable
+            composer update --with-all-dependencies --prefer-lowest --prefer-stable
           else
-            docker compose exec -T php composer update --with-all-dependencies
+            composer update --with-all-dependencies
           fi
 
       - name: Migrate PHPUnit configuration
-        run: docker compose exec -T php phpunit --migrate-configuration || true
+        run: vendor/bin/phpunit --migrate-configuration || true
         if: "${{ matrix.drupal_version == '11'}}"
 
       - name: Test with coverage
         if: ${{ matrix.coverage }}
-        run: docker compose exec -T php composer test-coverage
+        run: composer test-coverage
 
       - name: Test
         if: ${{ !matrix.coverage }}
-        run: docker compose exec -T php composer test
+        run: composer test
 
       - name: Extract total coverage
         if: ${{ matrix.coverage }}

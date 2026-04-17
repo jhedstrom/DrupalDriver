@@ -74,12 +74,8 @@ tests is planned for v3.x.
 ## Setting up the local environment
 
 Testing is performed automatically in GitHub Actions when a PR is
-submitted. To execute tests locally, you can use either Docker or
-a local PHP installation.
-
-### Local PHP (recommended)
-
-If you have PHP 8.2+ installed locally:
+submitted. To execute tests locally, ensure you have PHP 8.2+
+installed:
 
 ```shell
 composer install
@@ -90,22 +86,6 @@ Run a specific test:
 
 ```shell
 XDEBUG_MODE=off vendor/bin/phpunit --filter TimeHandlerTest
-```
-
-### Docker
-
-To test with a specific PHP version using Docker:
-
-```shell
-export PHP_VERSION=8.3
-export DRUPAL_VERSION=11
-export DOCKER_USER_ID=${UID}
-```
-
-```shell
-docker compose up -d
-docker compose exec -T php composer install
-docker compose exec -T php composer test
 ```
 
 ### Commands
@@ -122,8 +102,8 @@ docker compose exec -T php composer test
   all checks pass.
 - Check that changes from `composer require` are not included
   in your submitted PR.
-- Before testing another PHP or Drupal version with Docker,
-  remove `composer.lock` and `vendor/`.
+- To test against another PHP or Drupal version locally, remove
+  `composer.lock` and `vendor/`, then re-run `composer install`.
 
 ## Extending for a new Drupal version
 
