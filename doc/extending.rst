@@ -116,9 +116,7 @@ Drupal version down to the default:
 
     Detected Drupal version: 13
     Try: Drupal\Driver\Core13\Core   ← exists, use it
-    Try: Drupal\Driver\Core12\Core   ← (skipped)
-    ...
-    Try: Drupal\Driver\Core\Core     ← (skipped, found earlier)
+    (lookup short-circuits on the first match; later candidates are not reached)
 
 When the resolved Core looks up a field handler, it walks the same chain:
 
