@@ -18,7 +18,7 @@ class Core extends DefaultCore {
   /**
    * Marker so tests can identify which class was instantiated.
    */
-  public const string MARKER = 'Core99\\Core';
+  public const MARKER = 'Core99\\Core';
 
   /**
    * {@inheritdoc}

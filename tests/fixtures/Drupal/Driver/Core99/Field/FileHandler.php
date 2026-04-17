@@ -17,6 +17,6 @@ class FileHandler extends DefaultFileHandler {
   /**
    * Marker so tests can identify which class was instantiated.
    */
-  public const string MARKER = 'Core99\\Field\\FileHandler';
+  public const MARKER = 'Core99\\Field\\FileHandler';
 
 }
