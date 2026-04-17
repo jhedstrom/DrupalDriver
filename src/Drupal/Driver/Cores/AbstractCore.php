@@ -26,7 +26,7 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * Random generator.
    */
-  protected ?Random $random;
+  protected Random $random;
 
   /**
    * {@inheritdoc}

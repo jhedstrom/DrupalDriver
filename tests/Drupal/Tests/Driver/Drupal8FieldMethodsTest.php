@@ -199,7 +199,7 @@ namespace Drupal\Tests\Driver {
     /**
      * {@inheritdoc}
      */
-    protected function getEntityFieldManager(): object {
+    protected function getEntityFieldManager(): EntityFieldManagerInterface {
       return $this->entityFieldManager;
     }
 

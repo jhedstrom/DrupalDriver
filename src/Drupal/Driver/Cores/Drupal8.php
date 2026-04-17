@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -444,7 +445,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * @return \Drupal\Core\Entity\EntityFieldManagerInterface
    *   The entity field manager.
    */
-  protected function getEntityFieldManager(): object {
+  protected function getEntityFieldManager(): EntityFieldManagerInterface {
     return \Drupal::service('entity_field.manager');
   }
 

@@ -38,7 +38,7 @@ class DrushDriver extends BaseDriver {
   /**
    * Random generator.
    */
-  private readonly ?Random $random;
+  private readonly Random $random;
 
   /**
    * Global arguments or options for drush commands.
@@ -307,8 +307,8 @@ class DrushDriver extends BaseDriver {
    * @param string $output
    *   The output from Drush.
    *
-   * @return object
-   *   The decoded JSON object.
+   * @return mixed
+   *   The decoded JSON value.
    */
   protected function decodeJsonObject(string $output): mixed {
     // Remove anything before the first '{'.

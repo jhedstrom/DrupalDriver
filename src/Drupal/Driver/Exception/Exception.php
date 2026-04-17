@@ -36,10 +36,10 @@ abstract class Exception extends \Exception {
   /**
    * Returns exception driver.
    *
-   * @return \Drupal\Driver\DriverInterface
-   *   The driver where the exception occurred.
+   * @return \Drupal\Driver\DriverInterface|null
+   *   The driver where the exception occurred, or NULL if not set.
    */
-  public function getDriver(): DriverInterface {
+  public function getDriver(): ?DriverInterface {
     return $this->driver;
   }
 
