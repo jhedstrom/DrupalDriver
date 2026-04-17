@@ -10,7 +10,6 @@
     <file>tests</file>
 
     <rule ref="Drupal">
-        <exclude name="Drupal.Files.LineLength.TooLong"/>
         <exclude name="Drupal.Semantics.FunctionTriggerError"/>
         <exclude name="Drupal.Commenting.Deprecated"/>
     </rule>
@@ -37,11 +36,6 @@
     </rule>
     <rule ref="Drupal.Commenting.VariableComment">
         <exclude-pattern>*/spec/*</exclude-pattern>
-    </rule>
-
-    <!-- Strict types deferred to v3.x. -->
-    <rule ref="Generic.PHP.RequireStrictTypes">
-        <severity>0</severity>
     </rule>
 
     <rule ref="DrevOps">

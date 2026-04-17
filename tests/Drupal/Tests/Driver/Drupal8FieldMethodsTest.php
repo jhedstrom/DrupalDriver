@@ -27,7 +27,7 @@ namespace Drupal\Tests\Driver {
   use PHPUnit\Framework\TestCase;
 
   /**
-   * Tests for Drupal8 field methods: isBaseField(), isField(), getEntityFieldTypes().
+   * Tests 'isBaseField()', 'isField()', and 'getEntityFieldTypes()' methods.
    */
   class Drupal8FieldMethodsTest extends TestCase {
 
@@ -146,12 +146,13 @@ namespace Drupal\Tests\Driver {
       $moderation_state_field = $this->createMock(BaseFieldDefinition::class);
       $moderation_state_field->method('getType')->willReturn('string');
 
-      // Configurable field — use stub that passes instanceof FieldStorageConfig.
+      // Configurable field - stub that passes instanceof FieldStorageConfig.
       $field_tags = new FieldStorageConfig('entity_reference');
 
       $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
 
-      // getFieldStorageDefinitions: returns non-computed base fields + configurable fields.
+      // getFieldStorageDefinitions: returns non-computed base fields and
+      // configurable fields.
       $entity_field_manager->method('getFieldStorageDefinitions')
         ->with('node')
         ->willReturn([
@@ -159,7 +160,8 @@ namespace Drupal\Tests\Driver {
           'field_tags' => $field_tags,
         ]);
 
-      // getBaseFieldDefinitions: returns ALL base fields (computed + non-computed).
+      // getBaseFieldDefinitions: returns ALL base fields (computed and
+      // non-computed).
       $entity_field_manager->method('getBaseFieldDefinitions')
         ->with('node')
         ->willReturn([
