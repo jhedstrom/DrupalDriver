@@ -520,7 +520,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       $bundle_info = \Drupal::service('entity_type.bundle.info');
       $bundles = $bundle_info->getBundleInfo($entity_type);
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception(sprintf("Cannot create entity because provided bundle '%s->%s' does not exist.", $entity, $bundle_key));
+        throw new \Exception(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
       }
     }
     if (empty($entity_type)) {
