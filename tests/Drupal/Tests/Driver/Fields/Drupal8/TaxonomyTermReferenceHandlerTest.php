@@ -25,10 +25,16 @@ class TaxonomyTermReferenceHandlerTest extends TestCase {
    * Tests that a matching term returns its ID.
    */
   public function testExpandReturnsTermId() {
-    $term = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['id'])
-      ->getMock();
-    $term->method('id')->willReturn(17);
+    $term = new class {
+
+      /**
+       * Returns the term entity ID.
+       */
+      public function id() {
+        return 17;
+      }
+
+    };
 
     $this->setUpStorageWithResult(['Tag A' => [$term]]);
 

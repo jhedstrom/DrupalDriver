@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Fields\Drupal8\ListFloatHandler;
 use Drupal\Driver\Fields\Drupal8\ListIntegerHandler;
 use Drupal\Driver\Fields\Drupal8\ListStringHandler;
@@ -82,9 +83,7 @@ class ListHandlerTest extends TestCase {
    *   The handler instance with fieldInfo populated.
    */
   protected function createHandler($class_name, array $allowed_values) {
-    $field_info = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['getSetting'])
-      ->getMock();
+    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('allowed_values')
       ->willReturn($allowed_values);

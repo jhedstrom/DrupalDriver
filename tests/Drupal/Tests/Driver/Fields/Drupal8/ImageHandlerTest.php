@@ -72,17 +72,43 @@ class ImageHandlerTest extends TestCase {
 
   /**
    * Registers a mocked file.repository service returning a file with an ID.
+   *
+   * Uses inline anonymous classes because FileInterface and
+   * FileRepositoryInterface ship with the file module rather than drupal/core
+   * and are therefore not guaranteed to be autoloadable in isolation.
    */
   protected function setFileRepositoryWithReturnId($file_id) {
-    $file = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['id', 'save'])
-      ->getMock();
-    $file->method('id')->willReturn($file_id);
+    $file = new class($file_id) {
 
-    $repository = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['writeData'])
-      ->getMock();
-    $repository->method('writeData')->willReturn($file);
+      public function __construct(private $file_id) {}
+
+      /**
+       * Returns the stored file entity ID.
+       */
+      public function id() {
+        return $this->file_id;
+      }
+
+      /**
+       * Saves the file entity (no-op in the test double).
+       */
+      public function save() {
+      }
+
+    };
+
+    $repository = new class($file) {
+
+      public function __construct(private $file) {}
+
+      /**
+       * Writes data to a destination and returns the stored file entity.
+       */
+      public function writeData($data, $destination) {
+        return $this->file;
+      }
+
+    };
 
     $container = new ContainerBuilder();
     $container->set('file.repository', $repository);

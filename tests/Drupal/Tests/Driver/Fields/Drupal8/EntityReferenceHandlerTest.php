@@ -6,6 +6,8 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Fields\Drupal8\EntityReferenceHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -66,17 +68,13 @@ class EntityReferenceHandlerTest extends TestCase {
    * Creates an EntityReferenceHandler with mocked fieldInfo and fieldConfig.
    */
   protected function createHandler($target_type, array $target_bundles) {
-    $field_info = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['getSetting'])
-      ->getMock();
+    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('target_type')
       ->willReturn($target_type);
 
     $handler_settings = $target_bundles !== [] ? ['target_bundles' => $target_bundles] : [];
-    $field_config = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['getSettings'])
-      ->getMock();
+    $field_config = $this->createMock(FieldDefinitionInterface::class);
     $field_config->method('getSettings')
       ->willReturn(['handler_settings' => $handler_settings]);
 

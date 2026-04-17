@@ -2,16 +2,14 @@
 
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
+use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Driver\Fields\Drupal8\DatetimeHandler;
 use PHPUnit\Framework\TestCase;
-
-// The datetime module constants used by DatetimeHandler live outside the
-// default Drupal core autoload, so they must be loaded explicitly here.
-require_once __DIR__ . '/../../../../../../drupal/core/modules/datetime/src/Plugin/Field/FieldType/DateTimeItemInterface.php';
-require_once __DIR__ . '/../../../../../../drupal/core/modules/datetime/src/Plugin/Field/FieldType/DateTimeItem.php';
 
 /**
  * Tests the DatetimeHandler field handler.
@@ -27,6 +25,10 @@ class DatetimeHandlerTest extends TestCase {
    */
   protected function setUp(): void {
     parent::setUp();
+
+    if (!$this->loadDatetimeModuleInterface()) {
+      $this->markTestSkipped('drupal/core datetime module classes are not available.');
+    }
 
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')->with('timezone.default')->willReturn('UTC');
@@ -62,9 +64,7 @@ class DatetimeHandlerTest extends TestCase {
    * Creates a DatetimeHandler with a fieldInfo mock returning datetime_type.
    */
   protected function createHandler($datetime_type) {
-    $field_info = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['getSetting'])
-      ->getMock();
+    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('datetime_type')
       ->willReturn($datetime_type);
@@ -77,6 +77,40 @@ class DatetimeHandlerTest extends TestCase {
     $property->setValue($handler, $field_info);
 
     return $handler;
+  }
+
+  /**
+   * Loads datetime module classes from the Composer-resolved drupal/core path.
+   *
+   * The datetime module lives outside the default drupal/core PSR-4 namespace
+   * coverage, so the relevant files are loaded explicitly. Returns TRUE when
+   * DateTimeItemInterface is available after loading.
+   */
+  protected function loadDatetimeModuleInterface() {
+    if (interface_exists(DateTimeItemInterface::class)) {
+      return TRUE;
+    }
+
+    if (!class_exists(InstalledVersions::class)) {
+      return FALSE;
+    }
+
+    $core_path = InstalledVersions::getInstallPath('drupal/core');
+    if ($core_path === NULL) {
+      return FALSE;
+    }
+
+    $interface_file = $core_path . '/modules/datetime/src/Plugin/Field/FieldType/DateTimeItemInterface.php';
+    $item_file = $core_path . '/modules/datetime/src/Plugin/Field/FieldType/DateTimeItem.php';
+
+    if (!is_file($interface_file) || !is_file($item_file)) {
+      return FALSE;
+    }
+
+    require_once $interface_file;
+    require_once $item_file;
+
+    return interface_exists(DateTimeItemInterface::class);
   }
 
 }

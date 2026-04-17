@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Driver\Fields\Drupal8\AddressHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -167,9 +168,7 @@ class AddressHandlerTest extends TestCase {
    *   Handler instance with fieldConfig populated.
    */
   protected function createHandler(array $field_overrides = [], array $available_countries = ['AU' => 'AU']) {
-    $field_config = $this->getMockBuilder(\stdClass::class)
-      ->addMethods(['getSettings'])
-      ->getMock();
+    $field_config = $this->createMock(FieldDefinitionInterface::class);
     $field_config->method('getSettings')->willReturn([
       'field_overrides' => $field_overrides,
       'available_countries' => $available_countries,

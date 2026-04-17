@@ -2,15 +2,13 @@
 
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
+use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Driver\Fields\Drupal8\DaterangeHandler;
 use PHPUnit\Framework\TestCase;
-
-// The datetime module constants used downstream are not part of the default
-// Drupal core autoload, so they must be loaded explicitly here.
-require_once __DIR__ . '/../../../../../../drupal/core/modules/datetime/src/Plugin/Field/FieldType/DateTimeItemInterface.php';
 
 /**
  * Tests the DaterangeHandler field handler.
@@ -25,6 +23,10 @@ class DaterangeHandlerTest extends TestCase {
    */
   protected function setUp(): void {
     parent::setUp();
+
+    if (!$this->loadDatetimeModuleInterface()) {
+      $this->markTestSkipped('drupal/core datetime module classes are not available.');
+    }
 
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')->with('timezone.default')->willReturn('UTC');
@@ -61,6 +63,33 @@ class DaterangeHandlerTest extends TestCase {
       ['value' => NULL, 'end_value' => NULL],
       ['value' => NULL, 'end_value' => NULL],
     ], $result);
+  }
+
+  /**
+   * Loads the datetime module interface from the Composer-resolved core path.
+   */
+  protected function loadDatetimeModuleInterface() {
+    if (interface_exists(DateTimeItemInterface::class)) {
+      return TRUE;
+    }
+
+    if (!class_exists(InstalledVersions::class)) {
+      return FALSE;
+    }
+
+    $core_path = InstalledVersions::getInstallPath('drupal/core');
+    if ($core_path === NULL) {
+      return FALSE;
+    }
+
+    $interface_file = $core_path . '/modules/datetime/src/Plugin/Field/FieldType/DateTimeItemInterface.php';
+    if (!is_file($interface_file)) {
+      return FALSE;
+    }
+
+    require_once $interface_file;
+
+    return interface_exists(DateTimeItemInterface::class);
   }
 
 }
