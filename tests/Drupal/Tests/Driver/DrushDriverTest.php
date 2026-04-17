@@ -73,7 +73,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Data provider for testParseUserId().
    */
-  public function dataProviderParseUserId(): \Iterator {
+  public static function dataProviderParseUserId(): \Iterator {
     yield 'legacy key-value format' => [
       "User ID   :   550895\nUser name :   test\n",
       550895,
@@ -95,7 +95,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Data provider for testIsLegacyDrush().
    */
-  public function dataProviderIsLegacyDrush(): \Iterator {
+  public static function dataProviderIsLegacyDrush(): \Iterator {
     yield 'clean modern version' => [
       "12.5.2.0\n",
       FALSE,

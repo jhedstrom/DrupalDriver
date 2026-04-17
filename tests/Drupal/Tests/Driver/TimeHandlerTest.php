@@ -31,7 +31,7 @@ class TimeHandlerTest extends TestCase {
   /**
    * Data provider for testExpand().
    */
-  public function dataProviderExpand(): \Iterator {
+  public static function dataProviderExpand(): \Iterator {
     // Seconds past midnight for known times.
     // 9:30 AM = 9*3600 + 30*60 = 34200.
     // 2:15:30 PM = 14*3600 + 15*60 + 30 = 51330.

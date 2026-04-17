@@ -49,7 +49,7 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testIsBaseField().
      */
-    public function dataProviderIsBaseField(): \Iterator {
+    public static function dataProviderIsBaseField(): \Iterator {
       yield 'non-computed base field' => ['title', TRUE];
       yield 'computed base field' => ['moderation_state', TRUE];
       yield 'configurable field' => ['field_tags', FALSE];
@@ -74,7 +74,7 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testIsField().
      */
-    public function dataProviderIsField(): \Iterator {
+    public static function dataProviderIsField(): \Iterator {
       yield 'configurable field' => ['field_tags', TRUE];
       yield 'non-computed base field' => ['title', FALSE];
       yield 'computed base field' => ['moderation_state', FALSE];
@@ -108,7 +108,7 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testGetEntityFieldTypes().
      */
-    public function dataProviderGetEntityFieldTypes(): \Iterator {
+    public static function dataProviderGetEntityFieldTypes(): \Iterator {
       yield 'no base fields requested' => [
         [],
         ['field_tags'],

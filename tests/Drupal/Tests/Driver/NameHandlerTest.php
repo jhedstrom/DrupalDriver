@@ -31,7 +31,7 @@ class NameHandlerTest extends TestCase {
   /**
    * Data provider for testExpand().
    */
-  public function dataProviderExpand(): \Iterator {
+  public static function dataProviderExpand(): \Iterator {
     yield 'string shorthand family, given' => [
         ['Doe, John'],
         [['family' => 'Doe', 'given' => 'John']],

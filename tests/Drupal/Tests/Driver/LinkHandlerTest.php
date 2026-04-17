@@ -31,7 +31,7 @@ class LinkHandlerTest extends TestCase {
   /**
    * Data provider for testExpand().
    */
-  public function dataProviderExpand(): \Iterator {
+  public static function dataProviderExpand(): \Iterator {
     yield 'numeric indices' => [
         [['My link', 'https://example.com']],
         [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
