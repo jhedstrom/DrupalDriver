@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
-use Drupal\Driver\Cores\CoreInterface;
-use Drupal\Driver\Cores\CoreAuthenticationInterface;
+use Drupal\Driver\Core\Core;
+use Drupal\Driver\Core\CoreInterface;
+use Drupal\Driver\Core\CoreAuthenticationInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
@@ -161,8 +162,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * Detects the major Drupal version from the filesystem.
    *
    * @return int
-   *   The major version number. Drupal 10+ all return 8 because they share
-   *   the same driver (Drupal8.php).
+   *   The actual major version number (10, 11, 12, etc.).
    */
   protected function detectMajorVersion(): int {
     $version_files = [
@@ -187,8 +187,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
       throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 10 or higher is required.', $version_string));
     }
 
-    // Drupal 10 and 11 share the same core driver class (Drupal8.php).
-    return 8;
+    return (int) $major;
   }
 
   /**
@@ -205,7 +204,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * Instantiate and set Drupal core class.
    *
-   * @param array<int, \Drupal\Driver\Cores\CoreInterface> $available_cores
+   * @param array<int, \Drupal\Driver\Core\CoreInterface> $available_cores
    *   A major-version-keyed array of available core controllers.
    */
   public function setCore(array $available_cores): void {
@@ -217,10 +216,28 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
 
   /**
    * Automatically set the core from the current version.
+   *
+   * Walks from the detected Drupal version down to the default Core class,
+   * using the first class that exists in the lookup chain:
+   * Drupal\Driver\Core{N}\Core → ... → Drupal\Driver\Core\Core.
+   *
+   * @throws \Drupal\Driver\Exception\BootstrapException
+   *   Thrown when no Core implementation is found for the detected version.
    */
   public function setCoreFromVersion(): void {
-    $core = '\Drupal\Driver\Cores\Drupal' . $this->getDrupalVersion();
-    $this->core = new $core($this->drupalRoot, $this->uri);
+    $version = $this->getDrupalVersion();
+    $candidates = [];
+    for ($n = $version; $n >= 10; $n--) {
+      $candidates[] = sprintf('Drupal\\Driver\\Core%d\\Core', $n);
+    }
+    $candidates[] = Core::class;
+    foreach ($candidates as $class) {
+      if (class_exists($class)) {
+        $this->core = new $class($this->drupalRoot, $this->uri);
+        return;
+      }
+    }
+    throw new BootstrapException(sprintf('No Core implementation found for Drupal version %s.', $version));
   }
 
   /**
@@ -416,7 +433,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * Returns the core as an authentication driver, or NULL if unsupported.
    *
-   * @return \Drupal\Driver\Cores\CoreAuthenticationInterface|null
+   * @return \Drupal\Driver\Core\CoreAuthenticationInterface|null
    *   The authentication-capable core, or NULL.
    */
   protected function getAuthCore(): ?CoreAuthenticationInterface {

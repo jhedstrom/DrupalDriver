@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver;
 
-use Drupal\Driver\Fields\Drupal8\LinkHandler;
+use Drupal\Driver\Core\Field\LinkHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -86,7 +86,7 @@ class LinkHandlerTest extends TestCase {
   /**
    * Creates a LinkHandler instance that bypasses the parent constructor.
    *
-   * @return \Drupal\Driver\Fields\Drupal8\LinkHandler
+   * @return \Drupal\Driver\Core\Field\LinkHandler
    *   The handler instance.
    */
   protected function createHandler(): LinkHandler {

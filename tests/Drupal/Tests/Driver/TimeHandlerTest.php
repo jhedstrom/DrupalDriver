@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver;
 
-use Drupal\Driver\Fields\Drupal8\TimeHandler;
+use Drupal\Driver\Core\Field\TimeHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -66,7 +66,7 @@ class TimeHandlerTest extends TestCase {
   /**
    * Creates a TimeHandler instance that bypasses the parent constructor.
    *
-   * @return \Drupal\Driver\Fields\Drupal8\TimeHandler
+   * @return \Drupal\Driver\Core\Field\TimeHandler
    *   The handler instance.
    */
   protected function createHandler(): TimeHandler {

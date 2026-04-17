@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // Define a stub FieldStorageConfig in the correct namespace so that
-// instanceof checks in Drupal8::isField() work without a full Drupal bootstrap.
+// instanceof checks in Core::isField() work without a full Drupal bootstrap.
 // This must be declared before any class that references it.
 // phpcs:disable
 namespace Drupal\field\Entity {
@@ -22,7 +22,7 @@ namespace Drupal\Tests\Driver {
 
   use Drupal\Core\Entity\EntityFieldManagerInterface;
   use Drupal\Core\Field\BaseFieldDefinition;
-  use Drupal\Driver\Cores\Drupal8;
+  use Drupal\Driver\Core\Core;
   use Drupal\field\Entity\FieldStorageConfig;
   use PHPUnit\Framework\TestCase;
 
@@ -132,12 +132,12 @@ namespace Drupal\Tests\Driver {
     }
 
     /**
-     * Creates a TestDrupal8Core with mocked entity field manager.
+     * Creates a TestCore with mocked entity field manager.
      *
-     * @return \Drupal\Tests\Driver\TestDrupal8Core
+     * @return \Drupal\Tests\Driver\TestCore
      *   The test core instance.
      */
-    protected function createTestCore(): TestDrupal8Core {
+    protected function createTestCore(): TestCore {
       // Non-computed base field.
       $title_field = $this->createMock(BaseFieldDefinition::class);
       $title_field->method('getType')->willReturn('string');
@@ -169,7 +169,7 @@ namespace Drupal\Tests\Driver {
           'moderation_state' => $moderation_state_field,
         ]);
 
-      $core = new TestDrupal8Core(__DIR__, 'default');
+      $core = new TestCore(__DIR__, 'default');
       $core->setEntityFieldManager($entity_field_manager);
       return $core;
     }
@@ -179,7 +179,7 @@ namespace Drupal\Tests\Driver {
   /**
    * Testable subclass that overrides 'getEntityFieldManager()'.
    */
-  class TestDrupal8Core extends Drupal8 {
+  class TestCore extends Core {
 
     /**
      * The mock entity field manager.

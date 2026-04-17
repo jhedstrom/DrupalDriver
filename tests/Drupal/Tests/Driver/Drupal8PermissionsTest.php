@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver;
 
-use Drupal\Driver\Cores\Drupal8;
+use Drupal\Driver\Core\Core;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -91,12 +91,12 @@ class Drupal8PermissionsTest extends TestCase {
   /**
    * Invokes the protected 'convertPermissions()' method by reference.
    *
-   * @param \Drupal\Driver\Cores\Drupal8 $core
+   * @param \Drupal\Driver\Core\Core $core
    *   The core instance to invoke the method on.
    * @param array<string> &$permissions
    *   The permissions array to convert.
    */
-  protected function callConvertPermissions(Drupal8 $core, array &$permissions): void {
+  protected function callConvertPermissions(Core $core, array &$permissions): void {
     $method = new \ReflectionMethod($core, 'convertPermissions');
     $method->invokeArgs($core, [&$permissions]);
   }
@@ -104,12 +104,12 @@ class Drupal8PermissionsTest extends TestCase {
   /**
    * Invokes the protected 'checkPermissions()' method by reference.
    *
-   * @param \Drupal\Driver\Cores\Drupal8 $core
+   * @param \Drupal\Driver\Core\Core $core
    *   The core instance to invoke the method on.
    * @param array<string> &$permissions
    *   The permissions array to check.
    */
-  protected function callCheckPermissions(Drupal8 $core, array &$permissions): void {
+  protected function callCheckPermissions(Core $core, array &$permissions): void {
     $method = new \ReflectionMethod($core, 'checkPermissions');
     $method->invokeArgs($core, [&$permissions]);
   }
@@ -137,7 +137,7 @@ class Drupal8PermissionsTest extends TestCase {
 /**
  * Testable subclass that overrides 'getAllPermissions()'.
  */
-class TestDrupal8PermissionsCore extends Drupal8 {
+class TestDrupal8PermissionsCore extends Core {
 
   /**
    * Stored permissions keyed by machine name.

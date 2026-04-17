@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver;
 
-use Drupal\Driver\Fields\Drupal8\NameHandler;
+use Drupal\Driver\Core\Field\NameHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -63,7 +63,7 @@ class NameHandlerTest extends TestCase {
   /**
    * Creates a NameHandler instance that bypasses the parent constructor.
    *
-   * @return \Drupal\Driver\Fields\Drupal8\NameHandler
+   * @return \Drupal\Driver\Core\Field\NameHandler
    *   The handler instance.
    */
   protected function createHandler(): NameHandler {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver;
 
 use Drupal\Core\CronInterface;
-use Drupal\Driver\Cores\Drupal8;
+use Drupal\Driver\Core\Core;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
@@ -65,7 +65,7 @@ class Drupal8Test extends TestCase {
     \Drupal::setContainer($container);
 
     // Use __DIR__ as a dummy drupal root (runCron does not use it).
-    $core = new Drupal8(__DIR__, 'default');
+    $core = new Core(__DIR__, 'default');
     $result = $core->runCron();
 
     $this->assertTrue($result);
