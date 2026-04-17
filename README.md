@@ -9,6 +9,8 @@
 [![ci](https://github.com/jhedstrom/DrupalDriver/actions/workflows/ci.yml/badge.svg)](https://github.com/jhedstrom/DrupalDriver/actions/workflows/ci.yml)
 [![GitHub Issues](https://img.shields.io/github/issues/jhedstrom/DrupalDriver.svg)](https://github.com/jhedstrom/DrupalDriver/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/jhedstrom/DrupalDriver.svg)](https://github.com/jhedstrom/DrupalDriver/pulls)
+
+[![Join our community](https://img.shields.io/badge/Join%20our%20community-Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)](https://drupal.slack.com/archives/C4T2JHG9K)
 </div>
 
 A collection of lightweight drivers with a common interface for
@@ -73,7 +75,7 @@ $driver->createNode($node);
 
 ## Release notes
 
-See [CHANGELOG](CHANGELOG.MD).
+See [GitHub Releases](https://github.com/jhedstrom/DrupalDriver/releases).
 
 ## Contributing
 
