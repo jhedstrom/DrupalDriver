@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
@@ -14,9 +16,9 @@ class UnsupportedDriverActionExceptionTest extends TestCase {
   /**
    * Tests that the message template is populated with the driver class name.
    */
-  public function testMessageFormatting() {
+  public function testMessageFormatting(): void {
     $driver = $this->createMock(DriverInterface::class);
-    $driver_class = get_class($driver);
+    $driver_class = $driver::class;
 
     $exception = new UnsupportedDriverActionException('Action %s is not supported.', $driver);
 
@@ -26,7 +28,7 @@ class UnsupportedDriverActionExceptionTest extends TestCase {
   /**
    * Tests that the driver is accessible via getDriver().
    */
-  public function testGetDriverReturnsConstructorArgument() {
+  public function testGetDriverReturnsConstructorArgument(): void {
     $driver = $this->createMock(DriverInterface::class);
 
     $exception = new UnsupportedDriverActionException('%s', $driver);
@@ -37,7 +39,7 @@ class UnsupportedDriverActionExceptionTest extends TestCase {
   /**
    * Tests that code and previous exception are propagated to the parent.
    */
-  public function testCodeAndPreviousArePropagated() {
+  public function testCodeAndPreviousArePropagated(): void {
     $driver = $this->createMock(DriverInterface::class);
     $previous = new \RuntimeException('root cause');
 

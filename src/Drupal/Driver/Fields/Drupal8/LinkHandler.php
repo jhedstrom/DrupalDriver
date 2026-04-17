@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -10,7 +12,7 @@ class LinkHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $return = [];
     foreach ($values as $value) {
       // Support URI-only string values.
@@ -22,7 +24,7 @@ class LinkHandler extends AbstractHandler {
         'title' => $value['title'] ?? $value[0] ?? NULL,
         'uri' => $value['uri'] ?? $value[1] ?? NULL,
         'options' => [],
-      ], fn ($v) => $v !== NULL);
+      ], fn ($v): bool => $v !== NULL);
       // 'options' is required to be an array, otherwise the utility class
       // Drupal\Core\Utility\UnroutedUrlAssembler::assemble() will complain.
       $options = $value['options'] ?? $value[2] ?? NULL;

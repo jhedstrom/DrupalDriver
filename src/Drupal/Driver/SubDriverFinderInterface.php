@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver;
 
 /**
@@ -10,9 +12,9 @@ interface SubDriverFinderInterface {
   /**
    * Returns an array of paths in which to look for Drupal sub-drivers.
    *
-   * @return array
+   * @return array<string>
    *   An array of paths in which to find sub-drivers.
    */
-  public function getSubDriverPaths();
+  public function getSubDriverPaths(): array;
 
 }

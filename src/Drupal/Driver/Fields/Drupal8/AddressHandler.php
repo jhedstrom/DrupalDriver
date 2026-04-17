@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -10,7 +12,7 @@ class AddressHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $visible_fields = $this->getVisibleAddressFields();
     $result = [];
 
@@ -23,8 +25,11 @@ class AddressHandler extends AbstractHandler {
 
   /**
    * Returns address sub-fields that are not hidden by field overrides.
+   *
+   * @return array<int, string>
+   *   Visible address field names.
    */
-  protected function getVisibleAddressFields() {
+  protected function getVisibleAddressFields(): array {
     $fields = [
       'given_name',
       'additional_name',
@@ -47,7 +52,7 @@ class AddressHandler extends AbstractHandler {
       }
 
       // Convert camelCase override keys to snake_case field names.
-      $snake_key = strtolower(preg_replace('/([A-Z])/', '_$1', $key));
+      $snake_key = strtolower((string) preg_replace('/([A-Z])/', '_$1', (string) $key));
       $index = array_search($snake_key, $fields, TRUE);
 
       if ($index !== FALSE) {
@@ -60,8 +65,16 @@ class AddressHandler extends AbstractHandler {
 
   /**
    * Normalises a single address delta into a keyed array.
+   *
+   * @param mixed $value
+   *   A single address value (string or array).
+   * @param array<int, string> $visible_fields
+   *   The list of visible address field names.
+   *
+   * @return array<string, mixed>
+   *   A keyed array of address field values.
    */
-  protected function normaliseDelta($value, array $visible_fields) {
+  protected function normaliseDelta(mixed $value, array $visible_fields): array {
     if (is_string($value)) {
       return [reset($visible_fields) => $value];
     }

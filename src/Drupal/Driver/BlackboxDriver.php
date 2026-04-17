@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver;
 
 /**
@@ -10,7 +12,7 @@ class BlackboxDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function isBootstrapped() {
+  public function isBootstrapped(): bool {
     // Assume the blackbox is always bootstrapped.
     return TRUE;
   }

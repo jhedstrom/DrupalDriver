@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -14,7 +16,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that a string value uses the first visible field.
    */
-  public function testStringValueUsesFirstVisibleField() {
+  public function testStringValueUsesFirstVisibleField(): void {
     $handler = $this->createHandler();
 
     $result = $handler->expand(['Just a name']);
@@ -25,7 +27,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that keyed values are preserved and defaults filled in.
    */
-  public function testKeyedValuesAreKeptAndDefaultCountryApplied() {
+  public function testKeyedValuesAreKeptAndDefaultCountryApplied(): void {
     $handler = $this->createHandler();
 
     $result = $handler->expand([
@@ -47,7 +49,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that numeric indices are assigned in the order of visible fields.
    */
-  public function testNumericIndicesMapToVisibleFieldOrder() {
+  public function testNumericIndicesMapToVisibleFieldOrder(): void {
     $handler = $this->createHandler();
 
     $result = $handler->expand([
@@ -66,7 +68,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that hidden fields are removed from the visible field list.
    */
-  public function testHiddenFieldsAreSkippedForNumericIndices() {
+  public function testHiddenFieldsAreSkippedForNumericIndices(): void {
     $handler = $this->createHandler([
       'givenName' => ['override' => 'hidden'],
       'additionalName' => ['override' => 'hidden'],
@@ -87,7 +89,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that non-hidden overrides do not alter the visible field list.
    */
-  public function testNonHiddenOverridesAreIgnored() {
+  public function testNonHiddenOverridesAreIgnored(): void {
     $handler = $this->createHandler([
       'givenName' => ['override' => 'optional'],
     ]);
@@ -107,7 +109,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that excess numeric indices trigger an exception.
    */
-  public function testTooManyNumericIndicesThrows() {
+  public function testTooManyNumericIndicesThrows(): void {
     $handler = $this->createHandler([
       'additionalName' => ['override' => 'hidden'],
       'familyName' => ['override' => 'hidden'],
@@ -132,7 +134,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that a non-numeric, unknown sub-field key throws an exception.
    */
-  public function testUnknownKeyThrows() {
+  public function testUnknownKeyThrows(): void {
     $handler = $this->createHandler();
 
     $this->expectException(\RuntimeException::class);
@@ -146,7 +148,7 @@ class AddressHandlerTest extends TestCase {
   /**
    * Tests that an explicit country_code is not overridden by the default.
    */
-  public function testExplicitCountryCodeIsPreserved() {
+  public function testExplicitCountryCodeIsPreserved(): void {
     $handler = $this->createHandler();
 
     $result = $handler->expand([
@@ -159,15 +161,15 @@ class AddressHandlerTest extends TestCase {
   /**
    * Creates an AddressHandler with an injected fieldConfig mock.
    *
-   * @param array $field_overrides
+   * @param array<string, mixed> $field_overrides
    *   Address field override settings.
-   * @param array $available_countries
+   * @param array<string, string> $available_countries
    *   Available countries keyed by code.
    *
    * @return \Drupal\Driver\Fields\Drupal8\AddressHandler
    *   Handler instance with fieldConfig populated.
    */
-  protected function createHandler(array $field_overrides = [], array $available_countries = ['AU' => 'AU']) {
+  protected function createHandler(array $field_overrides = [], array $available_countries = ['AU' => 'AU']): AddressHandler {
     $field_config = $this->createMock(FieldDefinitionInterface::class);
     $field_config->method('getSettings')->willReturn([
       'field_overrides' => $field_overrides,
@@ -178,7 +180,6 @@ class AddressHandlerTest extends TestCase {
     $handler = $reflection->newInstanceWithoutConstructor();
 
     $property = new \ReflectionProperty(AddressHandler::class, 'fieldConfig');
-    $property->setAccessible(TRUE);
     $property->setValue($handler, $field_config);
 
     return $handler;

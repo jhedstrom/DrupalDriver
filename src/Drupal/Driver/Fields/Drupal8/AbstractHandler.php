@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Fields\FieldHandlerInterface;
 
 /**
@@ -10,17 +14,13 @@ use Drupal\Driver\Fields\FieldHandlerInterface;
 abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * Field storage definition.
-   *
-   * @var \Drupal\field\Entity\FieldStorageConfig
    */
-  protected $fieldInfo;
+  protected FieldStorageDefinitionInterface $fieldInfo;
 
   /**
    * Field configuration definition.
-   *
-   * @var \Drupal\field\Entity\FieldConfig
    */
-  protected $fieldConfig;
+  protected FieldDefinitionInterface $fieldConfig;
 
   /**
    * Constructs an AbstractHandler object.
@@ -35,7 +35,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    * @throws \Exception
    *   Thrown when the given field name does not exist on the entity.
    */
-  public function __construct(\StdClass $entity, $entity_type, $field_name) {
+  public function __construct(\StdClass $entity, string $entity_type, string $field_name) {
     if (empty($entity_type)) {
       throw new \Exception("You must specify an entity type in order to parse entity fields.");
     }

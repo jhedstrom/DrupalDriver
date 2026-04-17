@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Composer\InstalledVersions;
@@ -50,7 +52,7 @@ class DaterangeHandlerTest extends TestCase {
   /**
    * Tests that empty start/end values produce NULL entries.
    */
-  public function testExpandHandlesEmptyValuesAsNull() {
+  public function testExpandHandlesEmptyValuesAsNull(): void {
     $reflection = new \ReflectionClass(DaterangeHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
 
@@ -68,7 +70,7 @@ class DaterangeHandlerTest extends TestCase {
   /**
    * Loads the datetime module interface from the Composer-resolved core path.
    */
-  protected function loadDatetimeModuleInterface() {
+  protected function loadDatetimeModuleInterface(): bool {
     if (interface_exists(DateTimeItemInterface::class)) {
       return TRUE;
     }

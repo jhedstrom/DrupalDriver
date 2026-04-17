@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 use Drupal\Driver\Fields\FieldHandlerInterface;
@@ -12,8 +14,8 @@ class TextWithSummaryHandler implements FieldHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
-    return $values;
+  public function expand(mixed $values): array {
+    return (array) $values;
   }
 
 }

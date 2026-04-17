@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -12,7 +14,7 @@ abstract class ListHandlerBase extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand(mixed $values): array {
     $return = [];
 
     // Load allowed values from field storage.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Driver\Fields\Drupal8\TextWithSummaryHandler;
@@ -13,7 +15,7 @@ class TextWithSummaryHandlerTest extends TestCase {
   /**
    * Tests that expand() returns the input unchanged.
    */
-  public function testExpandReturnsValuesUnchanged() {
+  public function testExpandReturnsValuesUnchanged(): void {
     $handler = new TextWithSummaryHandler();
 
     $values = [

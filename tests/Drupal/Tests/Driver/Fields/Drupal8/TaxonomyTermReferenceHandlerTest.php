@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -24,13 +26,13 @@ class TaxonomyTermReferenceHandlerTest extends TestCase {
   /**
    * Tests that a matching term returns its ID.
    */
-  public function testExpandReturnsTermId() {
+  public function testExpandReturnsTermId(): void {
     $term = new class {
 
       /**
        * Returns the term entity ID.
        */
-      public function id() {
+      public function id(): int {
         return 17;
       }
 
@@ -46,7 +48,7 @@ class TaxonomyTermReferenceHandlerTest extends TestCase {
   /**
    * Tests that an unknown term name raises an exception.
    */
-  public function testExpandThrowsWhenTermNotFound() {
+  public function testExpandThrowsWhenTermNotFound(): void {
     $this->setUpStorageWithResult([]);
 
     $handler = $this->createHandler();
@@ -60,15 +62,18 @@ class TaxonomyTermReferenceHandlerTest extends TestCase {
   /**
    * Creates a handler that bypasses the parent constructor.
    */
-  protected function createHandler() {
+  protected function createHandler(): TaxonomyTermReferenceHandler {
     $reflection = new \ReflectionClass(TaxonomyTermReferenceHandler::class);
     return $reflection->newInstanceWithoutConstructor();
   }
 
   /**
    * Sets up a Drupal container that returns the supplied lookup results.
+   *
+   * @param array<string, mixed> $lookup
+   *   Map of term names to entity arrays.
    */
-  protected function setUpStorageWithResult(array $lookup) {
+  protected function setUpStorageWithResult(array $lookup): void {
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('loadByProperties')
       ->willReturnCallback(fn($properties) => $lookup[$properties['name']] ?? []);

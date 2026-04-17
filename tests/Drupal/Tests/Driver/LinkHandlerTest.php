@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver;
 
 use Drupal\Driver\Fields\Drupal8\LinkHandler;
@@ -13,14 +15,14 @@ class LinkHandlerTest extends TestCase {
   /**
    * Tests link field expansion.
    *
-   * @param array $input
+   * @param array<int, mixed> $input
    *   The input values to expand.
-   * @param array $expected
+   * @param array<int, mixed> $expected
    *   The expected expanded values.
    *
    * @dataProvider dataProviderExpand
    */
-  public function testExpand(array $input, array $expected) {
+  public function testExpand(array $input, array $expected): void {
     $handler = $this->createHandler();
     $result = $handler->expand($input);
     $this->assertSame($expected, $result);
@@ -29,17 +31,16 @@ class LinkHandlerTest extends TestCase {
   /**
    * Data provider for testExpand().
    */
-  public function dataProviderExpand() {
-    return [
-      'numeric indices' => [
+  public static function dataProviderExpand(): \Iterator {
+    yield 'numeric indices' => [
         [['My link', 'https://example.com']],
         [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
-      ],
-      'named keys' => [
+    ];
+    yield 'named keys' => [
         [['title' => 'My link', 'uri' => 'https://example.com']],
         [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
-      ],
-      'numeric indices with options' => [
+    ];
+    yield 'numeric indices with options' => [
         [['My link', 'https://example.com', 'target=_blank&rel=nofollow']],
         [[
           'title' => 'My link',
@@ -47,12 +48,12 @@ class LinkHandlerTest extends TestCase {
           'options' => ['target' => '_blank', 'rel' => 'nofollow'],
         ],
         ],
-      ],
-      'named keys with options' => [
+    ];
+    yield 'named keys with options' => [
         [['title' => 'My link', 'uri' => 'https://example.com', 'options' => 'target=_blank']],
         [['title' => 'My link', 'uri' => 'https://example.com', 'options' => ['target' => '_blank']]],
-      ],
-      'multiple values' => [
+    ];
+    yield 'multiple values' => [
         [
           ['First', 'https://first.com'],
           ['title' => 'Second', 'uri' => 'https://second.com'],
@@ -61,16 +62,16 @@ class LinkHandlerTest extends TestCase {
           ['title' => 'First', 'uri' => 'https://first.com', 'options' => []],
           ['title' => 'Second', 'uri' => 'https://second.com', 'options' => []],
         ],
-      ],
-      'no options returns empty array' => [
+    ];
+    yield 'no options returns empty array' => [
         [['title' => 'Link', 'uri' => 'https://example.com']],
         [['title' => 'Link', 'uri' => 'https://example.com', 'options' => []]],
-      ],
-      'uri-only string' => [
+    ];
+    yield 'uri-only string' => [
         ['https://example.com'],
         [['uri' => 'https://example.com', 'options' => []]],
-      ],
-      'mixed uri-only and full' => [
+    ];
+    yield 'mixed uri-only and full' => [
         [
           'https://first.com',
           ['title' => 'Second', 'uri' => 'https://second.com'],
@@ -79,7 +80,6 @@ class LinkHandlerTest extends TestCase {
           ['uri' => 'https://first.com', 'options' => []],
           ['title' => 'Second', 'uri' => 'https://second.com', 'options' => []],
         ],
-      ],
     ];
   }
 
@@ -89,7 +89,7 @@ class LinkHandlerTest extends TestCase {
    * @return \Drupal\Driver\Fields\Drupal8\LinkHandler
    *   The handler instance.
    */
-  protected function createHandler() {
+  protected function createHandler(): LinkHandler {
     $reflection = new \ReflectionClass(LinkHandler::class);
     return $reflection->newInstanceWithoutConstructor();
   }

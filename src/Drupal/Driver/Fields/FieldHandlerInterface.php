@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields;
 
 /**
@@ -20,10 +22,10 @@ interface FieldHandlerInterface {
    * @param mixed $values
    *   A single value or an array of field values to save on the entity.
    *
-   * @return array
+   * @return array<int|string, mixed>
    *   An array of field values in the format expected by the entity storage
    *   handlers in the driver's version of Drupal.
    */
-  public function expand($values);
+  public function expand(mixed $values): array;
 
 }

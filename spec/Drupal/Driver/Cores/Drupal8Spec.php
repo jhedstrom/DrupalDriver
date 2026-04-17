@@ -12,7 +12,7 @@ class Drupal8Spec extends ObjectBehavior
 {
     function let(Random $random)
     {
-        $this->beConstructedWith('path', 'http://www.example.com', $random);
+        $this->beConstructedWith(__DIR__, 'http://www.example.com', $random);
     }
 
     function it_is_initializable()

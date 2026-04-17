@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Composer\InstalledVersions;
@@ -52,7 +54,7 @@ class DatetimeHandlerTest extends TestCase {
   /**
    * Tests that empty strings and NULLs pass through as NULL values.
    */
-  public function testExpandPreservesEmptyValuesAsNull() {
+  public function testExpandPreservesEmptyValuesAsNull(): void {
     $handler = $this->createHandler('datetime');
 
     $result = $handler->expand(['', NULL]);
@@ -63,7 +65,7 @@ class DatetimeHandlerTest extends TestCase {
   /**
    * Creates a DatetimeHandler with a fieldInfo mock returning datetime_type.
    */
-  protected function createHandler($datetime_type) {
+  protected function createHandler(string $datetime_type): DatetimeHandler {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('datetime_type')
@@ -73,7 +75,6 @@ class DatetimeHandlerTest extends TestCase {
     $handler = $reflection->newInstanceWithoutConstructor();
 
     $property = new \ReflectionProperty(DatetimeHandler::class, 'fieldInfo');
-    $property->setAccessible(TRUE);
     $property->setValue($handler, $field_info);
 
     return $handler;
@@ -86,7 +87,7 @@ class DatetimeHandlerTest extends TestCase {
    * coverage, so the relevant files are loaded explicitly. Returns TRUE when
    * DateTimeItemInterface is available after loading.
    */
-  protected function loadDatetimeModuleInterface() {
+  protected function loadDatetimeModuleInterface(): bool {
     if (interface_exists(DateTimeItemInterface::class)) {
       return TRUE;
     }

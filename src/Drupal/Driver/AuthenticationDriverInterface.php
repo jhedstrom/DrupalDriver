@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver;
 
 /**
@@ -10,11 +12,11 @@ interface AuthenticationDriverInterface {
   /**
    * Logs the user in.
    */
-  public function login(\stdClass $user);
+  public function login(\stdClass $user): void;
 
   /**
    * Logs the user out.
    */
-  public function logout();
+  public function logout(): void;
 
 }

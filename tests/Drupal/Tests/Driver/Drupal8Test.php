@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver;
 
 use Drupal\Core\CronInterface;
@@ -16,10 +18,8 @@ class Drupal8Test extends TestCase {
 
   /**
    * The original REQUEST_TIME value.
-   *
-   * @var int
    */
-  protected $originalRequestTime;
+  protected ?int $originalRequestTime = NULL;
 
   /**
    * {@inheritdoc}
@@ -42,7 +42,7 @@ class Drupal8Test extends TestCase {
   /**
    * Tests that `runCron()` refreshes `REQUEST_TIME` before running cron.
    */
-  public function testRunCronRefreshesRequestTime() {
+  public function testRunCronRefreshesRequestTime(): void {
     $before = time();
     $stale_time = $before - 60;
 

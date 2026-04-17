@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver;
 
 use Drupal\Driver\Fields\Drupal8\TimeHandler;
@@ -13,14 +15,14 @@ class TimeHandlerTest extends TestCase {
   /**
    * Tests time field expansion.
    *
-   * @param array $input
+   * @param array<int, mixed> $input
    *   The input values to expand.
-   * @param array $expected
+   * @param array<int, mixed> $expected
    *   The expected expanded values.
    *
    * @dataProvider dataProviderExpand
    */
-  public function testExpand(array $input, array $expected) {
+  public function testExpand(array $input, array $expected): void {
     $handler = $this->createHandler();
     $result = $handler->expand($input);
     $this->assertSame($expected, $result);
@@ -29,38 +31,35 @@ class TimeHandlerTest extends TestCase {
   /**
    * Data provider for testExpand().
    */
-  public function dataProviderExpand() {
+  public static function dataProviderExpand(): \Iterator {
     // Seconds past midnight for known times.
     // 9:30 AM = 9*3600 + 30*60 = 34200.
     // 2:15:30 PM = 14*3600 + 15*60 + 30 = 51330.
     // Midnight = 0.
     $midnight = strtotime('today midnight');
-
-    return [
-      'numeric integer passthrough' => [
-        [34200],
-        [34200],
-      ],
-      'numeric string passthrough' => [
-        ['34200'],
-        ['34200'],
-      ],
-      'time string 9:30 AM' => [
-        ['9:30 AM'],
-        [strtotime('9:30 AM') - $midnight],
-      ],
-      'time string 14:15:30' => [
-        ['14:15:30'],
-        [strtotime('14:15:30') - $midnight],
-      ],
-      'time string midnight' => [
-        ['midnight'],
-        [0],
-      ],
-      'multiple mixed values' => [
-        [3600, '9:30 AM', '0'],
-        [3600, strtotime('9:30 AM') - $midnight, '0'],
-      ],
+    yield 'numeric integer passthrough' => [
+      [34200],
+      [34200],
+    ];
+    yield 'numeric string passthrough' => [
+      ['34200'],
+      ['34200'],
+    ];
+    yield 'time string 9:30 AM' => [
+      ['9:30 AM'],
+      [strtotime('9:30 AM') - $midnight],
+    ];
+    yield 'time string 14:15:30' => [
+      ['14:15:30'],
+      [strtotime('14:15:30') - $midnight],
+    ];
+    yield 'time string midnight' => [
+      ['midnight'],
+      [0],
+    ];
+    yield 'multiple mixed values' => [
+      [3600, '9:30 AM', '0'],
+      [3600, strtotime('9:30 AM') - $midnight, '0'],
     ];
   }
 
@@ -70,7 +69,7 @@ class TimeHandlerTest extends TestCase {
    * @return \Drupal\Driver\Fields\Drupal8\TimeHandler
    *   The handler instance.
    */
-  protected function createHandler() {
+  protected function createHandler(): TimeHandler {
     // Use reflection to bypass AbstractHandler constructor which requires
     // a full Drupal bootstrap.
     $reflection = new \ReflectionClass(TimeHandler::class);

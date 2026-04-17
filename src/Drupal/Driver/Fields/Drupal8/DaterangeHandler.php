@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
@@ -14,7 +16,7 @@ class DaterangeHandler extends DatetimeHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $site_timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
     $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
     $result = [];

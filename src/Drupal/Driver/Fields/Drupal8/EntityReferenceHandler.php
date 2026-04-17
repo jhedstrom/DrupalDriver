@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -10,7 +12,7 @@ class EntityReferenceHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $return = [];
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
@@ -60,7 +62,7 @@ class EntityReferenceHandler extends AbstractHandler {
    * @return mixed
    *   Array of bundle names, or NULL if not able to determine bundles.
    */
-  protected function getTargetBundles() {
+  protected function getTargetBundles(): mixed {
     $settings = $this->fieldConfig->getSettings();
     if (!empty($settings['handler_settings']['target_bundles'])) {
       return $settings['handler_settings']['target_bundles'];

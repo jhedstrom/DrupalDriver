@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
@@ -13,54 +15,40 @@ use Symfony\Component\Process\Process;
 class DrushDriver extends BaseDriver {
   /**
    * Store a drush alias for tests requiring shell access.
-   *
-   * @var string
    */
-  public $alias;
+  public string $alias;
 
   /**
    * Stores the root path to a Drupal installation.
    *
    * This is an alternative to using drush aliases.
-   *
-   * @var string
    */
-  public $root;
+  public string $root;
 
   /**
    * Store the path to drush binary.
-   *
-   * @var string
    */
-  public $binary;
+  public string $binary;
 
   /**
    * Track bootstrapping.
-   *
-   * @var bool
    */
-  private $bootstrapped = FALSE;
+  private bool $bootstrapped = FALSE;
 
   /**
    * Random generator.
-   *
-   * @var \Drupal\Component\Utility\Random
    */
-  private $random;
+  private readonly Random $random;
 
   /**
    * Global arguments or options for drush commands.
-   *
-   * @var string
    */
-  private $arguments = '';
+  private string $arguments = '';
 
   /**
    * Tracks legacy drush.
-   *
-   * @var bool
    */
-  protected static $isLegacyDrush;
+  protected static bool $isLegacyDrush;
 
   /**
    * Set drush alias or root path.
@@ -78,7 +66,7 @@ class DrushDriver extends BaseDriver {
    * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when a required parameter is missing.
    */
-  public function __construct($alias = NULL, $root_path = NULL, $binary = 'drush', ?Random $random = NULL) {
+  public function __construct(?string $alias = NULL, ?string $root_path = NULL, string $binary = 'drush', ?Random $random = NULL) {
     if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
       $alias = ltrim($alias, '@');
@@ -115,7 +103,7 @@ class DrushDriver extends BaseDriver {
    * @return string
    *   The resolved binary path.
    */
-  protected function resolveProjectDrush($fallback) {
+  protected function resolveProjectDrush(string $fallback): string {
     // Try Composer's runtime bin directory.
     $composer_bin = getenv('COMPOSER_BIN_DIR');
     if ($composer_bin && file_exists($composer_bin . '/drush')) {
@@ -134,14 +122,14 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function getRandom() {
+  public function getRandom(): Random {
     return $this->random;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function bootstrap() {
+  public function bootstrap(): void {
     // Check that the given alias works.
     // @todo check that this is a functioning alias.
     // See http://drupal.org/node/1615450
@@ -163,7 +151,7 @@ class DrushDriver extends BaseDriver {
    * @return bool
    *   Returns TRUE if drush is older than drush 9.
    */
-  protected function isLegacyDrush() {
+  protected function isLegacyDrush(): bool {
     try {
       // Try for a drush 9 version.
       $output = trim($this->drush('version', [], ['format' => 'string']));
@@ -173,7 +161,7 @@ class DrushDriver extends BaseDriver {
       $version = preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches) ? $matches[1] : $output;
       return version_compare($version, '9', '<=');
     }
-    catch (\RuntimeException $runtime_exception) {
+    catch (\RuntimeException) {
       // The version of drush is old enough that only `--version` was available,
       // so this is a legacy version.
       return TRUE;
@@ -183,14 +171,14 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function isBootstrapped() {
+  public function isBootstrapped(): bool {
     return $this->bootstrapped;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user) {
+  public function userCreate(\stdClass $user): void {
     $arguments = [
       sprintf('"%s"', $user->name),
     ];
@@ -216,7 +204,7 @@ class DrushDriver extends BaseDriver {
    * Drush 12+ table format where the ID is the first numeric value in the
    * data row.
    */
-  protected function parseUserId($info) {
+  protected function parseUserId(string $info): ?int {
     // Legacy format: "User ID : 123".
     if (preg_match('/User ID\s+:\s+(\d+)/', $info, $matches)) {
       return (int) $matches[1];
@@ -247,7 +235,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function userDelete(\stdClass $user) {
+  public function userDelete(\stdClass $user): void {
     $arguments = [sprintf('"%s"', $user->name)];
     $options = [
       'yes' => NULL,
@@ -259,7 +247,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role) {
+  public function userAddRole(\stdClass $user, $role): void {
     $arguments = [
       sprintf('"%s"', $role),
       sprintf('"%s"', $user->name),
@@ -270,7 +258,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
+  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL): string {
     $options = [
       'count' => $count,
       'type' => $type,
@@ -282,16 +270,16 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function clearCache($type = 'all') {
+  public function clearCache($type = 'all'): void {
     if (self::$isLegacyDrush) {
-      return $this->drush('cache-clear', [$type], []);
+      $this->drush('cache-clear', [$type], []);
+      return;
     }
 
     // Drush-only cache clear does not need a full rebuild.
     if ($type === 'drush') {
       $this->drush('cache-clear', ['drush'], []);
-
-      return NULL;
+      return;
     }
 
     // Both 'all' and 'drush' clear the drush cache first.
@@ -299,13 +287,13 @@ class DrushDriver extends BaseDriver {
       $this->drush('cache-clear', ['drush'], []);
     }
 
-    return $this->drush('cache:rebuild');
+    $this->drush('cache:rebuild');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches() {
+  public function clearStaticCaches(): void {
     // The drush driver does each operation as a separate request;
     // therefore, 'clearStaticCaches' can be a no-op.
   }
@@ -319,21 +307,21 @@ class DrushDriver extends BaseDriver {
    * @param string $output
    *   The output from Drush.
    *
-   * @return object
-   *   The decoded JSON object.
+   * @return mixed
+   *   The decoded JSON value.
    */
-  protected function decodeJsonObject($output) {
+  protected function decodeJsonObject(string $output): mixed {
     // Remove anything before the first '{'.
     $output = preg_replace('/^[^\{]*/', '', $output);
     // Remove anything after the last '}'.
-    $output = preg_replace('/[^\}]*$/s', '', $output);
-    return json_decode($output);
+    $output = preg_replace('/[^\}]*$/s', '', (string) $output);
+    return json_decode((string) $output);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createEntity($entity_type, \StdClass $entity) {
+  public function createEntity($entity_type, \StdClass $entity): object {
     $payload = [
       'entity_type' => $entity_type,
       'entity' => $entity,
@@ -345,7 +333,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, \StdClass $entity) {
+  public function entityDelete($entity_type, \StdClass $entity): void {
     $payload = [
       'entity_type' => $entity_type,
       'entity' => $entity,
@@ -356,7 +344,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function createNode($node) {
+  public function createNode($node): object {
     if (isset($node->author)) {
       $user_output = $this->drush('user-information', [sprintf('"%s"', $node->author)]);
       $uid = $this->parseUserId($user_output);
@@ -372,14 +360,14 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node) {
+  public function nodeDelete($node): void {
     $this->drush('behat', ['delete-node', escapeshellarg(json_encode($node))], []);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createTerm(\stdClass $term) {
+  public function createTerm(\stdClass $term): object {
     return $this->callBehatCommand('create-term', $term);
   }
 
@@ -394,7 +382,7 @@ class DrushDriver extends BaseDriver {
    * @return object
    *   The decoded response object.
    */
-  protected function callBehatCommand($sub_command, $payload) {
+  protected function callBehatCommand(string $sub_command, mixed $payload): object {
     $result = $this->drush('behat', [$sub_command, escapeshellarg(json_encode($payload))], []);
 
     return $this->decodeJsonObject($result);
@@ -403,14 +391,15 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term) {
+  public function termDelete(\stdClass $term): bool {
     $this->drush('behat', ['delete-term', escapeshellarg(json_encode($term))], []);
+    return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name) {
+  public function isField($entity_type, $field_name): bool {
     // If the Behat Drush Endpoint is not installed on the site-under-test,
     // then the drush() method will throw an exception. In this instance, we
     // want to treat all potential fields as non-fields.  This allows the
@@ -420,9 +409,9 @@ class DrushDriver extends BaseDriver {
       $value = [$entity_type, $field_name];
       $arguments = ['is-field', escapeshellarg(json_encode($value))];
       $result = $this->drush('behat', $arguments, []);
-      return strpos($result, "true\n") !== FALSE;
+      return str_contains($result, "true\n");
     }
-    catch (\Exception $exception) {
+    catch (\Exception) {
       return FALSE;
     }
   }
@@ -433,27 +422,27 @@ class DrushDriver extends BaseDriver {
    * @param string $arguments
    *   Global arguments to add to every drush command.
    */
-  public function setArguments($arguments) {
+  public function setArguments(string $arguments): void {
     $this->arguments = $arguments;
   }
 
   /**
    * Get common drush arguments.
    */
-  public function getArguments() {
+  public function getArguments(): string {
     return $this->arguments;
   }
 
   /**
    * Parse arguments into a string.
    *
-   * @param array $arguments
+   * @param array<string, string|null> $arguments
    *   An array of argument/option names to values.
    *
    * @return string
    *   The parsed arguments.
    */
-  protected static function parseArguments(array $arguments) {
+  protected static function parseArguments(array $arguments): string {
     $option_string = '';
 
     foreach ($arguments as $name => $value) {
@@ -469,8 +458,15 @@ class DrushDriver extends BaseDriver {
 
   /**
    * Execute a drush command.
+   *
+   * @param string $command
+   *   The Drush command to execute.
+   * @param array<int, string> $arguments
+   *   Positional arguments to pass to Drush.
+   * @param array<string, string|bool|null> $options
+   *   Options to pass to Drush.
    */
-  public function drush($command, array $arguments = [], array $options = []) {
+  public function drush(string $command, array $arguments = [], array $options = []): string {
     $argument_string = implode(' ', $arguments);
 
     if (isset(static::$isLegacyDrush) && static::$isLegacyDrush) {
@@ -504,7 +500,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function processBatch() {
+  public function processBatch(): void {
     // Do nothing. Drush should internally handle any needs for processing
     // batch ops.
   }
@@ -512,28 +508,37 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function runCron() {
+  public function runCron(): bool {
     $this->drush('cron');
+    return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name) {
+  public function moduleInstall($module_name): void {
     $this->drush('pm-enable', [$module_name], ['yes' => TRUE]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name) {
+  public function moduleUninstall($module_name): void {
     $this->drush('pm-uninstall', [$module_name], ['yes' => TRUE]);
   }
 
   /**
    * Run Drush commands dynamically from a DrupalContext.
+   *
+   * @param string $name
+   *   The method name, used as a Drush command.
+   * @param array<int, string> $arguments
+   *   The method arguments, forwarded to Drush.
+   *
+   * @return string
+   *   The Drush command output.
    */
-  public function __call($name, $arguments) {
+  public function __call(string $name, array $arguments): string {
     return $this->drush($name, $arguments);
   }
 

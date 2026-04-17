@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Exception;
 
 /**
@@ -17,7 +19,7 @@ class BootstrapException extends Exception {
    * @param \Exception $previous
    *   Optional previous exception that was thrown.
    */
-  public function __construct($message, $code = 0, ?\Exception $previous = NULL) {
+  public function __construct(string $message, int $code = 0, ?\Exception $previous = NULL) {
     parent::__construct($message, NULL, $code, $previous);
   }
 

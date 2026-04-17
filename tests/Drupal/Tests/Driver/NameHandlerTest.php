@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver;
 
 use Drupal\Driver\Fields\Drupal8\NameHandler;
@@ -13,14 +15,14 @@ class NameHandlerTest extends TestCase {
   /**
    * Tests name field expansion.
    *
-   * @param array $input
+   * @param array<int, mixed> $input
    *   The input values to expand.
-   * @param array $expected
+   * @param array<int, mixed> $expected
    *   The expected expanded values.
    *
    * @dataProvider dataProviderExpand
    */
-  public function testExpand(array $input, array $expected) {
+  public function testExpand(array $input, array $expected): void {
     $handler = $this->createHandler();
     $result = $handler->expand($input);
     $this->assertSame($expected, $result);
@@ -29,25 +31,24 @@ class NameHandlerTest extends TestCase {
   /**
    * Data provider for testExpand().
    */
-  public function dataProviderExpand() {
-    return [
-      'string shorthand family, given' => [
+  public static function dataProviderExpand(): \Iterator {
+    yield 'string shorthand family, given' => [
         ['Doe, John'],
         [['family' => 'Doe', 'given' => 'John']],
-      ],
-      'string shorthand family only' => [
+    ];
+    yield 'string shorthand family only' => [
         ['Doe'],
         [['family' => 'Doe', 'given' => NULL]],
-      ],
-      'named keys' => [
+    ];
+    yield 'named keys' => [
         [['given' => 'John', 'family' => 'Doe', 'middle' => 'Q']],
         [['given' => 'John', 'family' => 'Doe', 'middle' => 'Q']],
-      ],
-      'numeric indices' => [
+    ];
+    yield 'numeric indices' => [
         [['Dr', 'John', 'Quincy', 'Doe']],
         [['title' => 'Dr', 'given' => 'John', 'middle' => 'Quincy', 'family' => 'Doe']],
-      ],
-      'multiple values' => [
+    ];
+    yield 'multiple values' => [
         [
           'Doe, John',
           ['given' => 'Jane', 'family' => 'Smith'],
@@ -56,7 +57,6 @@ class NameHandlerTest extends TestCase {
           ['family' => 'Doe', 'given' => 'John'],
           ['given' => 'Jane', 'family' => 'Smith'],
         ],
-      ],
     ];
   }
 
@@ -66,7 +66,7 @@ class NameHandlerTest extends TestCase {
    * @return \Drupal\Driver\Fields\Drupal8\NameHandler
    *   The handler instance.
    */
-  protected function createHandler() {
+  protected function createHandler(): NameHandler {
     $reflection = new \ReflectionClass(NameHandler::class);
     return $reflection->newInstanceWithoutConstructor();
   }

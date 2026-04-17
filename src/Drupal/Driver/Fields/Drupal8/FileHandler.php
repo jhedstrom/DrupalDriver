@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -10,10 +12,10 @@ class FileHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $return = [];
     foreach ((array) $values as $value) {
-      $file_path = is_array($value) ? $value['target_id'] ?? $value[0] : $value;
+      $file_path = (string) (is_array($value) ? $value['target_id'] ?? $value[0] : $value);
       $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
       $data = file_get_contents($file_path);
 
