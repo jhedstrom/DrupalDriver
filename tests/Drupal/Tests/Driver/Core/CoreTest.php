@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Core;
 
 use Drupal\Core\CronInterface;
 use Drupal\Driver\Core\Core;
@@ -12,9 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Tests for the Drupal 8+ core driver.
+ * Tests for the default Drupal Core class.
  */
-class Drupal8Test extends TestCase {
+class CoreTest extends TestCase {
 
   /**
    * The original REQUEST_TIME value.

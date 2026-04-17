@@ -28,7 +28,7 @@ level of access to Drupal:
   that do not require access to Drupal internals.
 
 - **Drupal API** - Bootstraps Drupal directly in PHP. Delegates
-  to a version-specific Core class (`Drupal8.php` covers
+  to a version-specific Core class (`Core.php` covers
   Drupal 8 through 11) for entity CRUD, field handling, user
   and role management, cron, caching, and mail.
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Core\Field;
 
 use Drupal\Driver\Core\Field\TimeHandler;
 use PHPUnit\Framework\TestCase;

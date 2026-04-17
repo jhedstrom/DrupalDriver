@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Core;
 
 use Drupal\Driver\Core\Core;
 use PHPUnit\Framework\TestCase;
@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests permission label and machine name conversion in the Drupal 8+ driver.
  */
-class Drupal8PermissionsTest extends TestCase {
+class CorePermissionsTest extends TestCase {
 
   /**
    * Tests that human-readable titles are converted to machine names.
@@ -22,7 +22,7 @@ class Drupal8PermissionsTest extends TestCase {
    * mode without adding the cast.
    */
   public function testConvertPermissionsMapsStringableTitlesToMachineNames(): void {
-    $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
+    $core = new TestPermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer content types' => [
         'title' => $this->stringable('Administer content types'),
@@ -42,7 +42,7 @@ class Drupal8PermissionsTest extends TestCase {
    * Tests that titles already in machine name form are left unchanged.
    */
   public function testConvertPermissionsLeavesMachineNamesAlone(): void {
-    $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
+    $core = new TestPermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer users' => [
         'title' => $this->stringable('Administer users'),
@@ -59,7 +59,7 @@ class Drupal8PermissionsTest extends TestCase {
    * Tests that 'checkPermissions()' passes for valid machine names.
    */
   public function testCheckPermissionsAcceptsValidMachineNames(): void {
-    $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
+    $core = new TestPermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer users' => ['title' => 'Administer users'],
       'access content' => ['title' => 'Access content'],
@@ -75,7 +75,7 @@ class Drupal8PermissionsTest extends TestCase {
    * Tests that 'checkPermissions()' throws for unknown machine names.
    */
   public function testCheckPermissionsThrowsForUnknownPermission(): void {
-    $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
+    $core = new TestPermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer users' => ['title' => 'Administer users'],
     ]);
@@ -137,7 +137,7 @@ class Drupal8PermissionsTest extends TestCase {
 /**
  * Testable subclass that overrides 'getAllPermissions()'.
  */
-class TestDrupal8PermissionsCore extends Core {
+class TestPermissionsCore extends Core {
 
   /**
    * Stored permissions keyed by machine name.

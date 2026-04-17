@@ -1,7 +1,6 @@
 <?php
 
 use Drupal\Driver\DrupalDriver;
-use Drupal\Driver\Cores\Drupal8;
 
 require 'vendor/autoload.php';
 

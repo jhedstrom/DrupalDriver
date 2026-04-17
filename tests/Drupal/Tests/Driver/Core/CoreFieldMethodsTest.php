@@ -18,7 +18,7 @@ namespace Drupal\field\Entity {
 }
 // phpcs:enable
 
-namespace Drupal\Tests\Driver {
+namespace Drupal\Tests\Driver\Core {
 
   use Drupal\Core\Entity\EntityFieldManagerInterface;
   use Drupal\Core\Field\BaseFieldDefinition;
@@ -29,7 +29,7 @@ namespace Drupal\Tests\Driver {
   /**
    * Tests 'isBaseField()', 'isField()', and 'getEntityFieldTypes()' methods.
    */
-  class Drupal8FieldMethodsTest extends TestCase {
+  class CoreFieldMethodsTest extends TestCase {
 
     /**
      * Tests that 'isBaseField()' correctly identifies base fields.
@@ -134,7 +134,7 @@ namespace Drupal\Tests\Driver {
     /**
      * Creates a TestCore with mocked entity field manager.
      *
-     * @return \Drupal\Tests\Driver\TestCore
+     * @return \Drupal\Tests\Driver\Core\TestCore
      *   The test core instance.
      */
     protected function createTestCore(): TestCore {
