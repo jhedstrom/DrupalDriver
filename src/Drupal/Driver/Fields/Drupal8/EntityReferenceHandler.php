@@ -62,7 +62,7 @@ class EntityReferenceHandler extends AbstractHandler {
    * @return mixed
    *   Array of bundle names, or NULL if not able to determine bundles.
    */
-  protected function getTargetBundles() {
+  protected function getTargetBundles(): mixed {
     $settings = $this->fieldConfig->getSettings();
     if (!empty($settings['handler_settings']['target_bundles'])) {
       return $settings['handler_settings']['target_bundles'];

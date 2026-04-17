@@ -66,8 +66,16 @@ class EntityReferenceHandlerTest extends TestCase {
 
   /**
    * Creates an EntityReferenceHandler with mocked fieldInfo and fieldConfig.
+   *
+   * @param string $target_type
+   *   The target entity type ID.
+   * @param array<string, string> $target_bundles
+   *   Target bundle restrictions.
+   *
+   * @return \Drupal\Driver\Fields\Drupal8\EntityReferenceHandler
+   *   A handler instance with fieldInfo and fieldConfig populated.
    */
-  protected function createHandler($target_type, array $target_bundles) {
+  protected function createHandler(string $target_type, array $target_bundles = []): EntityReferenceHandler {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('target_type')
@@ -93,7 +101,7 @@ class EntityReferenceHandlerTest extends TestCase {
   /**
    * Sets up a Drupal container whose queries always return no results.
    */
-  protected function setUpEmptyQueryContainer($entity_type_id) {
+  protected function setUpEmptyQueryContainer(string $entity_type_id): void {
     $definition = $this->createMock(EntityTypeInterface::class);
     $definition->method('getKey')->willReturnMap([
       ['id', 'nid'],
@@ -109,12 +117,12 @@ class EntityReferenceHandlerTest extends TestCase {
 
     $storage = new class($query) {
 
-      public function __construct(private $query) {}
+      public function __construct(private readonly QueryInterface $query) {}
 
       /**
        * Returns the injected entity query.
        */
-      public function getQuery() {
+      public function getQuery(): QueryInterface {
         return $this->query;
       }
 

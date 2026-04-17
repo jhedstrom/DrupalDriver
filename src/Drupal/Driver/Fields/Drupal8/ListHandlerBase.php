@@ -14,7 +14,7 @@ abstract class ListHandlerBase extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand(mixed $values): array {
     $return = [];
 
     // Load allowed values from field storage.

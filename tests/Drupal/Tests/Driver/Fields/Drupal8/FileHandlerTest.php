@@ -95,15 +95,15 @@ class FileHandlerTest extends TestCase {
    * FileRepositoryInterface ship with the file module rather than drupal/core
    * and are therefore not guaranteed to be autoloadable in isolation.
    */
-  protected function setFileRepositoryWithReturnId($file_id) {
+  protected function setFileRepositoryWithReturnId(int $file_id): void {
     $file = new class($file_id) {
 
-      public function __construct(private $file_id) {}
+      public function __construct(private readonly int $file_id) {}
 
       /**
        * Returns the stored file entity ID.
        */
-      public function id() {
+      public function id(): int {
         return $this->file_id;
       }
 
@@ -117,12 +117,12 @@ class FileHandlerTest extends TestCase {
 
     $repository = new class($file) {
 
-      public function __construct(private $file) {}
+      public function __construct(private readonly mixed $file) {}
 
       /**
        * Writes data to a destination and returns the stored file entity.
        */
-      public function writeData($data, $destination) {
+      public function writeData(string $data, string $destination): mixed {
         return $this->file;
       }
 

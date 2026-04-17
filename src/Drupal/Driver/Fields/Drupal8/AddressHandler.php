@@ -25,6 +25,9 @@ class AddressHandler extends AbstractHandler {
 
   /**
    * Returns address sub-fields that are not hidden by field overrides.
+   *
+   * @return array<int, string>
+   *   Visible address field names.
    */
   protected function getVisibleAddressFields(): array {
     $fields = [
@@ -62,8 +65,16 @@ class AddressHandler extends AbstractHandler {
 
   /**
    * Normalises a single address delta into a keyed array.
+   *
+   * @param mixed $value
+   *   A single address value (string or array).
+   * @param array<int, string> $visible_fields
+   *   The list of visible address field names.
+   *
+   * @return array<string, mixed>
+   *   A keyed array of address field values.
    */
-  protected function normaliseDelta($value, array $visible_fields): array {
+  protected function normaliseDelta(mixed $value, array $visible_fields): array {
     if (is_string($value)) {
       return [reset($visible_fields) => $value];
     }

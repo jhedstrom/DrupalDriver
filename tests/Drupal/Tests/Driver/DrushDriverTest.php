@@ -131,10 +131,8 @@ class TestDrushDriver extends DrushDriver {
 
   /**
    * The output to return from `drush()`.
-   *
-   * @var string
    */
-  public $drushOutput = '';
+  public string $drushOutput = '';
 
   /**
    * {@inheritdoc}
@@ -153,7 +151,7 @@ class TestDrushDriver extends DrushDriver {
   /**
    * Exposes `parseUserId()` for testing.
    */
-  public function callParseUserId($info): ?int {
+  public function callParseUserId(string $info): ?int {
     return $this->parseUserId($info);
   }
 

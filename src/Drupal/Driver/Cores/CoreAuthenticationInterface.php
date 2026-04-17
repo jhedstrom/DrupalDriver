@@ -12,11 +12,11 @@ interface CoreAuthenticationInterface {
   /**
    * Logs a user in.
    */
-  public function login(\stdClass $user);
+  public function login(\stdClass $user): void;
 
   /**
    * Logs a user out.
    */
-  public function logout();
+  public function logout(): void;
 
 }

@@ -16,7 +16,7 @@ class DatetimeHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $site_timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default'));
     $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
 
@@ -30,17 +30,17 @@ class DatetimeHandler extends AbstractHandler {
   /**
    * Formats a date value for storage based on the field's datetime_type.
    *
-   * @param string $value
+   * @param string|null $value
    *   The raw date value, optionally prefixed with "relative:".
    * @param \DateTimeZone $site_timezone
    *   The site timezone.
    * @param \DateTimeZone $storage_timezone
    *   The storage timezone.
    *
-   * @return string
-   *   The formatted date string.
+   * @return string|null
+   *   The formatted date string, or null for empty values.
    */
-  protected function formatDateValue($value, \DateTimeZone $site_timezone, \DateTimeZone $storage_timezone) {
+  protected function formatDateValue(?string $value, \DateTimeZone $site_timezone, \DateTimeZone $storage_timezone): ?string {
     if ($value === NULL || $value === '') {
       return NULL;
     }

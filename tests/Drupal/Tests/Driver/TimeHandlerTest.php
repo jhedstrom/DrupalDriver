@@ -15,9 +15,9 @@ class TimeHandlerTest extends TestCase {
   /**
    * Tests time field expansion.
    *
-   * @param array $input
+   * @param array<int, mixed> $input
    *   The input values to expand.
-   * @param array $expected
+   * @param array<int, mixed> $expected
    *   The expected expanded values.
    *
    * @dataProvider dataProviderExpand

@@ -78,13 +78,13 @@ class ListHandlerTest extends TestCase {
    *
    * @param string $class_name
    *   The handler class to instantiate.
-   * @param array $allowed_values
+   * @param array<string, string> $allowed_values
    *   The allowed_values map to inject via the fieldInfo setting.
    *
    * @return object
    *   The handler instance with fieldInfo populated.
    */
-  protected function createHandler($class_name, array $allowed_values) {
+  protected function createHandler(string $class_name, array $allowed_values): object {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('allowed_values')

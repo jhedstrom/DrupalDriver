@@ -30,10 +30,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * This is necessary since configurations modified here are actually saved so
    * that they persist values across bootstraps.
    *
-   * @var array
+   * @var array<string, mixed>
    *   An array of data, keyed by configuration name.
    */
-  protected $originalConfiguration = [];
+  protected array $originalConfiguration = [];
 
   /**
    * {@inheritdoc}
@@ -77,9 +77,9 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeCreate($node) {
+  public function nodeCreate($node): object {
     // Throw an exception if the node type is missing or does not exist.
-    /** @var \Drupal\node\Entity\Node $node */
+    /** @var \stdClass $node */
     if (!isset($node->type) || !$node->type) {
       throw new \Exception("Cannot create content because it is missing the required property 'type'.");
     }
@@ -120,7 +120,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function runCron() {
+  public function runCron(): bool {
     $_SERVER['REQUEST_TIME'] = time();
     \Drupal::request()->server->set('REQUEST_TIME', $_SERVER['REQUEST_TIME']);
     return \Drupal::service('cron')->run();
@@ -148,7 +148,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions) {
+  public function roleCreate(array $permissions): int|string {
     // Generate a random, lowercase machine name.
     $rid = strtolower($this->random->name(8, TRUE));
 
@@ -204,10 +204,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * Retrieve all permissions.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Array of all defined permissions.
    */
-  protected function getAllPermissions() {
+  protected function getAllPermissions(): array {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
@@ -220,10 +220,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * Convert any permission labels to machine name.
    *
-   * @param array &$permissions
+   * @param array<string> &$permissions
    *   Array of permission names.
    */
-  protected function convertPermissions(array &$permissions) {
+  protected function convertPermissions(array &$permissions): void {
     $all_permissions = $this->getAllPermissions();
 
     foreach ($all_permissions as $name => $definition) {
@@ -240,10 +240,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * Check to make sure that the array of permissions are valid.
    *
-   * @param array $permissions
+   * @param array<string> $permissions
    *   Permissions to check.
    */
-  protected function checkPermissions(array &$permissions) {
+  protected function checkPermissions(array &$permissions): void {
     $available = array_keys($this->getAllPermissions());
 
     foreach ($permissions as $permission) {
@@ -359,11 +359,13 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term): void {
+  public function termDelete(\stdClass $term): bool {
     $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
     if ($term instanceof TermInterface) {
       $term->delete();
+      return TRUE;
     }
+    return FALSE;
   }
 
   /**
@@ -394,10 +396,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    *   The entity type for which to return the field types.
    * @param \StdClass $entity
    *   Entity object.
-   * @param array $base_fields
+   * @param array<string> $base_fields
    *   Base fields to be expanded in addition to user defined fields.
    */
-  public function expandEntityBaseFields($entity_type, \StdClass $entity, array $base_fields): void {
+  public function expandEntityBaseFields(string $entity_type, \StdClass $entity, array $base_fields): void {
     $this->expandEntityFields($entity_type, $entity, $base_fields);
   }
 
@@ -487,14 +489,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function configGet($name, $key = '') {
+  public function configGet($name, $key = ''): mixed {
     return \Drupal::config($name)->get($key);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configGetOriginal($name, $key = '') {
+  public function configGetOriginal($name, $key = ''): mixed {
     return \Drupal::config($name)->getOriginal($key, FALSE);
   }
 
@@ -510,7 +512,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityCreate($entity_type, $entity) {
+  public function entityCreate($entity_type, $entity): EntityInterface {
     // If the bundle field is empty, put the inferred bundle value in it.
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
@@ -592,7 +594,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMail() {
+  public function getMail(): array {
     \Drupal::state()->resetCache();
     $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
     // Discard cancelled mail.
@@ -610,12 +612,13 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function sendMail($body = '', $subject = '', $to = '', $langcode = '') {
+  public function sendMail($body = '', $subject = '', $to = '', $langcode = ''): bool {
     // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
     $mail_manager = \Drupal::service('plugin.manager.mail');
-    return $mail_manager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
+    $result = $mail_manager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
+    return !empty($result['result']);
   }
 
   /**
@@ -623,7 +626,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    *
    * @see MailsystemManager::getPluginInstance()
    */
-  protected function startCollectingMailSystemMail() {
+  protected function startCollectingMailSystemMail(): void {
     if (!\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       return;
     }
@@ -639,6 +642,12 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
 
   /**
    * Recursively replaces mail sender plugins with the test collector.
+   *
+   * @param array<string, mixed> $config_tree
+   *   The configuration tree to process.
+   *
+   * @return array<string, mixed>
+   *   The modified configuration tree.
    */
   protected function replaceMailSenders(array $config_tree): array {
     foreach ($config_tree as $key => $values) {
@@ -660,7 +669,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * If the Mail System module is enabled, stop collecting those mails.
    */
-  protected function stopCollectingMailSystemMail() {
+  protected function stopCollectingMailSystemMail(): void {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
     }
@@ -699,7 +708,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * @param mixed $value
    *   The original value of the configuration.
    */
-  protected function storeOriginalConfiguration($name, $value) {
+  protected function storeOriginalConfiguration(string $name, mixed $value): void {
     if (!isset($this->originalConfiguration[$name])) {
       $this->originalConfiguration[$name] = $value;
     }

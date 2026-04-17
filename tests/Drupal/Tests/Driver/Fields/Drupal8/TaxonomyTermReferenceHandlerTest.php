@@ -69,8 +69,11 @@ class TaxonomyTermReferenceHandlerTest extends TestCase {
 
   /**
    * Sets up a Drupal container that returns the supplied lookup results.
+   *
+   * @param array<string, mixed> $lookup
+   *   Map of term names to entity arrays.
    */
-  protected function setUpStorageWithResult(array $lookup) {
+  protected function setUpStorageWithResult(array $lookup): void {
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('loadByProperties')
       ->willReturnCallback(fn($properties) => $lookup[$properties['name']] ?? []);

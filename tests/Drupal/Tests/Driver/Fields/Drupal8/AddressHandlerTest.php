@@ -161,15 +161,15 @@ class AddressHandlerTest extends TestCase {
   /**
    * Creates an AddressHandler with an injected fieldConfig mock.
    *
-   * @param array $field_overrides
+   * @param array<string, mixed> $field_overrides
    *   Address field override settings.
-   * @param array $available_countries
+   * @param array<string, string> $available_countries
    *   Available countries keyed by code.
    *
    * @return \Drupal\Driver\Fields\Drupal8\AddressHandler
    *   Handler instance with fieldConfig populated.
    */
-  protected function createHandler(array $field_overrides = [], array $available_countries = ['AU' => 'AU']) {
+  protected function createHandler(array $field_overrides = [], array $available_countries = ['AU' => 'AU']): AddressHandler {
     $field_config = $this->createMock(FieldDefinitionInterface::class);
     $field_config->method('getSettings')->willReturn([
       'field_overrides' => $field_overrides,

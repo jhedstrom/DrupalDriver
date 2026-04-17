@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\Driver;
 
+use Drupal\Component\Utility\Random;
+use Drupal\Driver\Cores\CoreInterface;
 use Drupal\Driver\Cores\CoreAuthenticationInterface;
 use Drupal\Driver\Exception\BootstrapException;
-
-use Behat\Behat\Tester\Exception\PendingException;
 
 /**
  * Fully bootstraps Drupal and uses native API calls.
@@ -21,31 +21,23 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
 
   /**
    * Drupal core object.
-   *
-   * @var \Drupal\Driver\Cores\CoreInterface
    */
-  public $core;
+  public CoreInterface $core;
 
   /**
    * System path to the Drupal installation.
-   *
-   * @var string
    */
-  private $drupalRoot;
+  private readonly string $drupalRoot;
 
   /**
    * URI for the Drupal installation.
-   *
-   * @var string
    */
-  private $uri;
+  private readonly string $uri;
 
   /**
    * Drupal core version.
-   *
-   * @var int
    */
-  public $version;
+  public int $version;
 
   /**
    * Set Drupal root and URI.
@@ -58,10 +50,10 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when the Drupal installation is not found in the given root path.
    */
-  public function __construct(string $drupal_root, $uri) {
+  public function __construct(string $drupal_root, string $uri) {
     $this->drupalRoot = realpath($drupal_root);
     $this->uri = $uri;
-    if (!$this->drupalRoot) {
+    if ($this->drupalRoot === '' || $this->drupalRoot === '0') {
       throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
     $this->version = $this->getDrupalVersion();
@@ -70,7 +62,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function getRandom() {
+  public function getRandom(): Random {
     return $this->getCore()->getRandom();
   }
 
@@ -122,7 +114,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * {@inheritdoc}
    */
   public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL): never {
-    throw new PendingException(sprintf('Currently no ability to access watchdog entries in %s', $this));
+    throw new \RuntimeException(sprintf('Currently no ability to access watchdog entries in %s', $this));
   }
 
   /**
@@ -135,7 +127,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function getSubDriverPaths() {
+  public function getSubDriverPaths(): array {
     // Ensure system is bootstrapped.
     if (!$this->isBootstrapped()) {
       $this->bootstrap();
@@ -155,7 +147,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    *
    * @see drush_drupal_version()
    */
-  public function getDrupalVersion() {
+  public function getDrupalVersion(): int {
     if ($this->version !== NULL) {
       return $this->version;
     }
@@ -213,7 +205,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * Instantiate and set Drupal core class.
    *
-   * @param array $available_cores
+   * @param array<int, \Drupal\Driver\Cores\CoreInterface> $available_cores
    *   A major-version-keyed array of available core controllers.
    */
   public function setCore(array $available_cores): void {
@@ -234,51 +226,49 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * Return current core.
    */
-  public function getCore() {
+  public function getCore(): CoreInterface {
     return $this->core;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createNode($node) {
+  public function createNode($node): object {
     return $this->getCore()->nodeCreate($node);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node) {
-    return $this->getCore()->nodeDelete($node);
+  public function nodeDelete($node): void {
+    $this->getCore()->nodeDelete($node);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function runCron(): void {
-    if (!$this->getCore()->runCron()) {
-      throw new \Exception('Failed to run cron.');
-    }
+  public function runCron(): bool {
+    return $this->getCore()->runCron();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createTerm(\stdClass $term) {
+  public function createTerm(\stdClass $term): object {
     return $this->getCore()->termCreate($term);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term) {
+  public function termDelete(\stdClass $term): bool {
     return $this->getCore()->termDelete($term);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions) {
+  public function roleCreate(array $permissions): string {
     return $this->getCore()->roleCreate($permissions);
   }
 
@@ -292,35 +282,35 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name) {
+  public function isField($entity_type, $field_name): bool {
     return $this->getCore()->isField($entity_type, $field_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isBaseField($entity_type, $field_name) {
+  public function isBaseField($entity_type, $field_name): bool {
     return $this->getCore()->isBaseField($entity_type, $field_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function languageCreate($language) {
+  public function languageCreate(\stdClass $language): \stdClass|false {
     return $this->getCore()->languageCreate($language);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function languageDelete($language): void {
+  public function languageDelete(\stdClass $language): void {
     $this->getCore()->languageDelete($language);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configGet($name, $key) {
+  public function configGet($name, $key): mixed {
     return $this->getCore()->configGet($name, $key);
   }
 
@@ -341,49 +331,49 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function createEntity($entity_type, \stdClass $entity) {
+  public function createEntity($entity_type, \stdClass $entity): object {
     return $this->getCore()->entityCreate($entity_type, $entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, \stdClass $entity) {
-    return $this->getCore()->entityDelete($entity_type, $entity);
+  public function entityDelete($entity_type, \stdClass $entity): void {
+    $this->getCore()->entityDelete($entity_type, $entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function startCollectingMail() {
-    return $this->getCore()->startCollectingMail();
+  public function startCollectingMail(): void {
+    $this->getCore()->startCollectingMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stopCollectingMail() {
-    return $this->getCore()->stopCollectingMail();
+  public function stopCollectingMail(): void {
+    $this->getCore()->stopCollectingMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMail() {
+  public function getMail(): array {
     return $this->getCore()->getMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearMail() {
-    return $this->getCore()->clearMail();
+  public function clearMail(): void {
+    $this->getCore()->clearMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendMail($body, $subject, $to, $langcode) {
+  public function sendMail($body, $subject, $to, $langcode): bool {
     return $this->getCore()->sendMail($body, $subject, $to, $langcode);
   }
 

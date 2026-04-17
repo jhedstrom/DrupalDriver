@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Cores;
 
+use Drupal\Driver\Fields\FieldHandlerInterface;
 use Drupal\Component\Utility\Random;
 use Symfony\Component\DependencyInjection\Container;
 
@@ -14,17 +15,13 @@ abstract class AbstractCore implements CoreInterface {
 
   /**
    * System path to the Drupal installation.
-   *
-   * @var string
    */
-  protected $drupalRoot;
+  protected string $drupalRoot;
 
   /**
    * URI for the Drupal installation.
-   *
-   * @var string
    */
-  protected $uri;
+  protected string $uri;
 
   /**
    * Random generator.
@@ -46,14 +43,14 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRandom() {
+  public function getRandom(): Random {
     return $this->random;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFieldHandler($entity, $entity_type, $field_name) {
+  public function getFieldHandler($entity, $entity_type, $field_name): FieldHandlerInterface {
     $reflection = new \ReflectionClass($this);
     $core_namespace = $reflection->getShortName();
     $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
@@ -71,15 +68,15 @@ abstract class AbstractCore implements CoreInterface {
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param object $entity
+   * @param \stdClass $entity
    *   Entity object.
-   * @param array $base_fields
+   * @param array<string> $base_fields
    *   Optional. Define base fields that will be expanded in addition to user
    *   defined fields.
    */
-  protected function expandEntityFields($entity_type, \stdClass $entity, array $base_fields = []) {
+  protected function expandEntityFields(string $entity_type, \stdClass $entity, array $base_fields = []): void {
     $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
-    foreach ($field_types as $field_name => $type) {
+    foreach (array_keys($field_types) as $field_name) {
       if (isset($entity->$field_name)) {
         $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
           ->expand($entity->$field_name);
@@ -90,7 +87,7 @@ abstract class AbstractCore implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches() {
+  public function clearStaticCaches(): void {
   }
 
 }

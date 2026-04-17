@@ -14,8 +14,8 @@ class TextWithSummaryHandler implements FieldHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
-    return $values;
+  public function expand(mixed $values): array {
+    return (array) $values;
   }
 
 }

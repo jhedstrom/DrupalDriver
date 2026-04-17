@@ -70,7 +70,7 @@ class DaterangeHandlerTest extends TestCase {
   /**
    * Loads the datetime module interface from the Composer-resolved core path.
    */
-  protected function loadDatetimeModuleInterface() {
+  protected function loadDatetimeModuleInterface(): bool {
     if (interface_exists(DateTimeItemInterface::class)) {
       return TRUE;
     }

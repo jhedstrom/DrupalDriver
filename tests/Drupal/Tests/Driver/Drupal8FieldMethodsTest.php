@@ -84,11 +84,11 @@ namespace Drupal\Tests\Driver {
     /**
      * Tests that 'getEntityFieldTypes()' includes computed base fields.
      *
-     * @param array $base_fields_arg
+     * @param array<string> $base_fields_arg
      *   The $base_fields argument to pass.
-     * @param array $expected_fields
+     * @param array<string> $expected_fields
      *   The expected field names in the result.
-     * @param array $unexpected_fields
+     * @param array<string> $unexpected_fields
      *   Field names that should NOT be in the result.
      *
      * @dataProvider dataProviderGetEntityFieldTypes
@@ -183,10 +183,8 @@ namespace Drupal\Tests\Driver {
 
     /**
      * The mock entity field manager.
-     *
-     * @var \Drupal\Core\Entity\EntityFieldManagerInterface
      */
-    protected $entityFieldManager;
+    protected EntityFieldManagerInterface $entityFieldManager;
 
     /**
      * Sets the mock entity field manager.

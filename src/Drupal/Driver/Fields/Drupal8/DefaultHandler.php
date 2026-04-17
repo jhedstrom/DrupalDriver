@@ -12,8 +12,8 @@ class DefaultHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
-    return $values;
+  public function expand(mixed $values): array {
+    return (array) $values;
   }
 
 }

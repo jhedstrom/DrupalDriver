@@ -26,7 +26,8 @@ class BlackboxDriverTest extends TestCase {
    */
   public function testBootstrapIsNoop(): void {
     $driver = new BlackboxDriver();
-    $this->assertNull($driver->bootstrap());
+    $driver->bootstrap();
+    $this->addToAssertionCount(1);
   }
 
   /**
@@ -50,7 +51,7 @@ class BlackboxDriverTest extends TestCase {
    *
    * @param string $method
    *   The BaseDriver method name to invoke.
-   * @param array $args
+   * @param array<int, mixed> $args
    *   Positional arguments to pass to the method.
    * @param string $message_fragment
    *   A substring that must appear in the exception message.
@@ -87,7 +88,7 @@ class BlackboxDriverTest extends TestCase {
     yield 'createTerm' => ['createTerm', [$term], 'create terms'];
     yield 'termDelete' => ['termDelete', [$term], 'delete terms'];
     yield 'roleCreate' => ['roleCreate', [[]], 'create roles'];
-    yield 'roleDelete' => ['roleDelete', [1], 'delete roles'];
+    yield 'roleDelete' => ['roleDelete', ['editor'], 'delete roles'];
     yield 'configGet' => ['configGet', ['system.site', 'name'], 'config get'];
     yield 'configSet' => ['configSet', ['system.site', 'name', 'v'], 'config set'];
     yield 'createEntity' => ['createEntity', ['node', $entity], 'create entities using the generic Entity API'];

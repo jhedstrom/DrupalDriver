@@ -90,16 +90,26 @@ class Drupal8PermissionsTest extends TestCase {
 
   /**
    * Invokes the protected 'convertPermissions()' method by reference.
+   *
+   * @param \Drupal\Driver\Cores\Drupal8 $core
+   *   The core instance to invoke the method on.
+   * @param array<string> &$permissions
+   *   The permissions array to convert.
    */
-  protected function callConvertPermissions(Drupal8 $core, array &$permissions) {
+  protected function callConvertPermissions(Drupal8 $core, array &$permissions): void {
     $method = new \ReflectionMethod($core, 'convertPermissions');
     $method->invokeArgs($core, [&$permissions]);
   }
 
   /**
    * Invokes the protected 'checkPermissions()' method by reference.
+   *
+   * @param \Drupal\Driver\Cores\Drupal8 $core
+   *   The core instance to invoke the method on.
+   * @param array<string> &$permissions
+   *   The permissions array to check.
    */
-  protected function callCheckPermissions(Drupal8 $core, array &$permissions) {
+  protected function callCheckPermissions(Drupal8 $core, array &$permissions): void {
     $method = new \ReflectionMethod($core, 'checkPermissions');
     $method->invokeArgs($core, [&$permissions]);
   }
@@ -107,10 +117,10 @@ class Drupal8PermissionsTest extends TestCase {
   /**
    * Returns an anonymous Stringable that mimics a Drupal TranslatableMarkup.
    */
-  protected function stringable($label): object {
+  protected function stringable(string $label): object {
     return new class($label) {
 
-      public function __construct(private $label) {}
+      public function __construct(private readonly string $label) {}
 
       /**
        * Renders the stringable into its label.
@@ -132,12 +142,15 @@ class TestDrupal8PermissionsCore extends Drupal8 {
   /**
    * Stored permissions keyed by machine name.
    *
-   * @var array
+   * @var array<string, mixed>
    */
-  protected $permissions = [];
+  protected array $permissions = [];
 
   /**
    * Sets the permissions returned by 'getAllPermissions()'.
+   *
+   * @param array<string, mixed> $permissions
+   *   The permissions to set.
    */
   public function setPermissions(array $permissions): void {
     $this->permissions = $permissions;
@@ -146,7 +159,7 @@ class TestDrupal8PermissionsCore extends Drupal8 {
   /**
    * {@inheritdoc}
    */
-  protected function getAllPermissions() {
+  protected function getAllPermissions(): array {
     return $this->permissions;
   }
 

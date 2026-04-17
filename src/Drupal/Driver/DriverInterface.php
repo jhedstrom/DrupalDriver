@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Driver;
 
+use Drupal\Component\Utility\Random;
+
 /**
  * Driver interface.
  */
@@ -12,42 +14,42 @@ interface DriverInterface {
   /**
    * Returns a random generator.
    */
-  public function getRandom();
+  public function getRandom(): Random;
 
   /**
    * Bootstraps operations, as needed.
    */
-  public function bootstrap();
+  public function bootstrap(): void;
 
   /**
    * Determines if the driver has been bootstrapped.
    */
-  public function isBootstrapped();
+  public function isBootstrapped(): bool;
 
   /**
    * Creates a user.
    */
-  public function userCreate(\stdClass $user);
+  public function userCreate(\stdClass $user): void;
 
   /**
    * Deletes a user.
    */
-  public function userDelete(\stdClass $user);
+  public function userDelete(\stdClass $user): void;
 
   /**
    * Processes a batch of actions.
    */
-  public function processBatch();
+  public function processBatch(): void;
 
   /**
    * Adds a role for a user.
    *
-   * @param object $user
+   * @param \stdClass $user
    *   A user object.
    * @param string $role
    *   The role name to assign.
    */
-  public function userAddRole(\stdClass $user, $role);
+  public function userAddRole(\stdClass $user, string $role): void;
 
   /**
    * Retrieves watchdog entries.
@@ -62,7 +64,7 @@ interface DriverInterface {
    * @return string
    *   Watchdog output.
    */
-  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL);
+  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string;
 
   /**
    * Clears Drupal caches.
@@ -70,12 +72,12 @@ interface DriverInterface {
    * @param string $type
    *   Type of cache to clear defaults to all.
    */
-  public function clearCache($type = NULL);
+  public function clearCache(?string $type = NULL): void;
 
   /**
    * Clears static Drupal caches.
    */
-  public function clearStaticCaches();
+  public function clearStaticCaches(): void;
 
   /**
    * Creates a node.
@@ -86,7 +88,7 @@ interface DriverInterface {
    * @return object
    *   The node object including the node ID in the case of new nodes.
    */
-  public function createNode($node);
+  public function createNode(object $node): object;
 
   /**
    * Deletes a node.
@@ -94,45 +96,45 @@ interface DriverInterface {
    * @param object $node
    *   Fully loaded node object.
    */
-  public function nodeDelete($node);
+  public function nodeDelete(object $node): void;
 
   /**
    * Runs cron.
    */
-  public function runCron();
+  public function runCron(): bool;
 
   /**
    * Creates a taxonomy term.
    *
-   * @param object $term
+   * @param \stdClass $term
    *   Term object.
    *
    * @return object
    *   The term object including the term ID in the case of new terms.
    */
-  public function createTerm(\stdClass $term);
+  public function createTerm(\stdClass $term): object;
 
   /**
    * Deletes a taxonomy term.
    *
-   * @param object $term
+   * @param \stdClass $term
    *   Term object to delete.
    *
    * @return bool
    *   Status constant indicating deletion.
    */
-  public function termDelete(\stdClass $term);
+  public function termDelete(\stdClass $term): bool;
 
   /**
    * Creates a role.
    *
-   * @param array $permissions
+   * @param array<string> $permissions
    *   An array of permissions to create the role with.
    *
    * @return string
    *   Role name of newly created role.
    */
-  public function roleCreate(array $permissions);
+  public function roleCreate(array $permissions): string;
 
   /**
    * Deletes a role.
@@ -140,7 +142,7 @@ interface DriverInterface {
    * @param string $rid
    *   A role name to delete.
    */
-  public function roleDelete($rid);
+  public function roleDelete(string $rid): void;
 
   /**
    * Check if the specified field is an actual Drupal field.
@@ -153,7 +155,7 @@ interface DriverInterface {
    * @return bool
    *   TRUE if the field exists in the entity type, FALSE if not.
    */
-  public function isField($entity_type, $field_name);
+  public function isField(string $entity_type, string $field_name): bool;
 
   /**
    * Checks if the specified field is a Drupal base field.
@@ -166,7 +168,7 @@ interface DriverInterface {
    * @return bool
    *   TRUE if the given field is a base field, FALSE otherwise.
    */
-  public function isBaseField($entity_type, $field_name);
+  public function isBaseField(string $entity_type, string $field_name): bool;
 
   /**
    * Returns a configuration item.
@@ -179,7 +181,7 @@ interface DriverInterface {
    * @return mixed
    *   The data that was requested.
    */
-  public function configGet($name, $key);
+  public function configGet(string $name, string $key): mixed;
 
   /**
    * Sets a value in a configuration object.
@@ -191,40 +193,40 @@ interface DriverInterface {
    * @param mixed $value
    *   Value to associate with identifier.
    */
-  public function configSet($name, $key, $value);
+  public function configSet(string $name, string $key, mixed $value): void;
 
   /**
    * Creates an entity of a given type.
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param object $entity
+   * @param \stdClass $entity
    *   The entity to create.
    *
    * @return object
    *   The created entity with `id` set.
    */
-  public function createEntity($entity_type, \stdClass $entity);
+  public function createEntity(string $entity_type, \stdClass $entity): object;
 
   /**
    * Deletes an entity of a given type.
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param object $entity
+   * @param \stdClass $entity
    *   The entity to delete.
    */
-  public function entityDelete($entity_type, \stdClass $entity);
+  public function entityDelete(string $entity_type, \stdClass $entity): void;
 
   /**
    * Enable the test mail collector.
    */
-  public function startCollectingMail();
+  public function startCollectingMail(): void;
 
   /**
    * Restore normal operation of outgoing mail.
    */
-  public function stopCollectingMail();
+  public function stopCollectingMail(): void;
 
   /**
    * Get any mail collected by the test mail collector.
@@ -233,12 +235,12 @@ interface DriverInterface {
    *   An array of collected emails, each formatted as a Drupal 8
    *   \Drupal\Core\Mail\MailInterface::mail $message array.
    */
-  public function getMail();
+  public function getMail(): array;
 
   /**
    * Empty the test mail collector store of any collected mail.
    */
-  public function clearMail();
+  public function clearMail(): void;
 
   /**
    * Send a mail.
@@ -255,7 +257,7 @@ interface DriverInterface {
    * @return bool
    *   Whether the email was sent successfully.
    */
-  public function sendMail($body, $subject, $to, $langcode);
+  public function sendMail(string $body, string $subject, string $to, string $langcode): bool;
 
   /**
    * Installs a module.
@@ -263,7 +265,7 @@ interface DriverInterface {
    * @param string $module_name
    *   The machine name of the module to install.
    */
-  public function moduleInstall($module_name);
+  public function moduleInstall(string $module_name): void;
 
   /**
    * Uninstalls a module.
@@ -271,6 +273,6 @@ interface DriverInterface {
    * @param string $module_name
    *   The machine name of the module to uninstall.
    */
-  public function moduleUninstall($module_name);
+  public function moduleUninstall(string $module_name): void;
 
 }
