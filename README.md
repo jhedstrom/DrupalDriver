@@ -17,9 +17,11 @@ A collection of lightweight drivers with a common interface for
 interacting with [Drupal](https://www.drupal.org). These are generally
 intended for testing and are not meant to be API-complete.
 
-> **Note:** We are actively working on version 3.x which will drop
-> Drupal 6/7 support, modernise the codebase, and introduce integration
-> testing. See the
+> **Note:** This `master` branch is under heavy development for
+> version 3.x. Drupal 6 and 7 support has been dropped. For the
+> 2.x maintenance line, use the
+> [`2.x` branch](https://github.com/jhedstrom/DrupalDriver/tree/2.x).
+> See the
 > [3.x epic](https://github.com/jhedstrom/DrupalDriver/issues/312)
 > for details and progress.
 
