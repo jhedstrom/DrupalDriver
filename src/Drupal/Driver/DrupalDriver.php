@@ -156,47 +156,60 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @see drush_drupal_version()
    */
   public function getDrupalVersion() {
-    if ($this->version === NULL) {
-      // Support 6, 7 and 8.
-      $version_constant_paths = [
-        // Drupal 6.
-        '/modules/system/system.module',
-        // Drupal 7.
-        '/includes/bootstrap.inc',
-        // Drupal 8.
-        '/autoload.php',
-        '/core/includes/bootstrap.inc',
-      ];
+    if ($this->version !== NULL) {
+      return $this->version;
+    }
 
-      if ($this->drupalRoot === FALSE) {
-        throw new BootstrapException('`drupal_root` parameter must be defined.');
-      }
+    $this->version = $this->detectMajorVersion();
 
-      foreach ($version_constant_paths as $path) {
-        if (file_exists($this->drupalRoot . $path)) {
-          require_once $this->drupalRoot . $path;
-        }
-      }
-      if (defined('VERSION')) {
-        $version = VERSION;
-      }
-      elseif (defined(\Drupal::class . '::VERSION')) {
-        $version = \Drupal::VERSION;
-      }
-      else {
-        throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 6, 7, and 8.');
-      }
+    return $this->version;
+  }
 
-      // Extract the major version from VERSION.
-      $version_parts = explode('.', $version);
-      if (is_numeric($version_parts[0])) {
-        $this->version = (integer) $version_parts[0] < 8 ? $version_parts[0] : 8;
-      }
-      else {
-        throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version));
+  /**
+   * Detects the major Drupal version from the filesystem.
+   *
+   * @return int
+   *   The major version number. Drupal 8+ all return 8 because they share
+   *   the same driver (Drupal8.php).
+   */
+  protected function detectMajorVersion() {
+    $version_files = [
+      '/modules/system/system.module',
+      '/includes/bootstrap.inc',
+      '/autoload.php',
+      '/core/includes/bootstrap.inc',
+    ];
+
+    foreach ($version_files as $path) {
+      if (file_exists($this->drupalRoot . $path)) {
+        require_once $this->drupalRoot . $path;
       }
     }
-    return $this->version;
+
+    $version_string = $this->readVersionConstant();
+    $major = explode('.', $version_string)[0];
+
+    if (!is_numeric($major)) {
+      throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version_string));
+    }
+
+    // Drupal 8, 9, 10, 11 all use the same core driver class.
+    return (int) $major < 8 ? (int) $major : 8;
+  }
+
+  /**
+   * Reads the Drupal VERSION constant.
+   */
+  protected function readVersionConstant() {
+    if (defined('VERSION')) {
+      return VERSION;
+    }
+
+    if (defined(\Drupal::class . '::VERSION')) {
+      return \Drupal::VERSION;
+    }
+
+    throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 6, 7, 8, 10, and 11.');
   }
 
   /**
@@ -394,8 +407,10 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * {@inheritdoc}
    */
   public function login(\stdClass $user) {
-    if ($this->getCore() instanceof CoreAuthenticationInterface) {
-      $this->getCore()->login($user);
+    $auth = $this->getAuthCore();
+
+    if ($auth) {
+      $auth->login($user);
     }
   }
 
@@ -403,9 +418,23 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * {@inheritdoc}
    */
   public function logout() {
-    if ($this->getCore() instanceof CoreAuthenticationInterface) {
-      $this->getCore()->logout();
+    $auth = $this->getAuthCore();
+
+    if ($auth) {
+      $auth->logout();
     }
+  }
+
+  /**
+   * Returns the core as an authentication driver, or NULL if unsupported.
+   *
+   * @return \Drupal\Driver\Cores\CoreAuthenticationInterface|null
+   *   The authentication-capable core, or NULL.
+   */
+  protected function getAuthCore() {
+    $core = $this->getCore();
+
+    return $core instanceof CoreAuthenticationInterface ? $core : NULL;
   }
 
 }

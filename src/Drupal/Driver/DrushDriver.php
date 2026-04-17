@@ -284,15 +284,21 @@ class DrushDriver extends BaseDriver {
    */
   public function clearCache($type = 'all') {
     if (self::$isLegacyDrush) {
-      $type = [$type];
-      return $this->drush('cache-clear', $type, []);
+      return $this->drush('cache-clear', [$type], []);
     }
-    if (($type == 'all') || ($type == 'drush')) {
+
+    // Drush-only cache clear does not need a full rebuild.
+    if ($type === 'drush') {
       $this->drush('cache-clear', ['drush'], []);
-      if ($type === 'drush') {
-        return NULL;
-      }
+
+      return NULL;
     }
+
+    // Both 'all' and 'drush' clear the drush cache first.
+    if ($type === 'all') {
+      $this->drush('cache-clear', ['drush'], []);
+    }
+
     return $this->drush('cache:rebuild');
   }
 
@@ -328,42 +334,39 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function createEntity($entity_type, \StdClass $entity) {
-    $options = [
+    $payload = [
       'entity_type' => $entity_type,
       'entity' => $entity,
     ];
-    $result = $this->drush('behat',
-      ['create-entity', escapeshellarg(json_encode($options))], []);
-    return $this->decodeJsonObject($result);
+
+    return $this->callBehatCommand('create-entity', $payload);
   }
 
   /**
    * {@inheritdoc}
    */
   public function entityDelete($entity_type, \StdClass $entity) {
-    $options = [
+    $payload = [
       'entity_type' => $entity_type,
       'entity' => $entity,
     ];
-    $this->drush('behat',
-      ['delete-entity', escapeshellarg(json_encode($options))], []);
+    $this->drush('behat', ['delete-entity', escapeshellarg(json_encode($payload))], []);
   }
 
   /**
    * {@inheritdoc}
    */
   public function createNode($node) {
-    // Look up author by name.
     if (isset($node->author)) {
-      $user_info = $this->drush('user-information', [sprintf('"%s"', $node->author)]);
-      if ($uid = $this->parseUserId($user_info)) {
+      $user_output = $this->drush('user-information', [sprintf('"%s"', $node->author)]);
+      $uid = $this->parseUserId($user_output);
+
+      if ($uid) {
         $node->uid = $uid;
       }
     }
-    $result = $this->drush('behat',
-      ['create-node', escapeshellarg(json_encode($node))],
-      []);
-    return $this->decodeJsonObject($result);
+
+    return $this->callBehatCommand('create-node', $node);
   }
 
   /**
@@ -377,11 +380,23 @@ class DrushDriver extends BaseDriver {
    * {@inheritdoc}
    */
   public function createTerm(\stdClass $term) {
-    $result = $this->drush('behat',
-      [
-        'create-term',
-        escapeshellarg(json_encode($term)),
-      ], []);
+    return $this->callBehatCommand('create-term', $term);
+  }
+
+  /**
+   * Calls a behat drush sub-command and decodes the JSON response.
+   *
+   * @param string $sub_command
+   *   The behat sub-command (e.g., 'create-node', 'create-term').
+   * @param mixed $payload
+   *   The payload to JSON-encode and pass to the command.
+   *
+   * @return object
+   *   The decoded response object.
+   */
+  protected function callBehatCommand($sub_command, $payload) {
+    $result = $this->drush('behat', [$sub_command, escapeshellarg(json_encode($payload))], []);
+
     return $this->decodeJsonObject($result);
   }
 
@@ -439,16 +454,17 @@ class DrushDriver extends BaseDriver {
    *   The parsed arguments.
    */
   protected static function parseArguments(array $arguments) {
-    $string = '';
+    $option_string = '';
+
     foreach ($arguments as $name => $value) {
-      if (is_null($value)) {
-        $string .= ' --' . $name;
+      if ($value === NULL) {
+        $option_string .= ' --' . $name;
       }
       else {
-        $string .= ' --' . $name . '=' . $value;
+        $option_string .= ' --' . $name . '=' . $value;
       }
     }
-    return $string;
+    return $option_string;
   }
 
   /**
