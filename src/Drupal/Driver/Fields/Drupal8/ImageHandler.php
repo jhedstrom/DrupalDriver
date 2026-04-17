@@ -30,8 +30,8 @@ class ImageHandler extends AbstractHandler {
 
     return [
       'target_id' => $file->id(),
-      'alt' => $values['alt'] ?? '',
-      'title' => $values['title'] ?? '',
+      'alt' => $values['alt'] ?? NULL,
+      'title' => $values['title'] ?? NULL,
     ];
   }
 

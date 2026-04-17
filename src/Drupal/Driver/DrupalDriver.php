@@ -209,7 +209,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
       return \Drupal::VERSION;
     }
 
-    throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 6, 7, 8, 10, and 11.');
+    throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 6, 7, 8, 9, 10, and 11.');
   }
 
   /**

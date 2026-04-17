@@ -74,6 +74,10 @@ class AddressHandler extends AbstractHandler {
         $normalised[$key] = $field_value;
       }
       elseif (is_numeric($key)) {
+        if (!isset($visible_fields[$position])) {
+          throw new \RuntimeException(sprintf('Too many address sub-field values supplied; only %d visible fields available.', count($visible_fields)));
+        }
+
         $normalised[$visible_fields[$position]] = $field_value;
         $position++;
       }

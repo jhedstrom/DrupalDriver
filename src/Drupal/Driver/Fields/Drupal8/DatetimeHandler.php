@@ -39,6 +39,10 @@ class DatetimeHandler extends AbstractHandler {
    *   The formatted date string.
    */
   protected function formatDateValue($value, \DateTimeZone $site_timezone, \DateTimeZone $storage_timezone) {
+    if ($value === NULL || $value === '') {
+      return NULL;
+    }
+
     if (strpos($value, 'relative:') !== FALSE) {
       $value = trim(str_replace('relative:', '', $value));
     }
