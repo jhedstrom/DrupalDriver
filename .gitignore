@@ -1,5 +1,6 @@
 *.phar
 *.tgz
+/.logs
 /.phpunit.result.cache
 /composer.lock
 /drupal

@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true" bootstrap="vendor/autoload.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage>
-    <include>
-      <directory>./src/Drupal/</directory>
-    </include>
-  </coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheDirectory=".logs/.phpunit.cache"
+         colors="true"
+         executionOrder="depends,defects"
+         failOnWarning="true"
+         beStrictAboutCoverageMetadata="false">
   <testsuites>
     <testsuite name="Drupal Driver test suite">
       <directory>./tests/Drupal/</directory>
     </testsuite>
   </testsuites>
+  <source>
+    <include>
+      <directory>./src/Drupal/</directory>
+    </include>
+  </source>
+  <coverage pathCoverage="false"
+            ignoreDeprecatedCodeUnits="true">
+    <report>
+      <html outputDirectory=".logs/coverage/.coverage-html" lowUpperBound="50" highLowerBound="90"/>
+      <cobertura outputFile=".logs/coverage/cobertura.xml"/>
+      <text outputFile=".logs/coverage/coverage-summary.txt" showOnlySummary="true"/>
+    </report>
+  </coverage>
+  <logging>
+    <junit outputFile=".logs/phpunit/junit.xml"/>
+  </logging>
 </phpunit>
