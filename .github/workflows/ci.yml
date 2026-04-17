@@ -73,7 +73,7 @@ jobs:
 
       - name: Test with coverage
         if: ${{ matrix.coverage }}
-        run: docker compose exec -T php php -d pcov.enabled=1 -d pcov.directory=./src/Drupal vendor/bin/phpunit
+        run: docker compose exec -T php composer test-coverage
 
       - name: Test
         if: ${{ !matrix.coverage }}
