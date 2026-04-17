@@ -93,14 +93,10 @@
         "lint": [
             "XDEBUG_MODE=off parallel-lint src spec tests",
             "XDEBUG_MODE=off phpcs",
-            "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
-            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php --dry-run",
-            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8 --dry-run"
+            "XDEBUG_MODE=off rector process --dry-run"
         ],
         "lint-fix": [
-            "cp ./vendor/palantirnet/drupal-rector/rector.php drupal/.",
-            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Cores/Drupal8.php",
-            "XDEBUG_MODE=off cd drupal && ../vendor/bin/rector process ../src/Drupal/Driver/Fields/Drupal8",
+            "XDEBUG_MODE=off rector process",
             "XDEBUG_MODE=off phpcbf"
         ],
         "test": [

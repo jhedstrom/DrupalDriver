@@ -29,12 +29,7 @@ class AddressHandler extends AbstractHandler {
     // Any overrides that set field inputs to hidden will be skipped.
     foreach ($overrides as $key => $value) {
       preg_match('/[A-Z]/', $key, $matches, PREG_OFFSET_CAPTURE);
-      if (count($matches) > 0) {
-        $field_name = strtolower(substr_replace($key, '_', $matches[0][1], 0));
-      }
-      else {
-        $field_name = $key;
-      }
+      $field_name = $matches !== [] ? strtolower(substr_replace($key, '_', $matches[0][1], 0)) : $key;
       if ($value['override'] === 'hidden') {
         $remove_key = array_search($field_name, $address_fields, TRUE);
         unset($address_fields[$remove_key]);

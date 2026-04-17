@@ -58,6 +58,7 @@ class Drupal8Test extends TestCase {
     // Wire a container with request_stack and cron service.
     $request_stack = new RequestStack();
     $request_stack->push($request);
+
     $container = new ContainerBuilder();
     $container->set('request_stack', $request_stack);
     $container->set('cron', $cron);

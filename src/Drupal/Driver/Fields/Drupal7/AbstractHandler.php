@@ -14,28 +14,28 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *
    * @var string
    */
-  protected $language = NULL;
+  protected $language;
 
   /**
    * The simulated entity.
    *
    * @var object
    */
-  protected $entity = NULL;
+  protected $entity;
 
   /**
    * The entity type.
    *
    * @var string
    */
-  protected $entityType = NULL;
+  protected $entityType;
 
   /**
    * The field name.
    *
    * @var string
    */
-  protected $fieldName = NULL;
+  protected $fieldName;
 
   /**
    * The field array, as returned by field_read_fields().

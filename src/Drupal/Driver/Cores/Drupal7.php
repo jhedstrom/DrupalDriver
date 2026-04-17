@@ -165,7 +165,7 @@ class Drupal7 extends AbstractCore {
 
     foreach ($permissions as $key => $name) {
       if (!isset($all_permissions[$name])) {
-        $search = array_search($name, $all_permissions);
+        $search = array_search($name, $all_permissions, TRUE);
         if (!$search) {
           throw new \RuntimeException(sprintf("No permission '%s' exists.", $name));
         }
@@ -179,7 +179,7 @@ class Drupal7 extends AbstractCore {
     user_role_save($role);
     user_role_grant_permissions($role->rid, $permissions);
 
-    if ($role && !empty($role->rid)) {
+    if (!empty($role->rid)) {
       return $role->name;
     }
 
@@ -239,11 +239,11 @@ class Drupal7 extends AbstractCore {
     $_SERVER['HTTP_USER_AGENT'] = NULL;
 
     $conf_path = conf_path(TRUE, TRUE);
-    $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
+    $conf_file = $this->drupalRoot . sprintf('/%s/settings.php', $conf_path);
     if (!file_exists($conf_file)) {
       throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
     }
-    $drushrc_file = $this->drupalRoot . "/$conf_path/drushrc.php";
+    $drushrc_file = $this->drupalRoot . sprintf('/%s/drushrc.php', $conf_path);
     if (file_exists($drushrc_file)) {
       require_once $drushrc_file;
     }
@@ -279,7 +279,7 @@ class Drupal7 extends AbstractCore {
     // Map vocabulary names to vid, these take precedence over machine names.
     if (!isset($term->vid)) {
       $vocabularies = \taxonomy_get_vocabularies();
-      foreach ($vocabularies as $vid => $vocabulary) {
+      foreach ($vocabularies as $vocabulary) {
         if ($vocabulary->name == $term->vocabulary_machine_name) {
           $term->vid = $vocabulary->vid;
         }
@@ -323,12 +323,11 @@ class Drupal7 extends AbstractCore {
    * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
-    $status = 0;
     if (isset($term->tid)) {
-      $status = \taxonomy_term_delete($term->tid);
+      return \taxonomy_term_delete($term->tid);
     }
     // Will be SAVED_DELETED (3) on success.
-    return $status;
+    return 0;
   }
 
   /**
@@ -346,7 +345,7 @@ class Drupal7 extends AbstractCore {
 
     // If the language code is not valid then throw an InvalidArgumentException.
     if (!isset($predefined_languages[$language->langcode])) {
-      throw new \InvalidArgumentException("There is no predefined language with langcode '{$language->langcode}'.");
+      throw new \InvalidArgumentException(sprintf("There is no predefined language with langcode '%s'.", $language->langcode));
     }
 
     // Enable a language only if it has not been enabled already.
@@ -507,7 +506,7 @@ class Drupal7 extends AbstractCore {
     if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
       $bundles = $info['bundles'];
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception("Cannot create entity because provided bundle {$entity->$bundle_key} does not exist.");
+        throw new \Exception(sprintf('Cannot create entity because provided bundle %s does not exist.', $entity->$bundle_key));
       }
     }
     if (empty($entity_type)) {

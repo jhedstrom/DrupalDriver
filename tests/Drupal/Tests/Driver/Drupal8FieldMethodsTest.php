@@ -5,7 +5,7 @@
 // This must be declared before any class that references it.
 // phpcs:disable
 namespace Drupal\field\Entity {
-  if (!class_exists('Drupal\field\Entity\FieldStorageConfig')) {
+  if (!class_exists(\Drupal\field\Entity\FieldStorageConfig::class)) {
     class FieldStorageConfig {
       protected $type;
       public function __construct(string $type) { $this->type = $type; }
@@ -99,10 +99,10 @@ namespace Drupal\Tests\Driver {
       $result = $core->getEntityFieldTypes('node', $base_fields_arg);
 
       foreach ($expected_fields as $field_name) {
-        $this->assertArrayHasKey($field_name, $result, "Expected '$field_name' in result.");
+        $this->assertArrayHasKey($field_name, $result, sprintf("Expected '%s' in result.", $field_name));
       }
       foreach ($unexpected_fields as $field_name) {
-        $this->assertArrayNotHasKey($field_name, $result, "Did not expect '$field_name' in result.");
+        $this->assertArrayNotHasKey($field_name, $result, sprintf("Did not expect '%s' in result.", $field_name));
       }
     }
 

@@ -33,6 +33,7 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
     if (!empty($this->fieldInfo['settings']['allowed_values'][0]['vocabulary'])) {
       return $this->fieldInfo['settings']['allowed_values'][0]['vocabulary'];
     }
+    return NULL;
   }
 
 }
