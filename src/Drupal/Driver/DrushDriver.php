@@ -145,7 +145,7 @@ class DrushDriver extends BaseDriver {
     // Check that the given alias works.
     // @todo check that this is a functioning alias.
     // See http://drupal.org/node/1615450
-    if (!isset($this->alias) && !isset($this->root)) {
+    if ($this->alias === NULL && $this->root === NULL) {
       throw new BootstrapException('A drush alias or root path is required.');
     }
 
@@ -170,15 +170,10 @@ class DrushDriver extends BaseDriver {
       // On PHP 8.4, deprecation warnings from Drush dependencies may be
       // written to stdout before the version string. Extract the actual
       // version number from the output to avoid misdetection.
-      if (preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches)) {
-        $version = $matches[1];
-      }
-      else {
-        $version = $output;
-      }
+      $version = preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches) ? $matches[1] : $output;
       return version_compare($version, '9', '<=');
     }
-    catch (\RuntimeException $e) {
+    catch (\RuntimeException $runtime_exception) {
       // The version of drush is old enough that only `--version` was available,
       // so this is a legacy version.
       return TRUE;
@@ -234,7 +229,10 @@ class DrushDriver extends BaseDriver {
       foreach ($lines as $line) {
         // Skip header, separator, and empty lines.
         $trimmed = trim($line, " \t\n\r\0\x0B-");
-        if ($trimmed === '' || str_contains($trimmed, 'User ID')) {
+        if ($trimmed === '') {
+          continue;
+        }
+        if (str_contains($trimmed, 'User ID')) {
           continue;
         }
         // The first column in the data row is the User ID.
@@ -243,6 +241,7 @@ class DrushDriver extends BaseDriver {
         }
       }
     }
+    return NULL;
   }
 
   /**
@@ -290,8 +289,8 @@ class DrushDriver extends BaseDriver {
     }
     if (($type == 'all') || ($type == 'drush')) {
       $this->drush('cache-clear', ['drush'], []);
-      if ($type == 'drush') {
-        return;
+      if ($type === 'drush') {
+        return NULL;
       }
     }
     return $this->drush('cache:rebuild');
@@ -408,7 +407,7 @@ class DrushDriver extends BaseDriver {
       $result = $this->drush('behat', $arguments, []);
       return strpos($result, "true\n") !== FALSE;
     }
-    catch (\Exception $e) {
+    catch (\Exception $exception) {
       return FALSE;
     }
   }
@@ -465,14 +464,14 @@ class DrushDriver extends BaseDriver {
     else {
       $options['no-ansi'] = NULL;
     }
-    $string_options = $this->parseArguments($options);
+    $string_options = static::parseArguments($options);
 
-    $alias = isset($this->alias) ? "@{$this->alias}" : '--root=' . $this->root;
+    $alias = $this->alias !== NULL ? '@' . $this->alias : '--root=' . $this->root;
 
     // Add any global arguments.
     $global = $this->getArguments();
 
-    $cmd = "{$this->binary} {$alias} {$string_options} {$global} {$command} {$arguments}";
+    $cmd = sprintf('%s %s %s %s %s %s', $this->binary, $alias, $string_options, $global, $command, $arguments);
     $process = method_exists(Process::class, 'fromShellCommandline') ? Process::fromShellCommandline($cmd) : new Process($cmd);
     $process->setTimeout(3600);
     $process->run();
@@ -484,12 +483,10 @@ class DrushDriver extends BaseDriver {
     // Some drush commands write to standard error output (for example enable
     // use drush_log which default to _drush_print_log) instead of returning a
     // string (drush status use drush_print_pipe).
-    if (!$process->getOutput()) {
+    if ($process->getOutput() === '' || $process->getOutput() === '0') {
       return $process->getErrorOutput();
     }
-    else {
-      return $process->getOutput();
-    }
+    return $process->getOutput();
 
   }
 

@@ -12,7 +12,7 @@ abstract class FieldHandlerAbstractTestBase extends TestCase {
   /**
    * {@inheritdoc}
    */
-  public function tearDown(): void {
+  protected function tearDown(): void {
     \Mockery::close();
   }
 

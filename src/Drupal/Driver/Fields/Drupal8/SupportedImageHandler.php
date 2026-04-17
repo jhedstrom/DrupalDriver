@@ -26,7 +26,7 @@ class SupportedImageHandler extends AbstractHandler {
     foreach ($values as $value) {
       $file_path = (string) ($value['target_id'] ?? $value);
       $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
-      $data = file_get_contents((string) $file_path);
+      $data = file_get_contents($file_path);
 
       if ($data === FALSE) {
         throw new \Exception("Error reading file");

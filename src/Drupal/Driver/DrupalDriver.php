@@ -156,7 +156,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @see drush_drupal_version()
    */
   public function getDrupalVersion() {
-    if (!isset($this->version)) {
+    if ($this->version === NULL) {
       // Support 6, 7 and 8.
       $version_constant_paths = [
         // Drupal 6.
@@ -180,7 +180,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
       if (defined('VERSION')) {
         $version = VERSION;
       }
-      elseif (defined('\Drupal::VERSION')) {
+      elseif (defined(\Drupal::class . '::VERSION')) {
         $version = \Drupal::VERSION;
       }
       else {

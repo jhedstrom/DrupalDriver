@@ -183,7 +183,7 @@ class Drupal6 extends AbstractCore {
    */
   protected function checkPermissions(array $permissions, $reset = FALSE) {
 
-    if (!isset($this->availablePermissons) || $reset) {
+    if ($this->availablePermissons === NULL || $reset) {
       $this->availablePermissons = array_keys(module_invoke_all('permission'));
     }
 
@@ -203,7 +203,7 @@ class Drupal6 extends AbstractCore {
     // Verify permissions exist.
     $all_permissions = module_invoke_all('perm');
     foreach ($permissions as $name) {
-      $search = array_search($name, $all_permissions);
+      $search = array_search($name, $all_permissions, TRUE);
       if (!$search) {
         throw new \RuntimeException(sprintf("No permission '%s' exists.", $name));
       }
@@ -274,11 +274,11 @@ class Drupal6 extends AbstractCore {
     $_SERVER['HTTP_USER_AGENT'] = NULL;
 
     $conf_path = conf_path(TRUE, TRUE);
-    $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
+    $conf_file = $this->drupalRoot . sprintf('/%s/settings.php', $conf_path);
     if (!file_exists($conf_file)) {
       throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
     }
-    $drushrc_file = $this->drupalRoot . "/$conf_path/drushrc.php";
+    $drushrc_file = $this->drupalRoot . sprintf('/%s/drushrc.php', $conf_path);
     if (file_exists($drushrc_file)) {
       require_once $drushrc_file;
     }
@@ -318,7 +318,7 @@ class Drupal6 extends AbstractCore {
    */
   protected function taxonomyVocabularyLoadMultiple(array $vids = []) {
     $vocabularies = taxonomy_get_vocabularies();
-    if ($vids) {
+    if ($vids !== []) {
       return array_intersect_key($vocabularies, array_flip($vids));
     }
     return $vocabularies;
@@ -331,7 +331,7 @@ class Drupal6 extends AbstractCore {
     // Map vocabulary names to vid, these take precedence over machine names.
     if (!isset($term->vid)) {
       $vocabularies = \taxonomy_get_vocabularies();
-      foreach ($vocabularies as $vid => $vocabulary) {
+      foreach ($vocabularies as $vocabulary) {
         if ($vocabulary->name == $term->vocabulary_machine_name) {
           $term->vid = $vocabulary->vid;
         }
@@ -358,7 +358,7 @@ class Drupal6 extends AbstractCore {
     }
 
     if (empty($term->vid)) {
-      throw new \Exception(sprintf('No "%s" vocabulary found.'));
+      throw new \Exception('No "%s" vocabulary found.');
     }
 
     // Attempt to decipher any fields that may be specified.
@@ -375,21 +375,19 @@ class Drupal6 extends AbstractCore {
     // only be one matching term in a testing context, so take the first match
     // by reset()'ing $matches.
     $matches = \taxonomy_get_term_by_name($term->name);
-    $saved_term = reset($matches);
 
-    return $saved_term;
+    return reset($matches);
   }
 
   /**
    * {@inheritdoc}
    */
   public function termDelete(\stdClass $term) {
-    $status = 0;
     if (isset($term->tid)) {
-      $status = \taxonomy_del_term($term->tid);
+      return \taxonomy_del_term($term->tid);
     }
     // Will be SAVED_DELETED (3) on success.
-    return $status;
+    return 0;
   }
 
   /**
@@ -452,9 +450,7 @@ class Drupal6 extends AbstractCore {
       }
     }
 
-    $return += $taxonomy_fields;
-
-    return $return;
+    return $return + $taxonomy_fields;
   }
 
   /**

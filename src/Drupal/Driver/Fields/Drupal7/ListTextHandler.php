@@ -26,7 +26,7 @@ class ListTextHandler extends AbstractHandler {
         $allowed_values[$value] = $value;
       }
       elseif (in_array($value, $options)) {
-        $key = array_search($value, $options);
+        $key = array_search($value, $options, TRUE);
         $allowed_values[$value] = $key;
       }
     }

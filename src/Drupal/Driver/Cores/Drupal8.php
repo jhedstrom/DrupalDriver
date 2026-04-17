@@ -57,6 +57,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     // @see https://www.drupal.org/node/3151009
     $request->attributes->set('_route_object', new Route('<none>'));
     $request->attributes->set('_route', '<none>');
+
     $kernel->preHandle($request);
 
     // Initialise an anonymous session. required for the bootstrap.
@@ -210,7 +211,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
-      $permissions = \Drupal::service('user.permissions')->getPermissions();
+      return \Drupal::service('user.permissions')->getPermissions();
     }
 
     return $permissions;
@@ -226,7 +227,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $all_permissions = $this->getAllPermissions();
 
     foreach ($all_permissions as $name => $definition) {
-      $key = array_search($definition['title'], $permissions);
+      $key = array_search($definition['title'], $permissions, TRUE);
       if (FALSE !== $key) {
         $permissions[$key] = $name;
       }
@@ -317,11 +318,11 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
 
     $conf_path = DrupalKernel::findSitePath(Request::createFromGlobals());
-    $conf_file = $this->drupalRoot . "/$conf_path/settings.php";
+    $conf_file = $this->drupalRoot . sprintf('/%s/settings.php', $conf_path);
     if (!file_exists($conf_file)) {
       throw new BootstrapException(sprintf('Could not find a Drupal settings.php file at "%s"', $conf_file));
     }
-    $drushrc_file = $this->drupalRoot . "/$conf_path/drushrc.php";
+    $drushrc_file = $this->drupalRoot . sprintf('/%s/drushrc.php', $conf_path);
     if (file_exists($drushrc_file)) {
       require_once $drushrc_file;
     }
@@ -404,7 +405,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $return = [];
     $entity_field_manager = $this->getEntityFieldManager();
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
-    if (!empty($base_fields)) {
+    if ($base_fields !== []) {
       $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
     }
     foreach ($fields as $field_name => $field) {
@@ -452,7 +453,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     if (!ConfigurableLanguage::load($langcode)) {
       $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
       if (!$created_language) {
-        throw new \InvalidArgumentException("There is no predefined language with langcode '{$langcode}'.");
+        throw new \InvalidArgumentException(sprintf("There is no predefined language with langcode '%s'.", $langcode));
       }
       $created_language->save();
       return $language;
@@ -519,7 +520,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       $bundle_info = \Drupal::service('entity_type.bundle.info');
       $bundles = $bundle_info->getBundleInfo($entity_type);
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception("Cannot create entity because provided bundle '$entity->$bundle_key' does not exist.");
+        throw new \Exception(sprintf("Cannot create entity because provided bundle '%s->%s' does not exist.", $entity, $bundle_key));
       }
     }
     if (empty($entity_type)) {
@@ -593,9 +594,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     \Drupal::state()->resetCache();
     $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
     // Discard cancelled mail.
-    $mail = array_values(array_filter($mail, function ($mail_item) {
-      return ($mail_item['send'] == TRUE);
-    }));
+    $mail = array_values(array_filter($mail, fn($mail_item) => $mail_item['send'] == TRUE));
     return $mail;
   }
 
@@ -614,8 +613,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
     $mail_manager = \Drupal::service('plugin.manager.mail');
-    $result = $mail_manager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
-    return $result;
+    return $mail_manager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
   }
 
   /**
@@ -682,7 +680,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
         \Drupal::service('account_switcher')->switchBack();
       }
     }
-    catch (\RuntimeException $e) {
+    catch (\RuntimeException $runtime_exception) {
       // No more users are logged in.
     }
   }

@@ -18,13 +18,7 @@ class EntityReferenceHandler extends AbstractHandler {
     $id_key = $entity_definition->getKey('id');
 
     // Determine label field key.
-    if ($entity_type_id !== 'user') {
-      $label_key = $entity_definition->getKey('label');
-    }
-    else {
-      // Entity Definition->getKey('label') returns false for users.
-      $label_key = 'name';
-    }
+    $label_key = $entity_type_id !== 'user' ? $entity_definition->getKey('label') : 'name';
 
     if (!$label_key && $entity_type_id == 'user') {
       $label_key = 'name';
@@ -75,6 +69,7 @@ class EntityReferenceHandler extends AbstractHandler {
     if (!empty($settings['handler_settings']['target_bundles'])) {
       return $settings['handler_settings']['target_bundles'];
     }
+    return NULL;
   }
 
 }
