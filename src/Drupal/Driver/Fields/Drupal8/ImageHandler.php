@@ -11,23 +11,27 @@ class ImageHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values) {
-    $data = file_get_contents($values[0]);
-    if (FALSE === $data) {
-      throw new \Exception("Error reading file");
+    $file_path = $values[0];
+    $file_contents = file_get_contents($file_path);
+
+    if ($file_contents === FALSE) {
+      throw new \Exception(sprintf('Error reading file %s.', $file_path));
     }
 
     /** @var \Drupal\file\FileInterface $file */
-    $file = \Drupal::service('file.repository')->writeData($data, 'public://' . uniqid() . '.jpg');
+    $file = \Drupal::service('file.repository')
+      ->writeData($file_contents, 'public://' . uniqid() . '.jpg');
 
-    if (FALSE === $file) {
-      throw new \Exception("Error saving file");
+    if ($file === FALSE) {
+      throw new \Exception('Error saving file.');
     }
 
     $file->save();
+
     return [
       'target_id' => $file->id(),
-      'alt' => 'Behat test image',
-      'title' => 'Behat test image',
+      'alt' => $values['alt'] ?? NULL,
+      'title' => $values['title'] ?? NULL,
     ];
   }
 

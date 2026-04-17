@@ -17,12 +17,8 @@ class EntityReferenceHandler extends AbstractHandler {
 
     $id_key = $entity_definition->getKey('id');
 
-    // Determine label field key.
+    // User entities return FALSE for getKey('label'), so use 'name' directly.
     $label_key = $entity_type_id !== 'user' ? $entity_definition->getKey('label') : 'name';
-
-    if (!$label_key && $entity_type_id == 'user') {
-      $label_key = 'name';
-    }
 
     // Determine target bundle restrictions.
     $target_bundle_key = NULL;
