@@ -16,6 +16,14 @@
     <include>
       <directory>./src/Drupal/</directory>
     </include>
+    <exclude>
+      <directory>./src/Drupal/Driver/Cores/Drupal6</directory>
+      <directory>./src/Drupal/Driver/Cores/Drupal7</directory>
+      <directory>./src/Drupal/Driver/Fields/Drupal6</directory>
+      <directory>./src/Drupal/Driver/Fields/Drupal7</directory>
+      <file>./src/Drupal/Driver/Cores/Drupal6.php</file>
+      <file>./src/Drupal/Driver/Cores/Drupal7.php</file>
+    </exclude>
   </source>
   <coverage pathCoverage="false"
             ignoreDeprecatedCodeUnits="true">
