@@ -100,8 +100,9 @@
             "XDEBUG_MODE=off phpcbf"
         ],
         "test": [
-            "XDEBUG_MODE=off phpunit",
+            "XDEBUG_MODE=off phpunit --no-coverage",
             "XDEBUG_MODE=off phpspec run -f pretty --no-interaction"
-        ]
+        ],
+        "test-coverage": "XDEBUG_MODE=off php -d pcov.enabled=1 -d pcov.directory=./src/Drupal vendor/bin/phpunit"
     }
 }
