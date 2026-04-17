@@ -72,7 +72,7 @@ return RectorConfig::configure()
         RenameVariableToMatchMethodCallReturnTypeRector::class,
         RenameVariableToMatchNewTypeRector::class,
         SimplifyEmptyCheckOnEmptyArrayRector::class,
-        // Breaks 'drupal_static()' caching in 'Drupal8::getAllPermissions()':
+        // Breaks 'drupal_static()' caching in 'Core::getAllPermissions()':
         // assigning into the static reference is required for subsequent
         // calls to hit the cache, so the intermediate variable is not dead
         // code even though Rector thinks it is.

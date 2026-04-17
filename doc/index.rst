@@ -16,6 +16,7 @@ Contents:
    install
    drivers
    usage
+   extending
 
 .. _Drupal: http://drupal.org
 .. _`Drupal Drivers`: https://github.com/jhedstrom/DrupalDriver

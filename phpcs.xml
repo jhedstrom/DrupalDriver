@@ -16,7 +16,7 @@
 
     <!-- Core drivers need to set a server's remote address. -->
     <rule ref="Drupal.Semantics.RemoteAddress.RemoteAddress">
-        <exclude-pattern>src/Drupal/Driver/Cores/*.php</exclude-pattern>
+        <exclude-pattern>src/Drupal/Driver/Core/*.php</exclude-pattern>
     </rule>
 
     <!-- PHPSpec uses snake_case methods without visibility keywords and does
