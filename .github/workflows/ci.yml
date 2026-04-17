@@ -16,7 +16,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      contents: read
 
     env:
       PHP_VERSION: '8.4'
