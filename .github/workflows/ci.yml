@@ -73,7 +73,7 @@ jobs:
 
       - name: Test with coverage
         if: ${{ matrix.coverage }}
-        run: docker compose exec -T php php -d pcov.enabled=1 -d pcov.directory=. vendor/bin/phpunit --coverage-text=.logs/coverage/coverage-details.txt
+        run: docker compose exec -T php php -d pcov.enabled=1 -d pcov.directory=./src/Drupal vendor/bin/phpunit
 
       - name: Test
         if: ${{ !matrix.coverage }}
@@ -82,11 +82,19 @@ jobs:
       - name: Extract total coverage
         if: ${{ matrix.coverage }}
         run: |
+          set -euo pipefail
+          if [ ! -s .logs/coverage/cobertura.xml ]; then
+            echo "cobertura.xml missing or empty" >&2
+            exit 1
+          fi
           RATE=$(grep -om1 'line-rate="[0-9.]*"' .logs/coverage/cobertura.xml | tr -cd '0-9.')
+          : "${RATE:?failed to parse line-rate from cobertura.xml}"
           PERCENT=$(awk "BEGIN {printf \"%.2f\", $RATE*100}")
           echo "**Total coverage: $PERCENT%** (threshold: $CI_COVERAGE_THRESHOLD%)" | tee -a "$GITHUB_STEP_SUMMARY"
           echo "TOTAL_COVERAGE_PERCENT=${PERCENT}" >> "$GITHUB_ENV"
-          { echo "COVERAGE_SUMMARY<<EOF"; cat .logs/coverage/coverage-summary.txt; echo "EOF"; } >> "$GITHUB_ENV"
+          if [ -f .logs/coverage/coverage-summary.txt ]; then
+            { echo "COVERAGE_SUMMARY<<EOF"; cat .logs/coverage/coverage-summary.txt; echo "EOF"; } >> "$GITHUB_ENV"
+          fi
           DETAILS=$(python3 -c "
           import xml.etree.ElementTree as ET
           tree = ET.parse('.logs/coverage/cobertura.xml')
@@ -119,14 +127,14 @@ jobs:
       - name: Check coverage threshold
         if: ${{ matrix.coverage }}
         run: |
-          if [ "${TOTAL_COVERAGE_PERCENT//.}" -lt "$((CI_COVERAGE_THRESHOLD*100))" ]; then
+          if awk "BEGIN {exit !($TOTAL_COVERAGE_PERCENT < $CI_COVERAGE_THRESHOLD)}"; then
             echo "FAIL: Total coverage ${TOTAL_COVERAGE_PERCENT}% is below threshold ${CI_COVERAGE_THRESHOLD}%"
             exit 1
           fi
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.coverage }}
+        if: ${{ always() && matrix.coverage }}
         with:
           name: coverage-report
           path: .logs
