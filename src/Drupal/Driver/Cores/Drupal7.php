@@ -515,16 +515,16 @@ class Drupal7 extends AbstractCore {
     }
 
     $this->expandEntityFields($entity_type, $entity);
-    $createdEntity = entity_create($entity_type, (array) $entity);
+    $created_entity = entity_create($entity_type, (array) $entity);
 
     // In D7 it's possible that $createdEntity is not of class Entity, so we
     // must use entity_save().
-    entity_save($entity_type, $createdEntity);
+    entity_save($entity_type, $created_entity);
 
-    list($id) = entity_extract_ids($entity_type, $createdEntity);
-    $createdEntity->id = $id;
+    [$id] = entity_extract_ids($entity_type, $created_entity);
+    $created_entity->id = $id;
 
-    return $createdEntity;
+    return $created_entity;
   }
 
   /**
@@ -533,7 +533,7 @@ class Drupal7 extends AbstractCore {
   public function entityDelete($entity_type, $entity) {
     // In D7 it's possible that $entity is not of class Entity, so we must use
     // entity_delete().
-    list($id) = entity_extract_ids($entity_type, $entity);
+    [$id] = entity_extract_ids($entity_type, $entity);
     entity_delete($entity_type, $id);
   }
 

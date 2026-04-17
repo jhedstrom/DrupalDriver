@@ -108,19 +108,18 @@ docker compose exec -T php composer install
 docker compose exec -T php composer test
 ```
 
-### Test commands
+### Commands
 
 | Command | Description |
 | --- | --- |
-| `composer test` | Run all tests (lint, PHPUnit, PhpSpec, PHPCS, Rector) |
-| `composer lint` | PHP syntax check |
-| `composer phpunit` | PHPUnit tests only |
-| `composer phpspec` | PhpSpec tests only |
-| `composer phpcs` | Drupal coding standards check |
+| `composer lint` | PHP syntax check, PHPCS coding standards, Rector dry-run |
+| `composer lint-fix` | Auto-fix: Rector + PHPCBF |
+| `composer test` | PHPUnit + PhpSpec |
 
 ## Before submitting a change
 
-- Run `composer test` locally to verify all checks pass.
+- Run `composer lint` and `composer test` locally to verify
+  all checks pass.
 - Check that changes from `composer require` are not included
   in your submitted PR.
 - Before testing another PHP or Drupal version with Docker,

@@ -49,7 +49,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     // of the entity's bundle key. If both are empty, assume this is a single
     // bundle entity, and therefore make the bundle name the entity type.
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
-    $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : (isset($entity->step_bundle) ? $entity->step_bundle : $entity_type);
+    $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : ($entity->step_bundle ?? $entity_type);
 
     $fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
     $fieldsstring = '';

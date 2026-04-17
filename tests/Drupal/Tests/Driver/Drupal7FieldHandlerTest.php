@@ -27,7 +27,7 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTestBase {
    * @param array $expected_values
    *   The values in the expected format after expansion.
    *
-   * @dataProvider dataProvider
+   * @dataProvider dataProviderFieldHandlers
    */
   public function testFieldHandlers($class_name, $entity, $entity_type, array $field, array $expected_values) {
     $handler = $this->getMockHandler($class_name, $entity, $entity_type, $field);
@@ -43,7 +43,7 @@ class Drupal7FieldHandlerTest extends FieldHandlerAbstractTestBase {
    * @return array
    *   An array of test data.
    */
-  public static function dataProvider() {
+  public static function dataProviderFieldHandlers() {
     return [
       // Test default text field provided as simple text.
       [

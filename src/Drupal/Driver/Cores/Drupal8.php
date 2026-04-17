@@ -3,8 +3,6 @@
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
-use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -529,10 +527,10 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     }
 
     $this->expandEntityFields($entity_type, $entity);
-    $createdEntity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
-    $createdEntity->save();
+    $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
+    $created_entity->save();
 
-    $entity->id = $createdEntity->id();
+    $entity->id = $created_entity->id();
 
     return $entity;
   }
@@ -595,8 +593,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     \Drupal::state()->resetCache();
     $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
     // Discard cancelled mail.
-    $mail = array_values(array_filter($mail, function ($mailItem) {
-      return ($mailItem['send'] == TRUE);
+    $mail = array_values(array_filter($mail, function ($mail_item) {
+      return ($mail_item['send'] == TRUE);
     }));
     return $mail;
   }
@@ -615,8 +613,8 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
-    $mailManager = \Drupal::service('plugin.manager.mail');
-    $result = $mailManager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
+    $mail_manager = \Drupal::service('plugin.manager.mail');
+    $result = $mail_manager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
     return $result;
   }
 

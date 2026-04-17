@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\Driver;
 
-use Drupal;
 use Drupal\Core\CronInterface;
 use Drupal\Driver\Cores\Drupal8;
 use PHPUnit\Framework\TestCase;
@@ -62,7 +61,7 @@ class Drupal8Test extends TestCase {
     $container = new ContainerBuilder();
     $container->set('request_stack', $request_stack);
     $container->set('cron', $cron);
-    Drupal::setContainer($container);
+    \Drupal::setContainer($container);
 
     // Use __DIR__ as a dummy drupal root (runCron does not use it).
     $core = new Drupal8(__DIR__, 'default');
