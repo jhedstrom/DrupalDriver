@@ -60,6 +60,11 @@
             "Drupal\\Tests\\Driver": "tests/"
         }
     },
+    "autoload-dev": {
+        "psr-0": {
+            "Drupal\\Driver": "tests/fixtures/"
+        }
+    },
     "config": {
         "allow-plugins": {
             "composer/installers": true,
