@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.5.0]
+### Added
+  * [#306](https://github.com/jhedstrom/DrupalDriver/pull/306) Added `TimeHandler` for the `time_field` contrib module.
+  * [#307](https://github.com/jhedstrom/DrupalDriver/pull/307) Added `SupportedImageHandler` for the `supported_image` module.
+  * [#311](https://github.com/jhedstrom/DrupalDriver/pull/311) Allowed `LinkHandler` to accept named field properties.
+  * [#313](https://github.com/jhedstrom/DrupalDriver/pull/313) Added URI-only string support to `LinkHandler`.
+  * [#315](https://github.com/jhedstrom/DrupalDriver/pull/315) Added `moduleInstall()` and `moduleUninstall()` to all drivers.
+  * [#317](https://github.com/jhedstrom/DrupalDriver/pull/317) Added `DaterangeHandler` with timezone-aware date formatting.
+  * [#321](https://github.com/jhedstrom/DrupalDriver/pull/321) Added `OgStandardReferenceHandler` for Organic Groups.
+  * [#322](https://github.com/jhedstrom/DrupalDriver/pull/322) Added `NameHandler` for the Name module with tests.
+  * [#326](https://github.com/jhedstrom/DrupalDriver/pull/326) Added `.gitattributes` for lean distribution archives.
+  * [#328](https://github.com/jhedstrom/DrupalDriver/pull/328) Added project-level Rector configuration and applied fixes.
+  * [#330](https://github.com/jhedstrom/DrupalDriver/pull/330) Added PHPUnit code coverage reporting to CI with threshold enforcement.
+  * [#331](https://github.com/jhedstrom/DrupalDriver/pull/331) Added PHPUnit tests for D8+ field handlers and exceptions.
+### Changed
+  * [#314](https://github.com/jhedstrom/DrupalDriver/pull/314) Reimplemented `FileHandler` with proper file handling via `file.repository`.
+  * [#316](https://github.com/jhedstrom/DrupalDriver/pull/316) Added Alex Skrypnyk as maintainer.
+  * [#320](https://github.com/jhedstrom/DrupalDriver/pull/320) Rewrote `AddressHandler` with named key support and multi-value handling.
+  * [#323](https://github.com/jhedstrom/DrupalDriver/pull/323) Resolved project-level Drush binary in `DrushDriver`.
+  * [#325](https://github.com/jhedstrom/DrupalDriver/pull/325) Updated README and CONTRIBUTING to match DrupalExtension structure.
+  * [#327](https://github.com/jhedstrom/DrupalDriver/pull/327) Updated PHPCS configuration and fixed coding standards across the codebase.
+  * [#329](https://github.com/jhedstrom/DrupalDriver/pull/329) Refactored codebase for readability: extracted methods, removed dead code, clarified naming.
+### Fixed
+  * [#305](https://github.com/jhedstrom/DrupalDriver/pull/305) Fixed PostgreSQL crash when looking up an entity reference field by string/title.
+  * [#308](https://github.com/jhedstrom/DrupalDriver/pull/308) Fixed `EntityReferenceHandler` crash when entity label key is `FALSE`.
+  * [#309](https://github.com/jhedstrom/DrupalDriver/pull/309) Fixed date-only field handling and simplified relative date logic.
+  * [#310](https://github.com/jhedstrom/DrupalDriver/pull/310) Skipped processing empty batches in `processBatch()`.
+  * [#318](https://github.com/jhedstrom/DrupalDriver/pull/318) Cleared `EntityAccessControlHandler` static cache in `clearStaticCaches()`.
+  * [#319](https://github.com/jhedstrom/DrupalDriver/pull/319) Skipped exception when deleting a non-existent role.
+  * [#324](https://github.com/jhedstrom/DrupalDriver/pull/324) Fixed `parseUserId()` to handle Drush 12+ table output format.
+## [2.4.3]
+### Fixed
+  * [#303](https://github.com/jhedstrom/DrupalDriver/pull/303) Fixed `isBaseField()` to include computed base fields.
+## [2.4.2]
+### Fixed
+  * [#302](https://github.com/jhedstrom/DrupalDriver/pull/302) Refreshed `REQUEST_TIME` before cron run to prevent stale timestamps.
+## [2.4.1]
+### Fixed
+  * [#301](https://github.com/jhedstrom/DrupalDriver/pull/301) Fixed `isLegacyDrush()` misdetecting Drush 12+ as legacy on PHP 8.4.
 ## [2.4.0]
 ### Added
   * [#299](https://github.com/jhedstrom/DrupalDriver/pull/299) Added PHP 8.4 to CI test matrix.
@@ -137,7 +176,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     docblock for `CoreInterface::roleCreate`.
 
 
-[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/jhedstrom/DrupalDriver/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.4.3...v2.5.0
+[2.4.3]: https://github.com/jhedstrom/DrupalDriver/compare/v2.4.2...v2.4.3
+[2.4.2]: https://github.com/jhedstrom/DrupalDriver/compare/v2.4.1...v2.4.2
+[2.4.1]: https://github.com/jhedstrom/DrupalDriver/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.2...v2.4.0
 [2.3.0]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.2...v2.3.0
 [2.2.2]: https://github.com/jhedstrom/DrupalDriver/compare/v2.2.1...v2.2.2
