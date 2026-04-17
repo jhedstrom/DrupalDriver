@@ -124,3 +124,40 @@ docker compose exec -T php composer test
   in your submitted PR.
 - Before testing another PHP or Drupal version with Docker,
   remove `composer.lock` and `vendor/`.
+
+## Extending for a new Drupal version
+
+The default Drupal core implementation lives in
+`src/Drupal/Driver/Core/` and works for any Drupal version that
+does not break the public API.
+
+When a Drupal version diverges, add overrides under a
+`Core{N}/` directory (e.g., `Core12/`) - only the files that
+differ. The lookup chain in `DrupalDriver::setCoreFromVersion()`
+and `AbstractCore::getFieldHandler()` walks `Core{N}` -> ... ->
+`Core`, short-circuiting on the first match.
+
+```
+src/Drupal/Driver/
+├── Core/                       # default - works for all supported versions
+│   ├── Core.php
+│   └── Field/
+└── Core12/                     # only files that differ in D12
+    └── Field/
+        └── FileHandler.php     # extends Core\Field\FileHandler
+```
+
+The override extends the default and overrides only what changed:
+
+```php
+namespace Drupal\Driver\Core12\Field;
+
+class FileHandler extends \Drupal\Driver\Core\Field\FileHandler {
+  public function expand(mixed $values): array {
+    // D12-specific behavior; delegate for the common path.
+    return parent::expand($values);
+  }
+}
+```
+
+New Drupal versions that do not diverge cost zero new files.
