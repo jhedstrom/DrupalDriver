@@ -9,7 +9,7 @@ on:
       - master
 
 env:
-  CI_COVERAGE_THRESHOLD: '10'
+  CI_COVERAGE_THRESHOLD: '35'
 
 jobs:
   tests:
