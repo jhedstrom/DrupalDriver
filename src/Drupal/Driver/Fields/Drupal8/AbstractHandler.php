@@ -13,14 +13,14 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *
    * @var \Drupal\field\Entity\FieldStorageConfig
    */
-  protected $fieldInfo;
+  protected $fieldInfo = NULL;
 
   /**
    * Field configuration definition.
    *
    * @var \Drupal\field\Entity\FieldConfig
    */
-  protected $fieldConfig;
+  protected $fieldConfig = NULL;
 
   /**
    * Constructs an AbstractHandler object.
@@ -45,17 +45,13 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
     $this->fieldInfo = $fields[$field_name];
 
-    // The bundle may be stored either under "step_bundle" or under the name
-    // of the entity's bundle key. If both are empty, assume this is a single
-    // bundle entity, and therefore make the bundle name the entity type.
+    // Resolve the bundle: explicit bundle key > step_bundle > entity type
+    // (single-bundle entities like 'user' use the entity type as bundle).
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
-    $bundle = empty($entity->$bundle_key) ? $entity->step_bundle ?? $entity_type : ($entity->$bundle_key);
+    $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : ($entity->step_bundle ?? $entity_type);
 
     $fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
-    $fieldsstring = '';
-    foreach ($fields as $key => $value) {
-      $fieldsstring = $fieldsstring . ", " . $key;
-    }
+
     if (empty($fields[$field_name])) {
       throw new \Exception(sprintf('The field "%s" does not exist on entity type "%s" bundle "%s".', $field_name, $entity_type, $bundle));
     }

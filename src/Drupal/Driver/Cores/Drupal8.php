@@ -135,8 +135,6 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
       $user->status = 1;
     }
 
-    // Clone user object, otherwise user_save() changes the password to the
-    // hashed password.
     $this->expandEntityFields('user', $user);
     $account = \Drupal::entityTypeManager()->getStorage('user')->create((array) $user);
     $account->save();
@@ -565,14 +563,13 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function startCollectingMail() {
     $config = \Drupal::configFactory()->getEditable('system.mail');
-    $data = $config->getRawData();
+    $mail_config = $config->getRawData();
 
-    // Save the values for restoration after.
-    $this->storeOriginalConfiguration('system.mail', $data);
+    $this->storeOriginalConfiguration('system.mail', $mail_config);
 
     // @todo Use a collector that supports html after D#2223967 lands.
-    $data['interface'] = ['default' => 'test_mail_collector'];
-    $config->setData($data)->save();
+    $mail_config['interface'] = ['default' => 'test_mail_collector'];
+    $config->setData($mail_config)->save();
     // Disable the mail system module's mail if enabled.
     $this->startCollectingMailSystemMail();
   }
@@ -622,36 +619,37 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * @see MailsystemManager::getPluginInstance()
    */
   protected function startCollectingMailSystemMail() {
-    if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
-      $config = \Drupal::configFactory()->getEditable('mailsystem.settings');
-      $data = $config->getRawData();
-
-      // Track original data for restoration.
-      $this->storeOriginalConfiguration('mailsystem.settings', $data);
-
-      // Convert all of the 'senders' to the test collector.
-      $data = $this->findMailSystemSenders($data);
-      $config->setData($data)->save();
+    if (!\Drupal::moduleHandler()->moduleExists('mailsystem')) {
+      return;
     }
+
+    $config = \Drupal::configFactory()->getEditable('mailsystem.settings');
+    $mailsystem_config = $config->getRawData();
+
+    $this->storeOriginalConfiguration('mailsystem.settings', $mailsystem_config);
+
+    $mailsystem_config = $this->replaceMailSenders($mailsystem_config);
+    $config->setData($mailsystem_config)->save();
   }
 
   /**
-   * Find and replace all the mail system sender plugins with the test plugin.
-   *
-   * This method calls itself recursively.
+   * Recursively replaces mail sender plugins with the test collector.
    */
-  protected function findMailSystemSenders(array $data) {
-    foreach ($data as $key => $values) {
-      if (is_array($values)) {
-        if (isset($values[MailsystemManager::MAILSYSTEM_TYPE_SENDING])) {
-          $data[$key][MailsystemManager::MAILSYSTEM_TYPE_SENDING] = 'test_mail_collector';
-        }
-        else {
-          $data[$key] = $this->findMailSystemSenders($values);
-        }
+  protected function replaceMailSenders(array $config_tree) {
+    foreach ($config_tree as $key => $values) {
+      if (!is_array($values)) {
+        continue;
+      }
+
+      if (isset($values[MailsystemManager::MAILSYSTEM_TYPE_SENDING])) {
+        $config_tree[$key][MailsystemManager::MAILSYSTEM_TYPE_SENDING] = 'test_mail_collector';
+      }
+      else {
+        $config_tree[$key] = $this->replaceMailSenders($values);
       }
     }
-    return $data;
+
+    return $config_tree;
   }
 
   /**
@@ -675,13 +673,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function logout() {
+    // AccountSwitcher::switchBack() throws RuntimeException when the stack is
+    // empty. Loop until that happens to ensure all stacked accounts are popped.
     try {
       while (TRUE) {
         \Drupal::service('account_switcher')->switchBack();
       }
     }
     catch (\RuntimeException $runtime_exception) {
-      // No more users are logged in.
     }
   }
 

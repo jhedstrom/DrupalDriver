@@ -455,23 +455,20 @@ class DrushDriver extends BaseDriver {
    * Execute a drush command.
    */
   public function drush($command, array $arguments = [], array $options = []) {
-    $arguments = implode(' ', $arguments);
+    $argument_string = implode(' ', $arguments);
 
-    // Disable colored output from drush.
     if (isset(static::$isLegacyDrush) && static::$isLegacyDrush) {
       $options['nocolor'] = TRUE;
     }
     else {
       $options['no-ansi'] = NULL;
     }
-    $string_options = static::parseArguments($options);
 
+    $option_string = static::parseArguments($options);
     $alias = $this->alias !== NULL ? '@' . $this->alias : '--root=' . $this->root;
-
-    // Add any global arguments.
     $global = $this->getArguments();
 
-    $cmd = sprintf('%s %s %s %s %s %s', $this->binary, $alias, $string_options, $global, $command, $arguments);
+    $cmd = sprintf('%s %s %s %s %s %s', $this->binary, $alias, $option_string, $global, $command, $argument_string);
     $process = method_exists(Process::class, 'fromShellCommandline') ? Process::fromShellCommandline($cmd) : new Process($cmd);
     $process->setTimeout(3600);
     $process->run();
@@ -480,14 +477,12 @@ class DrushDriver extends BaseDriver {
       throw new \RuntimeException($process->getErrorOutput());
     }
 
-    // Some drush commands write to standard error output (for example enable
-    // use drush_log which default to _drush_print_log) instead of returning a
-    // string (drush status use drush_print_pipe).
+    // Some Drush commands write to stderr instead of stdout.
     if ($process->getOutput() === '' || $process->getOutput() === '0') {
       return $process->getErrorOutput();
     }
-    return $process->getOutput();
 
+    return $process->getOutput();
   }
 
   /**
