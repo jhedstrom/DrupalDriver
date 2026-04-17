@@ -13,14 +13,14 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *
    * @var \Drupal\field\Entity\FieldStorageConfig
    */
-  protected $fieldInfo = NULL;
+  protected $fieldInfo;
 
   /**
    * Field configuration definition.
    *
    * @var \Drupal\field\Entity\FieldConfig
    */
-  protected $fieldConfig = NULL;
+  protected $fieldConfig;
 
   /**
    * Constructs an AbstractHandler object.
@@ -48,7 +48,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     // Resolve the bundle: explicit bundle key > step_bundle > entity type
     // (single-bundle entities like 'user' use the entity type as bundle).
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
-    $bundle = !empty($entity->$bundle_key) ? $entity->$bundle_key : ($entity->step_bundle ?? $entity_type);
+    $bundle = empty($entity->$bundle_key) ? ($entity->step_bundle ?? $entity_type) : $entity->$bundle_key;
 
     $fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
 
