@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver;
 
 use Drupal\Driver\Exception\UnsupportedDriverActionException;
@@ -163,7 +165,7 @@ abstract class BaseDriver implements DriverInterface {
    * @return string
    *   A formatted string reminding people to use an API driver.
    */
-  private function errorString($error) {
+  private function errorString(string $error): string {
     return sprintf('No ability to %s in %%s. Put `@api` into your feature and add an API driver (ex: `api_driver: drupal`) in behat.yml.', $error);
   }
 

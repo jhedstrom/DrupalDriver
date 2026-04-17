@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -30,7 +32,7 @@ class EntityReferenceHandlerTest extends TestCase {
   /**
    * Tests that unknown values raise an exception.
    */
-  public function testExpandThrowsWhenNoEntityMatches() {
+  public function testExpandThrowsWhenNoEntityMatches(): void {
     $handler = $this->createHandler('node', []);
     $this->setUpEmptyQueryContainer('node');
 
@@ -43,11 +45,10 @@ class EntityReferenceHandlerTest extends TestCase {
   /**
    * Tests getTargetBundles() returns configured bundles.
    */
-  public function testGetTargetBundlesReturnsConfiguredBundles() {
+  public function testGetTargetBundlesReturnsConfiguredBundles(): void {
     $handler = $this->createHandler('node', ['article', 'page']);
 
     $reflection = new \ReflectionMethod(EntityReferenceHandler::class, 'getTargetBundles');
-    $reflection->setAccessible(TRUE);
 
     $this->assertSame(['article', 'page'], $reflection->invoke($handler));
   }
@@ -55,11 +56,10 @@ class EntityReferenceHandlerTest extends TestCase {
   /**
    * Tests getTargetBundles() returns NULL when none configured.
    */
-  public function testGetTargetBundlesReturnsNullWhenEmpty() {
+  public function testGetTargetBundlesReturnsNullWhenEmpty(): void {
     $handler = $this->createHandler('node', []);
 
     $reflection = new \ReflectionMethod(EntityReferenceHandler::class, 'getTargetBundles');
-    $reflection->setAccessible(TRUE);
 
     $this->assertNull($reflection->invoke($handler));
   }
@@ -82,11 +82,9 @@ class EntityReferenceHandlerTest extends TestCase {
     $handler = $reflection->newInstanceWithoutConstructor();
 
     $info_property = new \ReflectionProperty(EntityReferenceHandler::class, 'fieldInfo');
-    $info_property->setAccessible(TRUE);
     $info_property->setValue($handler, $field_info);
 
     $config_property = new \ReflectionProperty(EntityReferenceHandler::class, 'fieldConfig');
-    $config_property->setAccessible(TRUE);
     $config_property->setValue($handler, $field_config);
 
     return $handler;

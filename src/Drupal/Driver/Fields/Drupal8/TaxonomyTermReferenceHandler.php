@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -10,7 +12,7 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $return = [];
     foreach ($values as $name) {
       $terms = \Drupal::entityTypeManager()

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Define a stub FieldStorageConfig in the correct namespace so that
 // instanceof checks in Drupal8::isField() work without a full Drupal bootstrap.
 // This must be declared before any class that references it.
@@ -7,9 +9,10 @@
 namespace Drupal\field\Entity {
   if (!class_exists(\Drupal\field\Entity\FieldStorageConfig::class)) {
     class FieldStorageConfig {
-      protected $type;
-      public function __construct(string $type) { $this->type = $type; }
-      public function getType() { return $this->type; }
+      public function __construct(protected string $type)
+      {
+      }
+      public function getType(): string { return $this->type; }
     }
   }
 }
@@ -38,7 +41,7 @@ namespace Drupal\Tests\Driver {
      *
      * @dataProvider dataProviderIsBaseField
      */
-    public function testIsBaseField($field_name, $expected) {
+    public function testIsBaseField(string $field_name, bool $expected): void {
       $core = $this->createTestCore();
       $this->assertSame($expected, $core->isBaseField('node', $field_name));
     }
@@ -46,13 +49,11 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testIsBaseField().
      */
-    public function dataProviderIsBaseField() {
-      return [
-        'non-computed base field' => ['title', TRUE],
-        'computed base field' => ['moderation_state', TRUE],
-        'configurable field' => ['field_tags', FALSE],
-        'unknown field' => ['nonexistent', FALSE],
-      ];
+    public function dataProviderIsBaseField(): \Iterator {
+      yield 'non-computed base field' => ['title', TRUE];
+      yield 'computed base field' => ['moderation_state', TRUE];
+      yield 'configurable field' => ['field_tags', FALSE];
+      yield 'unknown field' => ['nonexistent', FALSE];
     }
 
     /**
@@ -65,7 +66,7 @@ namespace Drupal\Tests\Driver {
      *
      * @dataProvider dataProviderIsField
      */
-    public function testIsField($field_name, $expected) {
+    public function testIsField(string $field_name, bool $expected): void {
       $core = $this->createTestCore();
       $this->assertSame($expected, $core->isField('node', $field_name));
     }
@@ -73,13 +74,11 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testIsField().
      */
-    public function dataProviderIsField() {
-      return [
-        'configurable field' => ['field_tags', TRUE],
-        'non-computed base field' => ['title', FALSE],
-        'computed base field' => ['moderation_state', FALSE],
-        'unknown field' => ['nonexistent', FALSE],
-      ];
+    public function dataProviderIsField(): \Iterator {
+      yield 'configurable field' => ['field_tags', TRUE];
+      yield 'non-computed base field' => ['title', FALSE];
+      yield 'computed base field' => ['moderation_state', FALSE];
+      yield 'unknown field' => ['nonexistent', FALSE];
     }
 
     /**
@@ -94,7 +93,7 @@ namespace Drupal\Tests\Driver {
      *
      * @dataProvider dataProviderGetEntityFieldTypes
      */
-    public function testGetEntityFieldTypes(array $base_fields_arg, array $expected_fields, array $unexpected_fields) {
+    public function testGetEntityFieldTypes(array $base_fields_arg, array $expected_fields, array $unexpected_fields): void {
       $core = $this->createTestCore();
       $result = $core->getEntityFieldTypes('node', $base_fields_arg);
 
@@ -109,28 +108,26 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testGetEntityFieldTypes().
      */
-    public function dataProviderGetEntityFieldTypes() {
-      return [
-        'no base fields requested' => [
+    public function dataProviderGetEntityFieldTypes(): \Iterator {
+      yield 'no base fields requested' => [
         [],
         ['field_tags'],
         ['title', 'moderation_state'],
-        ],
-        'non-computed base field requested' => [
+      ];
+      yield 'non-computed base field requested' => [
         ['title'],
         ['field_tags', 'title'],
         ['moderation_state'],
-        ],
-        'computed base field requested' => [
+      ];
+      yield 'computed base field requested' => [
         ['moderation_state'],
         ['field_tags', 'moderation_state'],
         ['title'],
-        ],
-        'multiple base fields requested' => [
+      ];
+      yield 'multiple base fields requested' => [
         ['title', 'moderation_state'],
         ['field_tags', 'title', 'moderation_state'],
         [],
-        ],
       ];
     }
 
@@ -140,7 +137,7 @@ namespace Drupal\Tests\Driver {
      * @return \Drupal\Tests\Driver\TestDrupal8Core
      *   The test core instance.
      */
-    protected function createTestCore() {
+    protected function createTestCore(): TestDrupal8Core {
       // Non-computed base field.
       $title_field = $this->createMock(BaseFieldDefinition::class);
       $title_field->method('getType')->willReturn('string');
@@ -195,14 +192,14 @@ namespace Drupal\Tests\Driver {
      * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
      *   The mock entity field manager.
      */
-    public function setEntityFieldManager(EntityFieldManagerInterface $entity_field_manager) {
+    public function setEntityFieldManager(EntityFieldManagerInterface $entity_field_manager): void {
       $this->entityFieldManager = $entity_field_manager;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function getEntityFieldManager() {
+    protected function getEntityFieldManager(): object {
       return $this->entityFieldManager;
     }
 

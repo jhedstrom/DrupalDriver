@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Component\Utility\Random;

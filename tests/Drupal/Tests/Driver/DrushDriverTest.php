@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver;
 
 use Drupal\Driver\DrushDriver;
@@ -14,7 +16,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Tests instantiating the driver with only an alias.
    */
-  public function testWithAlias() {
+  public function testWithAlias(): void {
     $driver = new DrushDriver('alias');
     $this->assertEquals('alias', $driver->alias, 'The drush alias was not properly set.');
   }
@@ -22,7 +24,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Tests instantiating the driver with a prefixed alias.
    */
-  public function testWithAliasPrefix() {
+  public function testWithAliasPrefix(): void {
     $driver = new DrushDriver('@alias');
     $this->assertEquals('alias', $driver->alias, 'The drush alias did not remove the "@" prefix.');
   }
@@ -30,7 +32,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Tests instantiating the driver with only the root path.
    */
-  public function testWithRoot() {
+  public function testWithRoot(): void {
     // Bit of a hack here to use the path to this file, but all the driver cares
     // about during initialization is that the root be a directory.
     $driver = new DrushDriver('', __FILE__);
@@ -40,7 +42,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Tests instantiating the driver with missing alias and root path.
    */
-  public function testWithNeither() {
+  public function testWithNeither(): void {
     $this->expectException(BootstrapException::class);
     new DrushDriver('', '');
   }
@@ -50,7 +52,7 @@ class DrushDriverTest extends TestCase {
    *
    * @dataProvider dataProviderIsLegacyDrush
    */
-  public function testIsLegacyDrush($drush_output, $expected) {
+  public function testIsLegacyDrush(string $drush_output, bool $expected): void {
     $driver = new TestDrushDriver('alias');
     $driver->drushOutput = $drush_output;
     $result = $driver->callIsLegacyDrush();
@@ -62,7 +64,7 @@ class DrushDriverTest extends TestCase {
    *
    * @dataProvider dataProviderParseUserId
    */
-  public function testParseUserId($drush_output, $expected) {
+  public function testParseUserId(string $drush_output, ?int $expected): void {
     $driver = new TestDrushDriver('alias');
     $result = $driver->callParseUserId($drush_output);
     $this->assertSame($expected, $result);
@@ -71,56 +73,52 @@ class DrushDriverTest extends TestCase {
   /**
    * Data provider for testParseUserId().
    */
-  public function dataProviderParseUserId() {
-    return [
-      'legacy key-value format' => [
-        "User ID   :   550895\nUser name :   test\n",
-        550895,
-      ],
-      'drush 12 table format' => [
-        " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  550895    test        test@ex.co  authenticated   1            \n --------- ----------- ----------- --------------- ------------- \n",
-        550895,
-      ],
-      'no user id present' => [
-        "Some random output\n",
-        NULL,
-      ],
-      'drush 12 table uid 1' => [
-        " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  1         admin       a@ex.co     administrator   1            \n --------- ----------- ----------- --------------- ------------- \n",
-        1,
-      ],
+  public function dataProviderParseUserId(): \Iterator {
+    yield 'legacy key-value format' => [
+      "User ID   :   550895\nUser name :   test\n",
+      550895,
+    ];
+    yield 'drush 12 table format' => [
+      " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  550895    test        test@ex.co  authenticated   1            \n --------- ----------- ----------- --------------- ------------- \n",
+      550895,
+    ];
+    yield 'no user id present' => [
+      "Some random output\n",
+      NULL,
+    ];
+    yield 'drush 12 table uid 1' => [
+      " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  1         admin       a@ex.co     administrator   1            \n --------- ----------- ----------- --------------- ------------- \n",
+      1,
     ];
   }
 
   /**
    * Data provider for testIsLegacyDrush().
    */
-  public function dataProviderIsLegacyDrush() {
-    return [
-      'clean modern version' => [
-        "12.5.2.0\n",
-        FALSE,
-      ],
-      'deprecation warnings before version' => [
-        "Deprecated: Drush\\Drush::shell(): Implicitly marking parameter \$env as nullable\nDeprecated: Consolidation\\Config\\Config::__construct(): ...\n12.5.2.0\n",
-        FALSE,
-      ],
-      'drush 9 version' => [
-        "9.7.2\n",
-        FALSE,
-      ],
-      'legacy drush version' => [
-        "8.4.12\n",
-        TRUE,
-      ],
-      'legacy version with noise' => [
-        "Some warning output\n8.1.0\n",
-        TRUE,
-      ],
-      'three-part modern version' => [
-        "13.0.0\n",
-        FALSE,
-      ],
+  public function dataProviderIsLegacyDrush(): \Iterator {
+    yield 'clean modern version' => [
+      "12.5.2.0\n",
+      FALSE,
+    ];
+    yield 'deprecation warnings before version' => [
+      "Deprecated: Drush\\Drush::shell(): Implicitly marking parameter \$env as nullable\nDeprecated: Consolidation\\Config\\Config::__construct(): ...\n12.5.2.0\n",
+      FALSE,
+    ];
+    yield 'drush 9 version' => [
+      "9.7.2\n",
+      FALSE,
+    ];
+    yield 'legacy drush version' => [
+      "8.4.12\n",
+      TRUE,
+    ];
+    yield 'legacy version with noise' => [
+      "Some warning output\n8.1.0\n",
+      TRUE,
+    ];
+    yield 'three-part modern version' => [
+      "13.0.0\n",
+      FALSE,
     ];
   }
 
@@ -141,21 +139,21 @@ class TestDrushDriver extends DrushDriver {
   /**
    * {@inheritdoc}
    */
-  public function drush($command, array $arguments = [], array $options = []) {
+  public function drush($command, array $arguments = [], array $options = []): string {
     return $this->drushOutput;
   }
 
   /**
    * Exposes `isLegacyDrush()` for testing.
    */
-  public function callIsLegacyDrush() {
+  public function callIsLegacyDrush(): bool {
     return $this->isLegacyDrush();
   }
 
   /**
    * Exposes `parseUserId()` for testing.
    */
-  public function callParseUserId($info) {
+  public function callParseUserId($info): ?int {
     return $this->parseUserId($info);
   }
 

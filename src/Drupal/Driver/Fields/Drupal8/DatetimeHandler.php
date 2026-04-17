@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 use Drupal\Core\Datetime\DrupalDateTime;
@@ -43,7 +45,7 @@ class DatetimeHandler extends AbstractHandler {
       return NULL;
     }
 
-    if (strpos($value, 'relative:') !== FALSE) {
+    if (str_contains($value, 'relative:')) {
       $value = trim(str_replace('relative:', '', $value));
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -22,7 +24,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Tests that unreadable files throw a descriptive exception.
    */
-  public function testExpandThrowsWhenFileCannotBeRead() {
+  public function testExpandThrowsWhenFileCannotBeRead(): void {
     $handler = $this->createHandler();
 
     $this->expectException(\Exception::class);
@@ -34,7 +36,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Tests that string paths produce a single target entry with defaults.
    */
-  public function testExpandHandlesStringValueWithDefaults() {
+  public function testExpandHandlesStringValueWithDefaults(): void {
     $path = $this->createTempFile('png');
     $this->setFileRepositoryWithReturnId(99);
 
@@ -50,7 +52,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Tests that keyed array values honour their explicit overrides.
    */
-  public function testExpandHandlesArrayValueWithOverrides() {
+  public function testExpandHandlesArrayValueWithOverrides(): void {
     $path = $this->createTempFile('pdf');
     $this->setFileRepositoryWithReturnId(42);
 
@@ -72,7 +74,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Creates a FileHandler that bypasses the parent constructor.
    */
-  protected function createHandler() {
+  protected function createHandler(): FileHandler {
     $reflection = new \ReflectionClass(FileHandler::class);
     return $reflection->newInstanceWithoutConstructor();
   }
@@ -80,7 +82,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Creates a temporary file and returns its path.
    */
-  protected function createTempFile($extension) {
+  protected function createTempFile(string $extension): string {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.' . $extension;
     file_put_contents($path, 'fixture');
     return $path;
@@ -108,7 +110,7 @@ class FileHandlerTest extends TestCase {
       /**
        * Saves the file entity (no-op in the test double).
        */
-      public function save() {
+      public function save(): void {
       }
 
     };

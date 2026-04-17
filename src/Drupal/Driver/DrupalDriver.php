@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver;
 
 use Drupal\Driver\Cores\CoreAuthenticationInterface;
@@ -14,10 +16,8 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
 
   /**
    * Track whether Drupal has been bootstrapped.
-   *
-   * @var bool
    */
-  private $bootstrapped = FALSE;
+  private bool $bootstrapped = FALSE;
 
   /**
    * Drupal core object.
@@ -58,12 +58,12 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @throws \Drupal\Driver\Exception\BootstrapException
    *   Thrown when the Drupal installation is not found in the given root path.
    */
-  public function __construct($drupal_root, $uri) {
+  public function __construct(string $drupal_root, $uri) {
     $this->drupalRoot = realpath($drupal_root);
+    $this->uri = $uri;
     if (!$this->drupalRoot) {
       throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
-    $this->uri = $uri;
     $this->version = $this->getDrupalVersion();
   }
 
@@ -77,7 +77,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function bootstrap() {
+  public function bootstrap(): void {
     $this->getCore()->bootstrap();
     $this->bootstrapped = TRUE;
   }
@@ -85,7 +85,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function isBootstrapped() {
+  public function isBootstrapped(): bool {
     // Assume the blackbox is always bootstrapped.
     return $this->bootstrapped;
   }
@@ -93,42 +93,42 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user) {
+  public function userCreate(\stdClass $user): void {
     $this->getCore()->userCreate($user);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userDelete(\stdClass $user) {
+  public function userDelete(\stdClass $user): void {
     $this->getCore()->userDelete($user);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function processBatch() {
+  public function processBatch(): void {
     $this->getCore()->processBatch();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role_name) {
+  public function userAddRole(\stdClass $user, $role_name): void {
     $this->getCore()->userAddRole($user, $role_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL) {
+  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL): never {
     throw new PendingException(sprintf('Currently no ability to access watchdog entries in %s', $this));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearCache($type = NULL) {
+  public function clearCache($type = NULL): void {
     $this->getCore()->clearCache();
   }
 
@@ -172,7 +172,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    *   The major version number. Drupal 10+ all return 8 because they share
    *   the same driver (Drupal8.php).
    */
-  protected function detectMajorVersion() {
+  protected function detectMajorVersion(): int {
     $version_files = [
       '/autoload.php',
       '/core/includes/bootstrap.inc',
@@ -202,7 +202,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * Reads the Drupal VERSION constant.
    */
-  protected function readVersionConstant() {
+  protected function readVersionConstant(): string {
     if (defined(\Drupal::class . '::VERSION')) {
       return \Drupal::VERSION;
     }
@@ -216,7 +216,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @param array $available_cores
    *   A major-version-keyed array of available core controllers.
    */
-  public function setCore(array $available_cores) {
+  public function setCore(array $available_cores): void {
     if (!isset($available_cores[$this->version])) {
       throw new BootstrapException(sprintf('There is no available Drupal core controller for Drupal version %s.', $this->version));
     }
@@ -226,7 +226,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * Automatically set the core from the current version.
    */
-  public function setCoreFromVersion() {
+  public function setCoreFromVersion(): void {
     $core = '\Drupal\Driver\Cores\Drupal' . $this->getDrupalVersion();
     $this->core = new $core($this->drupalRoot, $this->uri);
   }
@@ -255,7 +255,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function runCron() {
+  public function runCron(): void {
     if (!$this->getCore()->runCron()) {
       throw new \Exception('Failed to run cron.');
     }
@@ -285,7 +285,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function roleDelete($rid) {
+  public function roleDelete($rid): void {
     $this->getCore()->roleDelete($rid);
   }
 
@@ -313,7 +313,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function languageDelete($language) {
+  public function languageDelete($language): void {
     $this->getCore()->languageDelete($language);
   }
 
@@ -327,14 +327,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function configSet($name, $key, $value) {
+  public function configSet($name, $key, $value): void {
     $this->getCore()->configSet($name, $key, $value);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches() {
+  public function clearStaticCaches(): void {
     $this->getCore()->clearStaticCaches();
   }
 
@@ -390,24 +390,24 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name) {
+  public function moduleInstall($module_name): void {
     $this->getCore()->moduleInstall($module_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name) {
+  public function moduleUninstall($module_name): void {
     $this->getCore()->moduleUninstall($module_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function login(\stdClass $user) {
+  public function login(\stdClass $user): void {
     $auth = $this->getAuthCore();
 
-    if ($auth) {
+    if ($auth instanceof CoreAuthenticationInterface) {
       $auth->login($user);
     }
   }
@@ -415,10 +415,10 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function logout() {
+  public function logout(): void {
     $auth = $this->getAuthCore();
 
-    if ($auth) {
+    if ($auth instanceof CoreAuthenticationInterface) {
       $auth->logout();
     }
   }
@@ -429,7 +429,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * @return \Drupal\Driver\Cores\CoreAuthenticationInterface|null
    *   The authentication-capable core, or NULL.
    */
-  protected function getAuthCore() {
+  protected function getAuthCore(): ?CoreAuthenticationInterface {
     $core = $this->getCore();
 
     return $core instanceof CoreAuthenticationInterface ? $core : NULL;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Composer\InstalledVersions;
@@ -52,7 +54,7 @@ class DatetimeHandlerTest extends TestCase {
   /**
    * Tests that empty strings and NULLs pass through as NULL values.
    */
-  public function testExpandPreservesEmptyValuesAsNull() {
+  public function testExpandPreservesEmptyValuesAsNull(): void {
     $handler = $this->createHandler('datetime');
 
     $result = $handler->expand(['', NULL]);
@@ -73,7 +75,6 @@ class DatetimeHandlerTest extends TestCase {
     $handler = $reflection->newInstanceWithoutConstructor();
 
     $property = new \ReflectionProperty(DatetimeHandler::class, 'fieldInfo');
-    $property->setAccessible(TRUE);
     $property->setValue($handler, $field_info);
 
     return $handler;

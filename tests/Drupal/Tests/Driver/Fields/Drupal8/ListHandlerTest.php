@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -16,7 +18,7 @@ class ListHandlerTest extends TestCase {
   /**
    * Tests that values matching allowed_values labels are mapped to keys.
    */
-  public function testExpandMapsLabelsToKeys() {
+  public function testExpandMapsLabelsToKeys(): void {
     $handler = $this->createHandler(ListStringHandler::class, [
       'red' => 'Red',
       'green' => 'Green',
@@ -29,7 +31,7 @@ class ListHandlerTest extends TestCase {
   /**
    * Tests that unmatched values fall through unchanged.
    */
-  public function testExpandReturnsOriginalValuesWhenNoMatch() {
+  public function testExpandReturnsOriginalValuesWhenNoMatch(): void {
     $handler = $this->createHandler(ListStringHandler::class, [
       'a' => 'Alpha',
     ]);
@@ -40,7 +42,7 @@ class ListHandlerTest extends TestCase {
   /**
    * Tests that integer list values are mapped to keys.
    */
-  public function testIntegerListMapsLabelsToKeys() {
+  public function testIntegerListMapsLabelsToKeys(): void {
     $handler = $this->createHandler(ListIntegerHandler::class, [
       1 => 'One',
       2 => 'Two',
@@ -52,7 +54,7 @@ class ListHandlerTest extends TestCase {
   /**
    * Tests that float list values are mapped to keys.
    */
-  public function testFloatListMapsLabelsToKeys() {
+  public function testFloatListMapsLabelsToKeys(): void {
     $handler = $this->createHandler(ListFloatHandler::class, [
       '1.5' => 'One and a half',
     ]);
@@ -63,7 +65,7 @@ class ListHandlerTest extends TestCase {
   /**
    * Tests that a scalar value is cast to an array before lookup.
    */
-  public function testExpandCastsScalarToArray() {
+  public function testExpandCastsScalarToArray(): void {
     $handler = $this->createHandler(ListStringHandler::class, [
       'k' => 'Label',
     ]);
@@ -92,7 +94,6 @@ class ListHandlerTest extends TestCase {
     $handler = $reflection->newInstanceWithoutConstructor();
 
     $property = new \ReflectionProperty($class_name, 'fieldInfo');
-    $property->setAccessible(TRUE);
     $property->setValue($handler, $field_info);
 
     return $handler;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Cores;
 
 use Drupal\Core\DrupalKernel;
@@ -36,7 +38,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function bootstrap() {
+  public function bootstrap(): void {
     // Validate, and prepare environment for Drupal bootstrap.
     if (!defined('DRUPAL_ROOT')) {
       define('DRUPAL_ROOT', $this->drupalRoot);
@@ -67,7 +69,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCache() {
+  public function clearCache(): void {
     // Need to change into the Drupal root directory or the registry explodes.
     drupal_flush_all_caches();
   }
@@ -108,7 +110,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node) {
+  public function nodeDelete($node): void {
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
     if ($node instanceof NodeInterface) {
       $node->delete();
@@ -127,7 +129,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user) {
+  public function userCreate(\stdClass $user): void {
     $this->validateDrupalSite();
 
     // Default status to TRUE if not explicitly creating a blocked user.
@@ -180,7 +182,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleDelete($role_name) {
+  public function roleDelete($role_name): void {
     $role = Role::load($role_name);
 
     if ($role) {
@@ -191,7 +193,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function processBatch() {
+  public function processBatch(): void {
     $this->validateDrupalSite();
     if ($batch =& batch_get()) {
       $batch['progressive'] = FALSE;
@@ -254,14 +256,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function userDelete(\stdClass $user) {
+  public function userDelete(\stdClass $user): void {
     user_cancel([], $user->uid, 'user_cancel_delete');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role_name) {
+  public function userAddRole(\stdClass $user, $role_name): void {
     // Allow both machine and human role names.
     $query = \Drupal::entityQuery('user_role');
     $conditions = $query->orConditionGroup()
@@ -282,7 +284,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateDrupalSite() {
+  public function validateDrupalSite(): void {
     if ('default' !== $this->uri) {
       // Fake the necessary HTTP headers that Drupal needs:
       $drupal_base_url = parse_url($this->uri);
@@ -332,7 +334,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function termCreate(\stdClass $term) {
+  public function termCreate(\stdClass $term): \stdClass {
     $term->vid = $term->vocabulary_machine_name;
 
     if (!empty($term->parent)) {
@@ -357,7 +359,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term) {
+  public function termDelete(\stdClass $term): void {
     $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
     if ($term instanceof TermInterface) {
       $term->delete();
@@ -367,14 +369,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function getModuleList() {
+  public function getModuleList(): array {
     return array_keys(\Drupal::moduleHandler()->getModuleList());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getExtensionPathList() {
+  public function getExtensionPathList(): array {
     $paths = [];
 
     // Get enabled modules.
@@ -395,14 +397,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * @param array $base_fields
    *   Base fields to be expanded in addition to user defined fields.
    */
-  public function expandEntityBaseFields($entity_type, \StdClass $entity, array $base_fields) {
+  public function expandEntityBaseFields($entity_type, \StdClass $entity, array $base_fields): void {
     $this->expandEntityFields($entity_type, $entity, $base_fields);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = []) {
+  public function getEntityFieldTypes($entity_type, array $base_fields = []): array {
     $return = [];
     $entity_field_manager = $this->getEntityFieldManager();
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
@@ -421,7 +423,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name) {
+  public function isField($entity_type, $field_name): bool {
     $fields = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
@@ -429,7 +431,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isBaseField($entity_type, $field_name) {
+  public function isBaseField($entity_type, $field_name): bool {
     $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
     return isset($base_fields[$field_name]);
   }
@@ -440,14 +442,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
    * @return \Drupal\Core\Entity\EntityFieldManagerInterface
    *   The entity field manager.
    */
-  protected function getEntityFieldManager() {
+  protected function getEntityFieldManager(): object {
     return \Drupal::service('entity_field.manager');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function languageCreate(\stdClass $language) {
+  public function languageCreate(\stdClass $language): \stdClass|false {
     $langcode = $language->langcode;
 
     // Enable a language only if it has not been enabled already.
@@ -466,7 +468,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function languageDelete(\stdClass $language) {
+  public function languageDelete(\stdClass $language): void {
     $configurable_language = ConfigurableLanguage::load($language->langcode);
     $configurable_language->delete();
   }
@@ -474,7 +476,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches() {
+  public function clearStaticCaches(): void {
     drupal_static_reset();
     \Drupal::service('cache_tags.invalidator')->resetChecksums();
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
@@ -499,7 +501,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function configSet($name, $key, $value) {
+  public function configSet($name, $key, $value): void {
     \Drupal::configFactory()->getEditable($name)
       ->set($key, $value)
       ->save();
@@ -540,7 +542,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, $entity) {
+  public function entityDelete($entity_type, $entity): void {
     $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
     if ($entity instanceof EntityInterface) {
       $entity->delete();
@@ -550,21 +552,21 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name) {
+  public function moduleInstall($module_name): void {
     \Drupal::service('module_installer')->install([$module_name]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name) {
+  public function moduleUninstall($module_name): void {
     \Drupal::service('module_installer')->uninstall([$module_name]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function startCollectingMail() {
+  public function startCollectingMail(): void {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $mail_config = $config->getRawData();
 
@@ -580,7 +582,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function stopCollectingMail() {
+  public function stopCollectingMail(): void {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $config->setData($this->originalConfiguration['system.mail'])->save();
     // Re-enable the mailsystem module's mail if enabled.
@@ -594,14 +596,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     \Drupal::state()->resetCache();
     $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
     // Discard cancelled mail.
-    $mail = array_values(array_filter($mail, fn($mail_item) => $mail_item['send'] == TRUE));
+    $mail = array_values(array_filter($mail, fn(array $mail_item): bool => $mail_item['send'] == TRUE));
     return $mail;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearMail() {
+  public function clearMail(): void {
     \Drupal::state()->set('system.test_mail_collector', []);
   }
 
@@ -638,7 +640,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * Recursively replaces mail sender plugins with the test collector.
    */
-  protected function replaceMailSenders(array $config_tree) {
+  protected function replaceMailSenders(array $config_tree): array {
     foreach ($config_tree as $key => $values) {
       if (!is_array($values)) {
         continue;
@@ -667,7 +669,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function login(\stdClass $user) {
+  public function login(\stdClass $user): void {
     $account = User::load($user->uid);
     \Drupal::service('account_switcher')->switchTo($account);
   }
@@ -675,7 +677,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function logout() {
+  public function logout(): void {
     // AccountSwitcher::switchBack() throws RuntimeException when the stack is
     // empty. Loop until that happens to ensure all stacked accounts are popped.
     try {
@@ -683,7 +685,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
         \Drupal::service('account_switcher')->switchBack();
       }
     }
-    catch (\RuntimeException $runtime_exception) {
+    catch (\RuntimeException) {
     }
   }
 

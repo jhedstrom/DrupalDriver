@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -22,7 +24,7 @@ class ImageHandlerTest extends TestCase {
   /**
    * Tests that unreadable files throw a descriptive exception.
    */
-  public function testExpandThrowsWhenFileCannotBeRead() {
+  public function testExpandThrowsWhenFileCannotBeRead(): void {
     $handler = $this->createHandler();
 
     $this->expectException(\Exception::class);
@@ -34,7 +36,7 @@ class ImageHandlerTest extends TestCase {
   /**
    * Tests that a readable path is expanded into an image field value.
    */
-  public function testExpandReturnsImageValueWithDefaultAltAndTitle() {
+  public function testExpandReturnsImageValueWithDefaultAltAndTitle(): void {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.jpg';
     file_put_contents($path, 'fixture');
     $this->setFileRepositoryWithReturnId(7);
@@ -49,7 +51,7 @@ class ImageHandlerTest extends TestCase {
   /**
    * Tests that alt and title extras are propagated when provided.
    */
-  public function testExpandPropagatesAltAndTitleExtras() {
+  public function testExpandPropagatesAltAndTitleExtras(): void {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.jpg';
     file_put_contents($path, 'fixture');
     $this->setFileRepositoryWithReturnId(12);
@@ -65,7 +67,7 @@ class ImageHandlerTest extends TestCase {
   /**
    * Creates an ImageHandler that bypasses the parent constructor.
    */
-  protected function createHandler() {
+  protected function createHandler(): ImageHandler {
     $reflection = new \ReflectionClass(ImageHandler::class);
     return $reflection->newInstanceWithoutConstructor();
   }
@@ -92,7 +94,7 @@ class ImageHandlerTest extends TestCase {
       /**
        * Saves the file entity (no-op in the test double).
        */
-      public function save() {
+      public function save(): void {
       }
 
     };

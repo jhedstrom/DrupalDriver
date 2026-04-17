@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -12,14 +14,14 @@ class NameHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $return = [];
     $components = ['title', 'given', 'middle', 'family', 'generational', 'credentials'];
 
     foreach ($values as $value) {
       if (is_string($value)) {
         // Support "Family, Given" shorthand.
-        $parts = array_map('trim', explode(',', $value));
+        $parts = array_map(trim(...), explode(',', $value));
         $return[] = [
           'family' => $parts[0] ?? NULL,
           'given' => $parts[1] ?? NULL,

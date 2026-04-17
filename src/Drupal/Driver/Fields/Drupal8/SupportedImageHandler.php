@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -15,7 +17,7 @@ class SupportedImageHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $return_values = [];
 
     // Standardize single/multi-value input.

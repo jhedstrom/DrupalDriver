@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver\Fields\Drupal8;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -22,7 +24,7 @@ class SupportedImageHandlerTest extends TestCase {
   /**
    * Tests that unreadable files throw a descriptive exception.
    */
-  public function testExpandThrowsWhenFileCannotBeRead() {
+  public function testExpandThrowsWhenFileCannotBeRead(): void {
     $handler = $this->createHandler();
 
     $this->expectException(\Exception::class);
@@ -34,7 +36,7 @@ class SupportedImageHandlerTest extends TestCase {
   /**
    * Tests that a string input is normalised into a single-item result.
    */
-  public function testExpandNormalisesStringInputToSingleItem() {
+  public function testExpandNormalisesStringInputToSingleItem(): void {
     $path = $this->createTempFile('jpg');
     $this->setFileRepositoryWithReturnId(3);
 
@@ -58,7 +60,7 @@ class SupportedImageHandlerTest extends TestCase {
   /**
    * Tests that caption and attribution metadata are preserved.
    */
-  public function testExpandPreservesCaptionAndAttributionMetadata() {
+  public function testExpandPreservesCaptionAndAttributionMetadata(): void {
     $path = $this->createTempFile('png');
     $this->setFileRepositoryWithReturnId(5);
 
@@ -92,7 +94,7 @@ class SupportedImageHandlerTest extends TestCase {
   /**
    * Tests that a single array with target_id is wrapped as a single item.
    */
-  public function testExpandWrapsSingleKeyedArrayInput() {
+  public function testExpandWrapsSingleKeyedArrayInput(): void {
     $path = $this->createTempFile('jpg');
     $this->setFileRepositoryWithReturnId(8);
 
@@ -111,7 +113,7 @@ class SupportedImageHandlerTest extends TestCase {
   /**
    * Creates a SupportedImageHandler that bypasses the parent constructor.
    */
-  protected function createHandler() {
+  protected function createHandler(): SupportedImageHandler {
     $reflection = new \ReflectionClass(SupportedImageHandler::class);
     return $reflection->newInstanceWithoutConstructor();
   }
@@ -119,7 +121,7 @@ class SupportedImageHandlerTest extends TestCase {
   /**
    * Creates a temporary file with the given extension.
    */
-  protected function createTempFile($extension) {
+  protected function createTempFile(string $extension): string {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.' . $extension;
     file_put_contents($path, 'fixture');
     return $path;
@@ -147,7 +149,7 @@ class SupportedImageHandlerTest extends TestCase {
       /**
        * Saves the file entity (no-op in the test double).
        */
-      public function save() {
+      public function save(): void {
       }
 
     };

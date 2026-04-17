@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\Driver;
 
 use Drupal\Driver\Cores\Drupal8;
@@ -19,7 +21,7 @@ class Drupal8PermissionsTest extends TestCase {
    * regressions where automated refactoring flips the comparison to strict
    * mode without adding the cast.
    */
-  public function testConvertPermissionsMapsStringableTitlesToMachineNames() {
+  public function testConvertPermissionsMapsStringableTitlesToMachineNames(): void {
     $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer content types' => [
@@ -39,7 +41,7 @@ class Drupal8PermissionsTest extends TestCase {
   /**
    * Tests that titles already in machine name form are left unchanged.
    */
-  public function testConvertPermissionsLeavesMachineNamesAlone() {
+  public function testConvertPermissionsLeavesMachineNamesAlone(): void {
     $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer users' => [
@@ -56,7 +58,7 @@ class Drupal8PermissionsTest extends TestCase {
   /**
    * Tests that 'checkPermissions()' passes for valid machine names.
    */
-  public function testCheckPermissionsAcceptsValidMachineNames() {
+  public function testCheckPermissionsAcceptsValidMachineNames(): void {
     $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer users' => ['title' => 'Administer users'],
@@ -72,7 +74,7 @@ class Drupal8PermissionsTest extends TestCase {
   /**
    * Tests that 'checkPermissions()' throws for unknown machine names.
    */
-  public function testCheckPermissionsThrowsForUnknownPermission() {
+  public function testCheckPermissionsThrowsForUnknownPermission(): void {
     $core = new TestDrupal8PermissionsCore(__DIR__, 'default');
     $core->setPermissions([
       'administer users' => ['title' => 'Administer users'],
@@ -91,7 +93,6 @@ class Drupal8PermissionsTest extends TestCase {
    */
   protected function callConvertPermissions(Drupal8 $core, array &$permissions) {
     $method = new \ReflectionMethod($core, 'convertPermissions');
-    $method->setAccessible(TRUE);
     $method->invokeArgs($core, [&$permissions]);
   }
 
@@ -100,14 +101,13 @@ class Drupal8PermissionsTest extends TestCase {
    */
   protected function callCheckPermissions(Drupal8 $core, array &$permissions) {
     $method = new \ReflectionMethod($core, 'checkPermissions');
-    $method->setAccessible(TRUE);
     $method->invokeArgs($core, [&$permissions]);
   }
 
   /**
    * Returns an anonymous Stringable that mimics a Drupal TranslatableMarkup.
    */
-  protected function stringable($label) {
+  protected function stringable($label): object {
     return new class($label) {
 
       public function __construct(private $label) {}
@@ -139,7 +139,7 @@ class TestDrupal8PermissionsCore extends Drupal8 {
   /**
    * Sets the permissions returned by 'getAllPermissions()'.
    */
-  public function setPermissions(array $permissions) {
+  public function setPermissions(array $permissions): void {
     $this->permissions = $permissions;
   }
 

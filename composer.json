@@ -37,10 +37,10 @@
         "drush-ops/behat-drush-endpoint": "*",
         "ergebnis/composer-normalize": "^2.50",
         "mockery/mockery": "^1.5",
-        "palantirnet/drupal-rector": "^0.20",
         "php-parallel-lint/php-parallel-lint": "^1.0",
         "phpspec/phpspec": "^7.5 || dev-main",
         "phpunit/phpunit": "^9.6 || ^10 || ^11",
+        "rector/rector": "^2.0",
         "symfony/phpunit-bridge": "^6.4 || ^7",
         "webmozart/assert": "^2.3"
     },

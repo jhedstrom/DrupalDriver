@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Fields\Drupal8;
 
 /**
@@ -10,7 +12,7 @@ class ImageHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values) {
+  public function expand($values): array {
     $file_path = $values[0];
     $file_contents = file_get_contents($file_path);
 

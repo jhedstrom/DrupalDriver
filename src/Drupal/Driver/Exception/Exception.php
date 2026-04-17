@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
@@ -11,10 +13,8 @@ abstract class Exception extends \Exception {
 
   /**
    * The driver where the exception occurred.
-   *
-   * @var \Drupal\Driver\DriverInterface
    */
-  private $driver;
+  private readonly ?DriverInterface $driver;
 
   /**
    * Initializes Drupal driver manager exception.
@@ -30,7 +30,6 @@ abstract class Exception extends \Exception {
    */
   public function __construct($message, ?DriverInterface $driver = NULL, $code = 0, ?\Exception $previous = NULL) {
     $this->driver = $driver;
-
     parent::__construct($message, $code, $previous);
   }
 

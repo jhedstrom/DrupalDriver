@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Driver\Exception;
 
 use Drupal\Driver\DriverInterface;
@@ -22,7 +24,7 @@ class UnsupportedDriverActionException extends Exception {
    *   Previous exception.
    */
   public function __construct($template, DriverInterface $driver, $code = 0, ?\Exception $previous = NULL) {
-    $message = sprintf($template, get_class($driver));
+    $message = sprintf($template, $driver::class);
 
     parent::__construct($message, $driver, $code, $previous);
   }
