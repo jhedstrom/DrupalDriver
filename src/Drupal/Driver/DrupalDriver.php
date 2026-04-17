@@ -169,13 +169,11 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * Detects the major Drupal version from the filesystem.
    *
    * @return int
-   *   The major version number. Drupal 8+ all return 8 because they share
+   *   The major version number. Drupal 10+ all return 8 because they share
    *   the same driver (Drupal8.php).
    */
   protected function detectMajorVersion() {
     $version_files = [
-      '/modules/system/system.module',
-      '/includes/bootstrap.inc',
       '/autoload.php',
       '/core/includes/bootstrap.inc',
     ];
@@ -193,23 +191,23 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
       throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version_string));
     }
 
-    // Drupal 8, 9, 10, 11 all use the same core driver class.
-    return (int) $major < 8 ? (int) $major : 8;
+    if ((int) $major < 10) {
+      throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 10 or higher is required.', $version_string));
+    }
+
+    // Drupal 10 and 11 share the same core driver class (Drupal8.php).
+    return 8;
   }
 
   /**
    * Reads the Drupal VERSION constant.
    */
   protected function readVersionConstant() {
-    if (defined('VERSION')) {
-      return VERSION;
-    }
-
     if (defined(\Drupal::class . '::VERSION')) {
       return \Drupal::VERSION;
     }
 
-    throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 6, 7, 8, 9, 10, and 11.');
+    throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 10 and 11.');
   }
 
   /**

@@ -42,8 +42,6 @@ return RectorConfig::configure()
         // calls to hit the cache, so the intermediate variable is not dead
         // code even though Rector thinks it is.
         ReturnEarlyIfVariableRector::class,
-        // Legacy test with PHPUnit compatibility issue.
-        __DIR__ . '/tests/Drupal/Tests/Driver/Drupal7FieldHandlerTest.php',
         // Dependencies.
         '*/vendor/*',
     ]);
