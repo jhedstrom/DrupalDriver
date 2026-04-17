@@ -209,7 +209,7 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $permissions = &drupal_static(__FUNCTION__);
 
     if (!isset($permissions)) {
-      return \Drupal::service('user.permissions')->getPermissions();
+      $permissions = \Drupal::service('user.permissions')->getPermissions();
     }
 
     return $permissions;
@@ -225,8 +225,11 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     $all_permissions = $this->getAllPermissions();
 
     foreach ($all_permissions as $name => $definition) {
-      $key = array_search($definition['title'], $permissions, TRUE);
-      if (FALSE !== $key) {
+      // Cast the title to string: Drupal returns TranslatableMarkup objects
+      // for permission titles, which would never strictly equal the plain
+      // string labels supplied by callers.
+      $key = array_search((string) $definition['title'], $permissions, TRUE);
+      if ($key !== FALSE) {
         $permissions[$key] = $name;
       }
     }
