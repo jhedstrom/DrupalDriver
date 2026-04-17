@@ -65,7 +65,7 @@ jobs:
         run: docker compose exec -T php composer update --with-all-dependencies
 
       - name: Migrate PHPUnit configuration
-        run: docker compose exec -T php phpunit --migrate-configuration
+        run: docker compose exec -T php phpunit --migrate-configuration || true
         if: "${{ matrix.drupal_version == '11'}}"
 
       - name: Lint
