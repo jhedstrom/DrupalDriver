@@ -28,7 +28,7 @@ abstract class Exception extends \Exception {
    * @param \Exception $previous
    *   Optional previous exception that was thrown.
    */
-  public function __construct($message, ?DriverInterface $driver = NULL, $code = 0, ?\Exception $previous = NULL) {
+  public function __construct(string $message, ?DriverInterface $driver = NULL, int $code = 0, ?\Exception $previous = NULL) {
     $this->driver = $driver;
     parent::__construct($message, $code, $previous);
   }
@@ -39,7 +39,7 @@ abstract class Exception extends \Exception {
    * @return \Drupal\Driver\DriverInterface
    *   The driver where the exception occurred.
    */
-  public function getDriver() {
+  public function getDriver(): DriverInterface {
     return $this->driver;
   }
 

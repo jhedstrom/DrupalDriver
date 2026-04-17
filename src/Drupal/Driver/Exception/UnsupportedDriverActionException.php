@@ -23,7 +23,7 @@ class UnsupportedDriverActionException extends Exception {
    * @param \Exception $previous
    *   Previous exception.
    */
-  public function __construct($template, DriverInterface $driver, $code = 0, ?\Exception $previous = NULL) {
+  public function __construct(string $template, DriverInterface $driver, int $code = 0, ?\Exception $previous = NULL) {
     $message = sprintf($template, $driver::class);
 
     parent::__construct($message, $driver, $code, $previous);

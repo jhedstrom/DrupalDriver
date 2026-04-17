@@ -18,10 +18,8 @@ class Drupal8Test extends TestCase {
 
   /**
    * The original REQUEST_TIME value.
-   *
-   * @var int
    */
-  protected $originalRequestTime;
+  protected int $originalRequestTime;
 
   /**
    * {@inheritdoc}

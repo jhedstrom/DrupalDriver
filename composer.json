@@ -36,9 +36,11 @@
         "drupal/mailsystem": "^4.4 || 4.x-dev",
         "drush-ops/behat-drush-endpoint": "*",
         "ergebnis/composer-normalize": "^2.50",
+        "mglaman/phpstan-drupal": "^2.0",
         "mockery/mockery": "^1.5",
         "php-parallel-lint/php-parallel-lint": "^1.0",
         "phpspec/phpspec": "^7.5 || dev-main",
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^9.6 || ^10 || ^11",
         "rector/rector": "^2.0",
         "symfony/phpunit-bridge": "^6.4 || ^7",
@@ -91,6 +93,7 @@
         "lint": [
             "XDEBUG_MODE=off parallel-lint src spec tests",
             "XDEBUG_MODE=off phpcs",
+            "XDEBUG_MODE=off phpstan",
             "XDEBUG_MODE=off rector process --dry-run"
         ],
         "lint-fix": [

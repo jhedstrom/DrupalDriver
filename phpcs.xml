@@ -42,4 +42,16 @@
         <exclude-pattern>*/spec/*</exclude-pattern>
     </rule>
 
+    <!-- Enforce native PHP type declarations on parameters, returns and
+         properties (auto-fixable when types exist in docblocks). -->
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
+        <exclude-pattern>*/spec/*</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
+        <exclude-pattern>*/spec/*</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
+        <exclude-pattern>*/spec/*</exclude-pattern>
+    </rule>
+
 </ruleset>
