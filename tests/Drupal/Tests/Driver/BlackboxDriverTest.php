@@ -4,14 +4,36 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver;
 
+use Drupal\Component\Utility\Random;
 use Drupal\Driver\BlackboxDriver;
-use Drupal\Driver\Exception\UnsupportedDriverActionException;
+use Drupal\Driver\BlackboxDriverInterface;
+use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
+use Drupal\Driver\Capability\CacheCapabilityInterface;
+use Drupal\Driver\Capability\ConfigCapabilityInterface;
+use Drupal\Driver\Capability\ContentCapabilityInterface;
+use Drupal\Driver\Capability\FieldCapabilityInterface;
+use Drupal\Driver\Capability\LanguageCapabilityInterface;
+use Drupal\Driver\Capability\MailCapabilityInterface;
+use Drupal\Driver\Capability\ModuleCapabilityInterface;
+use Drupal\Driver\Capability\RoleCapabilityInterface;
+use Drupal\Driver\Capability\UserCapabilityInterface;
+use Drupal\Driver\Capability\WatchdogCapabilityInterface;
+use Drupal\Driver\DriverInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the BlackboxDriver (and by extension BaseDriver).
+ * Tests BlackboxDriver's interface and capability surface.
  */
 class BlackboxDriverTest extends TestCase {
+
+  /**
+   * Tests that BlackboxDriver satisfies its declared interfaces.
+   */
+  public function testImplementsExpectedInterfaces(): void {
+    $driver = new BlackboxDriver();
+    $this->assertInstanceOf(BlackboxDriverInterface::class, $driver);
+    $this->assertInstanceOf(DriverInterface::class, $driver);
+  }
 
   /**
    * Tests that BlackboxDriver considers itself bootstrapped.
@@ -31,75 +53,53 @@ class BlackboxDriverTest extends TestCase {
   }
 
   /**
-   * Tests that isField() always returns FALSE in the blackbox driver.
+   * Tests that getRandom() returns a usable generator.
    */
-  public function testIsFieldReturnsFalse(): void {
+  public function testGetRandomReturnsInstance(): void {
     $driver = new BlackboxDriver();
-    $this->assertFalse($driver->isField('node', 'field_body'));
+    $this->assertInstanceOf(Random::class, $driver->getRandom());
   }
 
   /**
-   * Tests that isBaseField() always returns FALSE in the blackbox driver.
+   * Tests that an injected random generator is returned as-is.
    */
-  public function testIsBaseFieldReturnsFalse(): void {
-    $driver = new BlackboxDriver();
-    $this->assertFalse($driver->isBaseField('node', 'title'));
+  public function testGetRandomReturnsInjectedInstance(): void {
+    $random = new Random();
+    $driver = new BlackboxDriver($random);
+    $this->assertSame($random, $driver->getRandom());
   }
 
   /**
-   * Tests that unsupported driver actions throw the expected exception.
+   * Tests that BlackboxDriver does not claim unsupported capabilities.
    *
-   * @param string $method
-   *   The BaseDriver method name to invoke.
-   * @param array<int, mixed> $args
-   *   Positional arguments to pass to the method.
-   * @param string $message_fragment
-   *   A substring that must appear in the exception message.
+   * @param string $capability_class
+   *   The fully qualified capability interface name.
    *
-   * @dataProvider dataProviderUnsupportedActionsThrow
+   * @dataProvider dataProviderCapabilitiesNotSupported
    */
-  public function testUnsupportedActionsThrow(string $method, array $args, string $message_fragment): void {
+  public function testDoesNotImplementCapability(string $capability_class): void {
     $driver = new BlackboxDriver();
-
-    $this->expectException(UnsupportedDriverActionException::class);
-    $this->expectExceptionMessageMatches('/' . preg_quote($message_fragment, '/') . '/');
-
-    $driver->$method(...$args);
+    $this->assertNotInstanceOf($capability_class, $driver, sprintf(
+      'BlackboxDriver must not claim to implement %s.',
+      $capability_class
+    ));
   }
 
   /**
-   * Data provider listing every BaseDriver method that must be unsupported.
+   * Data provider listing every capability BlackboxDriver must not declare.
    */
-  public static function dataProviderUnsupportedActionsThrow(): \Iterator {
-    $user = new \stdClass();
-    $term = new \stdClass();
-    $entity = new \stdClass();
-    yield 'getRandom' => ['getRandom', [], 'generate random'];
-    yield 'userCreate' => ['userCreate', [$user], 'create users'];
-    yield 'userDelete' => ['userDelete', [$user], 'delete users'];
-    yield 'processBatch' => ['processBatch', [], 'process batch actions'];
-    yield 'userAddRole' => ['userAddRole', [$user, 'editor'], 'add roles'];
-    yield 'fetchWatchdog' => ['fetchWatchdog', [], 'access watchdog entries'];
-    yield 'clearCache' => ['clearCache', [], 'clear Drupal caches'];
-    yield 'clearStaticCaches' => ['clearStaticCaches', [], 'clear static caches'];
-    yield 'createNode' => ['createNode', [new \stdClass()], 'create nodes'];
-    yield 'nodeDelete' => ['nodeDelete', [new \stdClass()], 'delete nodes'];
-    yield 'runCron' => ['runCron', [], 'run cron'];
-    yield 'createTerm' => ['createTerm', [$term], 'create terms'];
-    yield 'termDelete' => ['termDelete', [$term], 'delete terms'];
-    yield 'roleCreate' => ['roleCreate', [[]], 'create roles'];
-    yield 'roleDelete' => ['roleDelete', ['editor'], 'delete roles'];
-    yield 'configGet' => ['configGet', ['system.site', 'name'], 'config get'];
-    yield 'configSet' => ['configSet', ['system.site', 'name', 'v'], 'config set'];
-    yield 'createEntity' => ['createEntity', ['node', $entity], 'create entities using the generic Entity API'];
-    yield 'entityDelete' => ['entityDelete', ['node', $entity], 'delete entities using the generic Entity API'];
-    yield 'startCollectingMail' => ['startCollectingMail', [], 'work with mail'];
-    yield 'stopCollectingMail' => ['stopCollectingMail', [], 'work with mail'];
-    yield 'getMail' => ['getMail', [], 'work with mail'];
-    yield 'clearMail' => ['clearMail', [], 'work with mail'];
-    yield 'sendMail' => ['sendMail', ['body', 'subject', 'to', 'en'], 'work with mail'];
-    yield 'moduleInstall' => ['moduleInstall', ['node'], 'install modules'];
-    yield 'moduleUninstall' => ['moduleUninstall', ['node'], 'uninstall modules'];
+  public static function dataProviderCapabilitiesNotSupported(): \Iterator {
+    yield 'authentication' => [AuthenticationCapabilityInterface::class];
+    yield 'cache' => [CacheCapabilityInterface::class];
+    yield 'config' => [ConfigCapabilityInterface::class];
+    yield 'content' => [ContentCapabilityInterface::class];
+    yield 'field' => [FieldCapabilityInterface::class];
+    yield 'language' => [LanguageCapabilityInterface::class];
+    yield 'mail' => [MailCapabilityInterface::class];
+    yield 'module' => [ModuleCapabilityInterface::class];
+    yield 'role' => [RoleCapabilityInterface::class];
+    yield 'user' => [UserCapabilityInterface::class];
+    yield 'watchdog' => [WatchdogCapabilityInterface::class];
   }
 
 }
