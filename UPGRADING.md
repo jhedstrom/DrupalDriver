@@ -29,6 +29,17 @@ DrupalExtension integrations) may need updating.
   `Drupal\Driver\Capability\AuthenticationCapabilityInterface`.
 - `Drupal\Driver\Core\CoreAuthenticationInterface` - replaced by the same
   capability interface.
+- `Drupal\Driver\Core\AbstractCore` - merged into `Core`. Custom cores should
+  extend `Core` directly and override the methods they need.
+
+### CoreInterface expanded
+
+`Drupal\Driver\Core\CoreInterface` now extends every capability interface in
+addition to declaring its bootstrap internals (`validateDrupalSite`,
+`getModuleList`, `getExtensionPathList`, `getFieldHandler`,
+`getEntityFieldTypes`, `processBatch`). `DrupalDriver::getCore()` still
+returns `CoreInterface` - you get the full capability surface from the same
+type hint.
 
 ### Renamed driver methods
 
