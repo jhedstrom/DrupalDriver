@@ -141,7 +141,10 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
         $this->assertEquals($expected, $actual, sprintf('Field "%s" delta %d did not round-trip.', $field_name, $delta));
       }
       else {
-        $this->assertSame($expected, $item->value, sprintf('Field "%s" delta %d did not round-trip.', $field_name, $delta));
+        // Value-equivalent rather than strict: integer/float field columns are
+        // often returned as strings by SQLite-backed storage, but we care that
+        // the round-trip preserves the value, not the storage artefact.
+        $this->assertEquals($expected, $item->value, sprintf('Field "%s" delta %d did not round-trip.', $field_name, $delta));
       }
     }
   }
