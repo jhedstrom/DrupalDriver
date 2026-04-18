@@ -107,7 +107,7 @@ jobs:
           coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
 
       - name: Add Drupal core dependency
-        run: composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
+        run: composer require --no-interaction --dev --no-update drupal/core:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION} drupal/core-recommended:^${DRUPAL_VERSION} drupal/core-dev:^${DRUPAL_VERSION}
 
       - name: Install Composer dependencies
         run: |
