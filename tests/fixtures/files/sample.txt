@@ -1,0 +1,1 @@
+Sample file content for FileHandler kernel test fixtures.
