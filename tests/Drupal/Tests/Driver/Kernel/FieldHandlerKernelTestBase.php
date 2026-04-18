@@ -141,10 +141,14 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
         $this->assertEquals($expected, $actual, sprintf('Field "%s" delta %d did not round-trip.', $field_name, $delta));
       }
       else {
-        // Value-equivalent rather than strict: integer/float field columns are
-        // often returned as strings by SQLite-backed storage, but we care that
-        // the round-trip preserves the value, not the storage artefact.
-        $this->assertEquals($expected, $item->value, sprintf('Field "%s" delta %d did not round-trip.', $field_name, $delta));
+        // Scalar path: compare against the field's main column. Most fields
+        // use 'value', but entity_reference uses 'target_id' and other types
+        // may use a different key. Prefer 'value' if present, else fall back
+        // to the first property returned by getValue(). Loose equality is
+        // intentional: SQLite returns integer/float columns as strings.
+        $raw = $item->getValue();
+        $actual = $raw['value'] ?? reset($raw);
+        $this->assertEquals($expected, $actual, sprintf('Field "%s" delta %d did not round-trip.', $field_name, $delta));
       }
     }
   }
