@@ -24,7 +24,7 @@ use Drupal\user\Entity\User;
 class CoreUserMethodsKernelTest extends KernelTestBase {
 
   /**
-   * Modules to enable.
+   * {@inheritdoc}
    *
    * @var array<string>
    */

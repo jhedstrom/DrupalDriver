@@ -111,7 +111,6 @@
             "phpcbf"
         ],
         "test": "phpunit --no-coverage",
-        "test-kernel": "phpunit --configuration phpunit.kernel.xml.dist --no-coverage",
         "test-coverage": "php -d pcov.enabled=1 -d pcov.directory=./src/Drupal vendor/bin/phpunit"
     }
 }

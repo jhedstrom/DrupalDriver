@@ -55,7 +55,7 @@ class ImageHandlerKernelTest extends FieldHandlerKernelTestBase {
     // ImageHandler takes [$path] or [$path, 'alt' => ..., 'title' => ...].
     // The alt/title keys come in as associative keys beside the numeric path.
     $this->assertFieldRoundTripViaDriver('field_photo', [
-      $fixture,
+      0 => $fixture,
       'alt' => 'A red pixel.',
       'title' => 'Sample photo.',
     ]);

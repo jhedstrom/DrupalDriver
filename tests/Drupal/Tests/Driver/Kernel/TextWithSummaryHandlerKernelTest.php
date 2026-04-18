@@ -9,7 +9,7 @@ use Drupal\filter\Entity\FilterFormat;
 /**
  * Kernel round-trip test for TextWithSummaryHandler via the Core driver.
  *
- * text_with_summary is a multi-property field (value, summary, format). The
+ * The text_with_summary field is multi-property (value, summary, format). The
  * handler is a passthrough, so this test verifies the multi-property payload
  * reaches storage intact via the driver's lookup + expand chain.
  */

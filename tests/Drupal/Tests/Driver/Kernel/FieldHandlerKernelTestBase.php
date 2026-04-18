@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Driver\Core\Core;
+use Drupal\entity_test\EntityTestHelper;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase;
@@ -66,7 +68,7 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
     $this->installConfig(['system']);
 
     // entity_test does not auto-register a default bundle in kernel tests.
-    entity_test_create_bundle(self::BUNDLE);
+    EntityTestHelper::createBundle(self::BUNDLE);
 
     // Core::bootstrap() is NOT called: KernelTestBase has already booted the
     // kernel. We only need a Core instance to call the driver API methods on.
@@ -131,6 +133,7 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
     $reloaded = \Drupal::entityTypeManager()
       ->getStorage(self::ENTITY_TYPE)
       ->loadUnchanged($stub->id);
+    $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
 
     // Some handlers (e.g. ImageHandler) emit a flat associative array as
     // single-delta shorthand rather than a list of deltas. Normalise that

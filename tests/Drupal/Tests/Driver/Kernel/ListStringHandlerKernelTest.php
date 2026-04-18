@@ -7,8 +7,8 @@ namespace Drupal\Tests\Driver\Kernel;
 /**
  * Kernel round-trip test for list_string fields via the Core driver.
  *
- * list_string is single-property but its handler translates human-readable
- * labels to the machine keys declared in the field's allowed_values storage
+ * The list_string field is single-property but its handler translates labels
+ * to the machine keys declared in the field's allowed_values storage
  * setting. This test exercises that translation end-to-end: the driver
  * receives a label, the handler swaps it for the key, storage accepts the
  * key, and the round-trip returns the key unchanged.

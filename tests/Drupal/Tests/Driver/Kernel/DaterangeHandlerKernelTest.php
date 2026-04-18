@@ -30,8 +30,8 @@ class DaterangeHandlerKernelTest extends FieldHandlerKernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    // See DatetimeHandlerKernelTest - handler reads system.date:timezone.default
-    // unconditionally; pinning UTC keeps the round-trip deterministic.
+    // See DatetimeHandlerKernelTest - handler reads
+    // system.date:timezone.default unconditionally; pin UTC for determinism.
     $this->config('system.date')->set('timezone.default', 'UTC')->save();
   }
 
