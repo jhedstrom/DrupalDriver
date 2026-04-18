@@ -28,11 +28,7 @@ class AddressHandlerKernelTest extends FieldHandlerKernelTestBase {
    * Tests round-trip for an address field with associative input.
    */
   public function testAddressAssociativeRoundTrip(): void {
-    $this->attachField('field_address', 'address', [], [
-      'available_countries' => ['US'],
-      'field_overrides' => [],
-      'langcode_override' => '',
-    ]);
+    $this->attachAddressField();
 
     $this->assertFieldRoundTripViaDriver('field_address', [
       [
@@ -44,6 +40,43 @@ class AddressHandlerKernelTest extends FieldHandlerKernelTestBase {
         'postal_code' => '95014',
         'country_code' => 'US',
       ],
+    ]);
+  }
+
+  /**
+   * Tests numeric-indexed input with country_code defaulted from field config.
+   *
+   * Exercises AddressHandler's positional-to-keyed normalisation and its
+   * fallback where an omitted country_code falls back to the first entry in
+   * the field's available_countries list.
+   */
+  public function testAddressNumericInputFallsBackToAvailableCountry(): void {
+    $this->attachAddressField();
+
+    $this->assertFieldRoundTripViaDriver('field_address', [
+      [
+        'Jane',
+        NULL,
+        'Doe',
+        NULL,
+        '1 Infinite Loop',
+        NULL,
+        '95014',
+        NULL,
+        'Cupertino',
+        'CA',
+      ],
+    ]);
+  }
+
+  /**
+   * Attaches the test address field with a single available country (US).
+   */
+  protected function attachAddressField(): void {
+    $this->attachField('field_address', 'address', [], [
+      'available_countries' => ['US'],
+      'field_overrides' => [],
+      'langcode_override' => '',
     ]);
   }
 

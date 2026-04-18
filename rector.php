@@ -35,6 +35,9 @@ use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 
 $drupalRoot = (new DrupalFinderComposerRuntime())->getDrupalRoot();
+if (!$drupalRoot || !is_dir($drupalRoot . '/core')) {
+    throw new \RuntimeException('Unable to locate Drupal root via DrupalFinderComposerRuntime; ensure drupal/core is installed.');
+}
 
 return RectorConfig::configure()
     ->withPaths([

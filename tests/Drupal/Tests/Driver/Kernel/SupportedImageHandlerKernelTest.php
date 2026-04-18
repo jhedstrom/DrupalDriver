@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel;
 
+use Drupal\filter\Entity\FilterFormat;
+
 /**
  * Kernel round-trip test for SupportedImageHandler via the Core driver.
  *
@@ -41,6 +43,10 @@ class SupportedImageHandlerKernelTest extends FieldHandlerKernelTestBase {
       mkdir($public_path, 0777, TRUE);
     }
     $this->setSetting('file_public_path', $public_path);
+
+    // caption_format/attribution_format reference a filter format id; define a
+    // plain_text format so the round-trip values validate.
+    FilterFormat::create(['format' => 'plain_text', 'name' => 'Plain text'])->save();
   }
 
   /**
@@ -56,6 +62,10 @@ class SupportedImageHandlerKernelTest extends FieldHandlerKernelTestBase {
         'target_id' => $fixture,
         'alt' => 'Hero alt.',
         'title' => 'Hero title.',
+        'caption_value' => 'A caption body.',
+        'caption_format' => 'plain_text',
+        'attribution_value' => 'Photo credit.',
+        'attribution_format' => 'plain_text',
       ],
     ]);
   }

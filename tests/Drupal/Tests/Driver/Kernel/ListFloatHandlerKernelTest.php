@@ -23,15 +23,18 @@ class ListFloatHandlerKernelTest extends FieldHandlerKernelTestBase {
    * Tests that a label is translated to its float key on round-trip.
    */
   public function testLabelToFloatKeyRoundTrip(): void {
+    // Use fractional-only keys so the stored value actually exercises float
+    // handling; keys like '1.0' normalise to integer '1' on storage and would
+    // not distinguish list_float from list_integer.
     $this->attachField('field_rating', 'list_float', [
       'allowed_values' => [
         '0.5' => 'Half',
-        '1.0' => 'One',
         '1.5' => 'One and a half',
+        '2.5' => 'Two and a half',
       ],
     ]);
 
-    $this->assertFieldRoundTripViaDriver('field_rating', ['One']);
+    $this->assertFieldRoundTripViaDriver('field_rating', ['Half']);
   }
 
 }
