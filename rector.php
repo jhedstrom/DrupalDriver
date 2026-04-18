@@ -4,12 +4,14 @@
  * @file
  * Rector configuration.
  *
- * Usage:
- * ./vendor/bin/rector process .
+ * @see https://github.com/palantirnet/drupal-rector
+ * @see https://getrector.com/documentation
  */
 
 declare(strict_types=1);
 
+use DrupalFinder\DrupalFinderComposerRuntime;
+use DrupalRector\Set\Drupal10SetList;
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\ClassMethod\InlineArrayReturnAssignRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
@@ -32,10 +34,16 @@ use Rector\PHPUnit\CodeQuality\Rector\Class_\YieldDataProviderRector;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 
+$drupalRoot = (new DrupalFinderComposerRuntime())->getDrupalRoot();
+
 return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/src/**',
         __DIR__ . '/tests/**',
+    ])
+    ->withAutoloadPaths([
+        $drupalRoot . '/core',
+        $drupalRoot . '/modules',
     ])
     ->withPhpSets(php82: TRUE)
     ->withPreparedSets(
@@ -47,6 +55,9 @@ return RectorConfig::configure()
         instanceOf: TRUE,
         earlyReturn: TRUE,
     )
+    ->withSets([
+        Drupal10SetList::DRUPAL_10,
+    ])
     ->withRules([
         DeclareStrictTypesRector::class,
         YieldDataProviderRector::class,

@@ -47,7 +47,8 @@
         "drupal/address": "^2",
         "drupal/name": "^1",
         "drupal/supported_image": "^1",
-        "drupal/time_field": "^2.2"
+        "drupal/time_field": "^2.2",
+        "palantirnet/drupal-rector": "^0.21.1"
     },
     "repositories": {
         "drupal": {
