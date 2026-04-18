@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel;
 
+use Drupal\entity_test\Entity\EntityTest;
+
 /**
  * Kernel round-trip test for list_string fields via the Core driver.
  *
@@ -40,6 +42,18 @@ class ListStringHandlerKernelTest extends FieldHandlerKernelTestBase {
     // After the driver mutates the stub, the assertion sees the key and
     // compares it against what storage returned.
     $this->assertFieldRoundTripViaDriver('field_status', ['Active']);
+
+    // Pin the translation explicitly so a regression where the handler stops
+    // converting labels to keys is caught even though the mutated-stub
+    // round-trip would otherwise pass.
+    $stub = (object) [
+      'type' => 'entity_test',
+      'name' => 'pinned',
+      'field_status' => ['Active'],
+    ];
+    $this->core->entityCreate('entity_test', $stub);
+    $reloaded = EntityTest::load($stub->id);
+    $this->assertSame('active', $reloaded->get('field_status')->value);
   }
 
   /**

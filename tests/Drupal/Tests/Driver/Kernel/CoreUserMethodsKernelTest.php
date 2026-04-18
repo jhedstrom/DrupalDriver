@@ -79,11 +79,14 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
     $this->assertSame(1, (int) $account->get('status')->value);
 
     // 2. roleCreate returns a new role id and stores the granted permissions.
-    $role_id = $this->core->roleCreate(['access content']);
+    // 'access user profiles' is provided by the user module enabled here, so
+    // checkPermissions() can validate it in isolation without pulling in node.
+    $permission = 'access user profiles';
+    $role_id = $this->core->roleCreate([$permission]);
     $this->assertIsString($role_id);
     $role = Role::load($role_id);
     $this->assertInstanceOf(Role::class, $role);
-    $this->assertTrue($role->hasPermission('access content'));
+    $this->assertTrue($role->hasPermission($permission));
 
     // 3. userAddRole attaches the role to the user.
     $this->core->userAddRole($user_data, $role_id);

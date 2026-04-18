@@ -149,8 +149,17 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
       ? [$stub->$field_name]
       : $stub->$field_name;
 
+    // Assert the stored delta count matches the stub so a handler that
+    // duplicates or appends deltas cannot slip through the per-delta loop.
+    $field_items = $reloaded->get($field_name);
+    $this->assertCount(
+      count($deltas),
+      $field_items,
+      sprintf('Field "%s" stored an unexpected number of deltas.', $field_name),
+    );
+
     foreach ($deltas as $delta => $expected) {
-      $item = $reloaded->get($field_name)->get($delta);
+      $item = $field_items->get($delta);
       $this->assertNotNull($item, sprintf('Field "%s" is missing delta %d.', $field_name, $delta));
 
       if (is_array($expected)) {
