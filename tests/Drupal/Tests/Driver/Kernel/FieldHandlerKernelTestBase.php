@@ -68,7 +68,14 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
     $this->installConfig(['system']);
 
     // entity_test does not auto-register a default bundle in kernel tests.
-    EntityTestHelper::createBundle(self::BUNDLE);
+    // Drupal 11.2+ provides EntityTestHelper::createBundle() and deprecates
+    // the legacy procedural helper; older cores only have the function.
+    if (class_exists(EntityTestHelper::class)) {
+      EntityTestHelper::createBundle(self::BUNDLE);
+    }
+    else {
+      entity_test_create_bundle(self::BUNDLE);
+    }
 
     // Core::bootstrap() is NOT called: KernelTestBase has already booted the
     // kernel. We only need a Core instance to call the driver API methods on.
