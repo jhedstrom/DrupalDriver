@@ -35,7 +35,7 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
    *
    * @var array<string>
    */
-  protected const array BASE_MODULES = [
+  protected const BASE_MODULES = [
     'system',
     'field',
     'entity_test',
@@ -45,12 +45,12 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
   /**
    * The entity type used to host test fields.
    */
-  protected const string ENTITY_TYPE = 'entity_test';
+  protected const ENTITY_TYPE = 'entity_test';
 
   /**
    * The bundle used to host test fields.
    */
-  protected const string BUNDLE = 'entity_test';
+  protected const BUNDLE = 'entity_test';
 
   /**
    * The driver under test.
