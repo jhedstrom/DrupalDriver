@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
 use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core\CoreInterface;
-use Drupal\Driver\Core\CoreAuthenticationInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
  * Fully bootstraps Drupal and uses native API calls.
  */
-class DrupalDriver implements DriverInterface, SubDriverFinderInterface, AuthenticationDriverInterface {
+class DrupalDriver implements DrupalDriverInterface {
 
   /**
    * Track whether Drupal has been bootstrapped.
@@ -79,7 +79,6 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
    * {@inheritdoc}
    */
   public function isBootstrapped(): bool {
-    // Assume the blackbox is always bootstrapped.
     return $this->bootstrapped;
   }
 
@@ -107,22 +106,22 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role_name): void {
-    $this->getCore()->userAddRole($user, $role_name);
+  public function userAddRole(\stdClass $user, string $role): void {
+    $this->getCore()->userAddRole($user, $role);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL): never {
-    throw new \RuntimeException(sprintf('Currently no ability to access watchdog entries in %s', $this));
+  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+    return $this->getCore()->fetchWatchdog($count, $type, $severity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearCache($type = NULL): void {
-    $this->getCore()->clearCache();
+  public function clearCache(?string $type = NULL): void {
+    $this->getCore()->clearCache($type);
   }
 
   /**
@@ -250,14 +249,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function createNode($node): object {
+  public function nodeCreate(\stdClass $node): object {
     return $this->getCore()->nodeCreate($node);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node): void {
+  public function nodeDelete(object $node): void {
     $this->getCore()->nodeDelete($node);
   }
 
@@ -271,42 +270,42 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function createTerm(\stdClass $term): object {
+  public function termCreate(\stdClass $term): object {
     return $this->getCore()->termCreate($term);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term): bool {
+  public function termDelete(object $term): bool {
     return $this->getCore()->termDelete($term);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): string {
+  public function roleCreate(array $permissions): int|string {
     return $this->getCore()->roleCreate($permissions);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function roleDelete($rid): void {
-    $this->getCore()->roleDelete($rid);
+  public function roleDelete(string $role_name): void {
+    $this->getCore()->roleDelete($role_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name): bool {
+  public function isField(string $entity_type, string $field_name): bool {
     return $this->getCore()->isField($entity_type, $field_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isBaseField($entity_type, $field_name): bool {
+  public function isBaseField(string $entity_type, string $field_name): bool {
     return $this->getCore()->isBaseField($entity_type, $field_name);
   }
 
@@ -327,14 +326,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function configGet($name, $key): mixed {
+  public function configGet(string $name, string $key = ''): mixed {
     return $this->getCore()->configGet($name, $key);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configSet($name, $key, $value): void {
+  public function configGetOriginal(string $name, string $key = ''): mixed {
+    return $this->getCore()->configGetOriginal($name, $key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet(string $name, string $key, mixed $value): void {
     $this->getCore()->configSet($name, $key, $value);
   }
 
@@ -348,14 +354,14 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function createEntity($entity_type, \stdClass $entity): object {
+  public function entityCreate(string $entity_type, \stdClass $entity): object {
     return $this->getCore()->entityCreate($entity_type, $entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, \stdClass $entity): void {
+  public function entityDelete(string $entity_type, object $entity): void {
     $this->getCore()->entityDelete($entity_type, $entity);
   }
 
@@ -390,21 +396,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   /**
    * {@inheritdoc}
    */
-  public function sendMail($body, $subject, $to, $langcode): bool {
+  public function sendMail(string $body, string $subject, string $to, string $langcode): bool {
     return $this->getCore()->sendMail($body, $subject, $to, $langcode);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name): void {
+  public function moduleInstall(string $module_name): void {
     $this->getCore()->moduleInstall($module_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name): void {
+  public function moduleUninstall(string $module_name): void {
     $this->getCore()->moduleUninstall($module_name);
   }
 
@@ -414,7 +420,7 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   public function login(\stdClass $user): void {
     $auth = $this->getAuthCore();
 
-    if ($auth instanceof CoreAuthenticationInterface) {
+    if ($auth instanceof AuthenticationCapabilityInterface) {
       $auth->login($user);
     }
   }
@@ -425,21 +431,21 @@ class DrupalDriver implements DriverInterface, SubDriverFinderInterface, Authent
   public function logout(): void {
     $auth = $this->getAuthCore();
 
-    if ($auth instanceof CoreAuthenticationInterface) {
+    if ($auth instanceof AuthenticationCapabilityInterface) {
       $auth->logout();
     }
   }
 
   /**
-   * Returns the core as an authentication driver, or NULL if unsupported.
+   * Returns the core as an authentication-capable object, or NULL.
    *
-   * @return \Drupal\Driver\Core\CoreAuthenticationInterface|null
-   *   The authentication-capable core, or NULL.
+   * @return \Drupal\Driver\Capability\AuthenticationCapabilityInterface|null
+   *   The authentication-capable core, or NULL if unsupported.
    */
-  protected function getAuthCore(): ?CoreAuthenticationInterface {
+  protected function getAuthCore(): ?AuthenticationCapabilityInterface {
     $core = $this->getCore();
 
-    return $core instanceof CoreAuthenticationInterface ? $core : NULL;
+    return $core instanceof AuthenticationCapabilityInterface ? $core : NULL;
   }
 
 }
