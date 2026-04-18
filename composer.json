@@ -44,7 +44,8 @@
         "rector/rector": "^2.0",
         "symfony/phpunit-bridge": "^6.4 || ^7",
         "webmozart/assert": "^2.3",
-        "drupal/address": "^2"
+        "drupal/address": "^2",
+        "drupal/name": "^1"
     },
     "repositories": {
         "drupal": {
