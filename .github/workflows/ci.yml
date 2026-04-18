@@ -111,7 +111,7 @@ jobs:
 
       - name: Pin Drupal 10 tooling
         if: ${{ matrix.drupal_version == '10' }}
-        run: composer require --no-interaction --dev --no-update mglaman/phpstan-drupal:^1.1.25 phpstan/phpstan:^1.10 phpunit/phpunit:^9.6
+        run: composer require --no-interaction --dev --no-update mglaman/phpstan-drupal:^1.1.25 phpstan/phpstan:^1.10 phpunit/phpunit:^9.6 rector/rector:^1
 
       - name: Install Composer dependencies
         run: |
