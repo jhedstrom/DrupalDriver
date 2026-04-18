@@ -45,6 +45,9 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
     parent::setUp();
 
     $this->installEntitySchema('user');
+    // users_data is used by user_cancel's batch callback; required for
+    // synchronous userDelete to complete without hitting a missing table.
+    $this->installSchema('user', ['users_data']);
     $this->installConfig(['user']);
 
     // Core's bootstrap() is NOT called - KernelTestBase has already booted the
@@ -87,9 +90,13 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
     $account = User::load($user_data->uid);
     $this->assertContains($role_id, $account->getRoles());
 
-    // userDelete uses user_cancel() which schedules deletion via batch; batches
-    // do not run automatically in kernel tests. Covering that path needs an
-    // explicit batch_process() call and is kept for a later dedicated test.
+    // 4. userDelete removes the user (processes the batch synchronously).
+    $this->core->userDelete($user_data);
+    $this->assertNull(\Drupal::entityTypeManager()->getStorage('user')->loadUnchanged($user_data->uid));
+
+    // 5. roleDelete removes the role.
+    $this->core->roleDelete($role_id);
+    $this->assertNull(Role::load($role_id));
   }
 
   /**

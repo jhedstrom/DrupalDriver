@@ -26,16 +26,6 @@ class DaterangeHandlerKernelTest extends FieldHandlerKernelTestBase {
   ];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    // See DatetimeHandlerKernelTest - handler reads
-    // system.date:timezone.default unconditionally; pin UTC for determinism.
-    $this->config('system.date')->set('timezone.default', 'UTC')->save();
-  }
-
-  /**
    * Tests round-trip for a daterange field with start and end datetimes.
    */
   public function testDaterangeRoundTrip(): void {

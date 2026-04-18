@@ -193,7 +193,6 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function processBatch(): void {
-    $this->validateDrupalSite();
     if ($batch =& batch_get()) {
       $batch['progressive'] = FALSE;
       batch_process();
@@ -257,6 +256,9 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function userDelete(\stdClass $user): void {
     user_cancel([], $user->uid, 'user_cancel_delete');
+    // user_cancel() schedules the deletion via batch; drive the batch to
+    // completion so callers see synchronous deletion.
+    $this->processBatch();
   }
 
   /**

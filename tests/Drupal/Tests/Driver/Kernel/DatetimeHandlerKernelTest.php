@@ -27,19 +27,6 @@ class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
   ];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // DatetimeHandler reads system.date:timezone.default unconditionally; the
-    // freshly-installed system config leaves this NULL, which blows up new
-    // DateTimeZone(). Pin it here so every round-trip has a deterministic
-    // site timezone. UTC avoids the need for any timezone math.
-    $this->config('system.date')->set('timezone.default', 'UTC')->save();
-  }
-
-  /**
    * Tests round-trip for a datetime field (with time component).
    */
   public function testDatetimeRoundTrip(): void {
