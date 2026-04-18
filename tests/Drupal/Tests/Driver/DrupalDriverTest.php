@@ -44,7 +44,7 @@ class DrupalDriverTest extends TestCase {
    * @param string $capability_class
    *   The capability interface name.
    *
-   * @dataProvider dataProviderAllCapabilities
+   * @dataProvider dataProviderImplementsCapability
    */
   public function testImplementsCapability(string $capability_class): void {
     $this->assertTrue(is_subclass_of(DrupalDriver::class, $capability_class), sprintf(
@@ -56,7 +56,7 @@ class DrupalDriverTest extends TestCase {
   /**
    * Data provider listing every capability the Drupal driver must support.
    */
-  public static function dataProviderAllCapabilities(): \Iterator {
+  public static function dataProviderImplementsCapability(): \Iterator {
     yield 'authentication' => [AuthenticationCapabilityInterface::class];
     yield 'cache' => [CacheCapabilityInterface::class];
     yield 'config' => [ConfigCapabilityInterface::class];

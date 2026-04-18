@@ -7,17 +7,6 @@ namespace Drupal\Driver\Core;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
-use Drupal\Driver\Capability\CacheCapabilityInterface;
-use Drupal\Driver\Capability\ConfigCapabilityInterface;
-use Drupal\Driver\Capability\ContentCapabilityInterface;
-use Drupal\Driver\Capability\FieldCapabilityInterface;
-use Drupal\Driver\Capability\LanguageCapabilityInterface;
-use Drupal\Driver\Capability\MailCapabilityInterface;
-use Drupal\Driver\Capability\ModuleCapabilityInterface;
-use Drupal\Driver\Capability\RoleCapabilityInterface;
-use Drupal\Driver\Capability\UserCapabilityInterface;
-use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Exception\BootstrapException;
@@ -38,19 +27,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Default Drupal core implementation.
  */
-class Core implements
-  CoreInterface,
-  AuthenticationCapabilityInterface,
-  CacheCapabilityInterface,
-  ConfigCapabilityInterface,
-  ContentCapabilityInterface,
-  FieldCapabilityInterface,
-  LanguageCapabilityInterface,
-  MailCapabilityInterface,
-  ModuleCapabilityInterface,
-  RoleCapabilityInterface,
-  UserCapabilityInterface,
-  WatchdogCapabilityInterface {
+class Core implements CoreInterface {
 
   /**
    * System path to the Drupal installation.
@@ -466,7 +443,7 @@ class Core implements
       ->condition($conditions)
       ->execute();
     if (!$rids) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
+      throw new \RuntimeException(sprintf('No role "%s" exists.', $role));
     }
 
     $account = User::load($user->uid);

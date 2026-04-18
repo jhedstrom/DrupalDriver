@@ -75,7 +75,7 @@ class BlackboxDriverTest extends TestCase {
    * @param string $capability_class
    *   The fully qualified capability interface name.
    *
-   * @dataProvider dataProviderCapabilitiesNotSupported
+   * @dataProvider dataProviderDoesNotImplementCapability
    */
   public function testDoesNotImplementCapability(string $capability_class): void {
     $driver = new BlackboxDriver();
@@ -88,7 +88,7 @@ class BlackboxDriverTest extends TestCase {
   /**
    * Data provider listing every capability BlackboxDriver must not declare.
    */
-  public static function dataProviderCapabilitiesNotSupported(): \Iterator {
+  public static function dataProviderDoesNotImplementCapability(): \Iterator {
     yield 'authentication' => [AuthenticationCapabilityInterface::class];
     yield 'cache' => [CacheCapabilityInterface::class];
     yield 'config' => [ConfigCapabilityInterface::class];

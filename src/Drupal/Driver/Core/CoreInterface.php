@@ -4,18 +4,39 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Core;
 
-use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Component\Utility\Random;
+use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
+use Drupal\Driver\Capability\CacheCapabilityInterface;
+use Drupal\Driver\Capability\ConfigCapabilityInterface;
+use Drupal\Driver\Capability\ContentCapabilityInterface;
+use Drupal\Driver\Capability\FieldCapabilityInterface;
+use Drupal\Driver\Capability\LanguageCapabilityInterface;
+use Drupal\Driver\Capability\MailCapabilityInterface;
+use Drupal\Driver\Capability\ModuleCapabilityInterface;
+use Drupal\Driver\Capability\RoleCapabilityInterface;
+use Drupal\Driver\Capability\UserCapabilityInterface;
+use Drupal\Driver\Capability\WatchdogCapabilityInterface;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 
 /**
- * Drupal-bootstrap contract.
+ * Contract for a Drupal-backed core implementation.
  *
- * Covers the internals of bringing a Drupal site online and introspecting its
- * module and field configuration. Operational capabilities (users, content,
- * config, mail, and so on) live in the 'Drupal\Driver\Capability' namespace
- * and are implemented alongside this interface by the 'Core' class.
+ * Combines the Drupal-bootstrap internals (validate, module list, field
+ * handler, and so on) with every operational capability. Used by
+ * 'DrupalDriver' as the shared delegation target.
  */
-interface CoreInterface {
+interface CoreInterface extends
+  AuthenticationCapabilityInterface,
+  CacheCapabilityInterface,
+  ConfigCapabilityInterface,
+  ContentCapabilityInterface,
+  FieldCapabilityInterface,
+  LanguageCapabilityInterface,
+  MailCapabilityInterface,
+  ModuleCapabilityInterface,
+  RoleCapabilityInterface,
+  UserCapabilityInterface,
+  WatchdogCapabilityInterface {
 
   /**
    * Returns a random-value generator.

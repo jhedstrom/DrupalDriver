@@ -41,7 +41,7 @@ class DrushDriverTest extends TestCase {
    * @param string $capability_class
    *   The capability interface name.
    *
-   * @dataProvider dataProviderSupportedCapabilities
+   * @dataProvider dataProviderImplementsSupportedCapability
    */
   public function testImplementsSupportedCapability(string $capability_class): void {
     $this->assertTrue(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
@@ -56,7 +56,7 @@ class DrushDriverTest extends TestCase {
    * @param string $capability_class
    *   The capability interface name.
    *
-   * @dataProvider dataProviderUnsupportedCapabilities
+   * @dataProvider dataProviderDoesNotImplementUnsupportedCapability
    */
   public function testDoesNotImplementUnsupportedCapability(string $capability_class): void {
     $this->assertFalse(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
@@ -68,7 +68,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Capabilities DrushDriver is expected to support via Drush shell-outs.
    */
-  public static function dataProviderSupportedCapabilities(): \Iterator {
+  public static function dataProviderImplementsSupportedCapability(): \Iterator {
     yield 'cache' => [CacheCapabilityInterface::class];
     yield 'config' => [ConfigCapabilityInterface::class];
     yield 'content' => [ContentCapabilityInterface::class];
@@ -82,7 +82,7 @@ class DrushDriverTest extends TestCase {
   /**
    * Capabilities DrushDriver cannot support.
    */
-  public static function dataProviderUnsupportedCapabilities(): \Iterator {
+  public static function dataProviderDoesNotImplementUnsupportedCapability(): \Iterator {
     yield 'authentication' => [AuthenticationCapabilityInterface::class];
     yield 'language' => [LanguageCapabilityInterface::class];
     yield 'mail' => [MailCapabilityInterface::class];
