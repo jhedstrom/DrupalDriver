@@ -20,3 +20,8 @@ parameters:
       message: '#.*no value type specified in iterable type array.#'
       path: tests/*
       reportUnmatched: false
+    -
+      # The driver is a thin wrapper around Drupal's global service container;
+      # static \Drupal:: calls are the intended access pattern here.
+      identifier: globalDrupalDependencyInjection.useDependencyInjection
+      path: src/*
