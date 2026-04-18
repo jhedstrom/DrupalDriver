@@ -284,7 +284,7 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): int|string {
+  public function roleCreate(array $permissions): string {
     return $this->getCore()->roleCreate($permissions);
   }
 

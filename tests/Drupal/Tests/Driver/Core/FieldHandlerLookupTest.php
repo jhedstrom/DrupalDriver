@@ -213,7 +213,7 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): int|string {
+  public function roleCreate(array $permissions): string {
     return '';
   }
 

@@ -15,10 +15,10 @@ interface RoleCapabilityInterface {
    * @param array<string> $permissions
    *   Permission machine names or labels.
    *
-   * @return int|string
+   * @return string
    *   The created role's machine name.
    */
-  public function roleCreate(array $permissions): int|string;
+  public function roleCreate(array $permissions): string;
 
   /**
    * Deletes a role.

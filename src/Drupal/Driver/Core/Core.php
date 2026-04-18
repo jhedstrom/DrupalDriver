@@ -66,7 +66,11 @@ class Core implements CoreInterface {
    *   Optional random-value generator.
    */
   public function __construct(string $drupal_root, string $uri = 'default', ?Random $random = NULL) {
-    $this->drupalRoot = realpath($drupal_root);
+    $resolved = realpath($drupal_root);
+    if ($resolved === FALSE) {
+      throw new BootstrapException(sprintf('Could not resolve Drupal root "%s".', $drupal_root));
+    }
+    $this->drupalRoot = $resolved;
     $this->uri = $uri;
     $this->random = $random ?? new Random();
   }
@@ -97,6 +101,9 @@ class Core implements CoreInterface {
    */
   public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface {
     $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
+    if (!isset($field_types[$field_name])) {
+      throw new \RuntimeException(sprintf('Field "%s" not found on entity type "%s".', $field_name, $entity_type));
+    }
     $camelized_type = Container::camelize($field_types[$field_name]);
     $version = $this->getVersion();
 
@@ -263,7 +270,7 @@ class Core implements CoreInterface {
         }
       }
       $message = strtr((string) $row->message, $replacements);
-      $lines[] = sprintf('[%s/%s] %s', $row->type, $row->severity, $message);
+      $lines[] = sprintf('[%s/%s] %s', $row->type, $this->resolveSeverityLabel((int) $row->severity), $message);
     }
 
     return implode("\n", $lines);
@@ -273,18 +280,8 @@ class Core implements CoreInterface {
    * Maps a severity name or numeric string to an RFC 5424 log level integer.
    */
   protected function resolveSeverityLevel(string $severity): int {
-    static $levels = [
-      'emergency' => 0,
-      'alert' => 1,
-      'critical' => 2,
-      'error' => 3,
-      'warning' => 4,
-      'notice' => 5,
-      'info' => 6,
-      'debug' => 7,
-    ];
-
     $key = strtolower($severity);
+    $levels = array_flip($this->severityLabels());
     if (isset($levels[$key])) {
       return $levels[$key];
     }
@@ -294,6 +291,32 @@ class Core implements CoreInterface {
     }
 
     throw new \InvalidArgumentException(sprintf('Unknown severity level: %s', $severity));
+  }
+
+  /**
+   * Returns the symbolic name for an RFC 5424 log level integer.
+   */
+  protected function resolveSeverityLabel(int $level): string {
+    return $this->severityLabels()[$level] ?? (string) $level;
+  }
+
+  /**
+   * Returns the RFC 5424 severity level-to-label map.
+   *
+   * @return array<int, string>
+   *   Integer level keyed to symbolic name.
+   */
+  private function severityLabels(): array {
+    return [
+      0 => 'emergency',
+      1 => 'alert',
+      2 => 'critical',
+      3 => 'error',
+      4 => 'warning',
+      5 => 'notice',
+      6 => 'info',
+      7 => 'debug',
+    ];
   }
 
   /**
@@ -316,7 +339,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): int|string {
+  public function roleCreate(array $permissions): string {
     // Generate a random, lowercase machine name.
     $rid = strtolower($this->random->name(8, TRUE));
 

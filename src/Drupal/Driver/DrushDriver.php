@@ -431,9 +431,12 @@ class DrushDriver implements DrushDriverInterface {
    */
   public function configGet(string $name, string $key = ''): mixed {
     $arguments = $key !== '' ? [$name, $key] : [$name];
-    $output = $this->drush('config:get', $arguments, ['format' => 'json']);
+    $output = trim($this->drush('config:get', $arguments, ['format' => 'json']));
 
-    return $this->decodeJsonObject($output);
+    // 'drush config:get' returns whatever JSON shape the value has (object,
+    // array, scalar). 'decodeJsonObject()' would strip non-object payloads,
+    // so decode the trimmed output directly.
+    return json_decode($output);
   }
 
   /**
@@ -460,7 +463,7 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): int|string {
+  public function roleCreate(array $permissions): string {
     $random = $this->getRandom();
     $rid = strtolower($random->name(8, TRUE));
     $label = trim($random->name(8, TRUE));
@@ -582,14 +585,14 @@ class DrushDriver implements DrushDriverInterface {
    * {@inheritdoc}
    */
   public function moduleInstall(string $module_name): void {
-    $this->drush('pm-enable', [$module_name], ['yes' => TRUE]);
+    $this->drush('pm-enable', [$module_name], ['yes' => NULL]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function moduleUninstall(string $module_name): void {
-    $this->drush('pm-uninstall', [$module_name], ['yes' => TRUE]);
+    $this->drush('pm-uninstall', [$module_name], ['yes' => NULL]);
   }
 
   /**
