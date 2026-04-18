@@ -131,8 +131,6 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function userCreate(\stdClass $user): void {
-    $this->validateDrupalSite();
-
     // Default status to TRUE if not explicitly creating a blocked user.
     if (!isset($user->status)) {
       $user->status = 1;
@@ -195,7 +193,6 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function processBatch(): void {
-    $this->validateDrupalSite();
     if ($batch =& batch_get()) {
       $batch['progressive'] = FALSE;
       batch_process();
@@ -259,6 +256,9 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    */
   public function userDelete(\stdClass $user): void {
     user_cancel([], $user->uid, 'user_cancel_delete');
+    // user_cancel() schedules the deletion via batch; drive the batch to
+    // completion so callers see synchronous deletion.
+    $this->processBatch();
   }
 
   /**
@@ -537,9 +537,10 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
     $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $created_entity->save();
 
+    // Mutate the stub so callers holding the reference can still read ->id.
     $entity->id = $created_entity->id();
 
-    return $entity;
+    return $created_entity;
   }
 
   /**

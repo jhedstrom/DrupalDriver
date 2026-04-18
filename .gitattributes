@@ -10,7 +10,7 @@
 /drupal          export-ignore
 /drush           export-ignore
 /phpcs-ruleset.xml export-ignore
-/phpunit.xml.dist export-ignore
+/phpunit.xml     export-ignore
 /recipes         export-ignore
 /spec            export-ignore
 /tests           export-ignore

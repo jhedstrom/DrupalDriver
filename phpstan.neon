@@ -2,10 +2,6 @@
 # Configuration file for PHPStan static code checking, see https://phpstan.org .
 #
 
-includes:
-  - vendor/mglaman/phpstan-drupal/extension.neon
-  - vendor/phpstan/phpstan-deprecation-rules/rules.neon
-
 parameters:
 
   level: 3
@@ -24,3 +20,14 @@ parameters:
       message: '#.*no value type specified in iterable type array.#'
       path: tests/*
       reportUnmatched: false
+    -
+      # The driver is a thin wrapper around Drupal's global service container;
+      # static \Drupal:: calls are the intended access pattern here.
+      identifier: globalDrupalDependencyInjection.useDependencyInjection
+      path: src/*
+    -
+      # entity_test_create_bundle() is deprecated in Drupal 11.2 in favour of
+      # EntityTestHelper::createBundle(); kept as a fallback for Drupal 10 and
+      # earlier 11.x where the helper class does not yet exist.
+      message: '#Call to deprecated function entity_test_create_bundle\(\).*#'
+      path: tests/Drupal/Tests/Driver/Kernel/FieldHandlerKernelTestBase.php
