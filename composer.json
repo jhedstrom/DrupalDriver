@@ -28,10 +28,10 @@
     },
     "require-dev": {
         "composer/installers": "^2.1",
-        "dms/phpunit-arraysubset-asserts": "^0.5.0",
         "drevops/phpcs-standard": "^0.7.0",
         "drupal/coder": "~8.3.0",
         "drupal/core-composer-scaffold": "^10 || ^11",
+        "drupal/core-dev": "^10 || ^11",
         "drupal/core-recommended": "^10 || ^11",
         "drupal/mailsystem": "^4.4 || 4.x-dev",
         "drush-ops/behat-drush-endpoint": "*",
@@ -39,9 +39,8 @@
         "mglaman/phpstan-drupal": "^2.0",
         "mockery/mockery": "^1.5",
         "php-parallel-lint/php-parallel-lint": "^1.0",
-        "phpspec/phpspec": "^7.5 || dev-main",
         "phpstan/phpstan": "^2.0",
-        "phpunit/phpunit": "^9.6 || ^10 || ^11",
+        "phpunit/phpunit": "^11",
         "rector/rector": "^2.0",
         "symfony/phpunit-bridge": "^6.4 || ^7",
         "webmozart/assert": "^2.3"
@@ -70,7 +69,9 @@
             "composer/installers": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "drupal/core-composer-scaffold": true,
-            "ergebnis/composer-normalize": true
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true,
+            "tbachert/spi": true
         }
     },
     "extra": {
@@ -96,19 +97,17 @@
     },
     "scripts": {
         "lint": [
-            "XDEBUG_MODE=off parallel-lint src spec tests",
-            "XDEBUG_MODE=off phpcs",
-            "XDEBUG_MODE=off phpstan",
-            "XDEBUG_MODE=off rector process --dry-run"
+            "parallel-lint src tests",
+            "phpcs",
+            "phpstan",
+            "rector process --dry-run"
         ],
         "lint-fix": [
-            "XDEBUG_MODE=off rector process",
-            "XDEBUG_MODE=off phpcbf"
+            "rector process",
+            "phpcbf"
         ],
-        "test": [
-            "XDEBUG_MODE=off phpunit --no-coverage",
-            "XDEBUG_MODE=off phpspec run -f pretty --no-interaction"
-        ],
-        "test-coverage": "XDEBUG_MODE=off php -d pcov.enabled=1 -d pcov.directory=./src/Drupal vendor/bin/phpunit"
+        "test": "phpunit --no-coverage",
+        "test-kernel": "phpunit --configuration phpunit.kernel.xml.dist --no-coverage",
+        "test-coverage": "php -d pcov.enabled=1 -d pcov.directory=./src/Drupal vendor/bin/phpunit"
     }
 }

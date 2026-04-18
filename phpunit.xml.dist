@@ -8,8 +8,9 @@
          failOnWarning="true"
          beStrictAboutCoverageMetadata="false">
   <testsuites>
-    <testsuite name="Drupal Driver test suite">
+    <testsuite name="unit">
       <directory>./tests/Drupal/</directory>
+      <exclude>./tests/Drupal/Tests/Driver/Kernel</exclude>
     </testsuite>
   </testsuites>
   <source>

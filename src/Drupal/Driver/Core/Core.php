@@ -131,8 +131,6 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    * {@inheritdoc}
    */
   public function userCreate(\stdClass $user): void {
-    $this->validateDrupalSite();
-
     // Default status to TRUE if not explicitly creating a blocked user.
     if (!isset($user->status)) {
       $user->status = 1;
@@ -537,9 +535,10 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
     $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $created_entity->save();
 
+    // Mutate the stub so callers holding the reference can still read ->id.
     $entity->id = $created_entity->id();
 
-    return $entity;
+    return $created_entity;
   }
 
   /**
