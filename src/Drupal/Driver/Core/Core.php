@@ -35,7 +35,6 @@ use Symfony\Component\Routing\Route;
  * Default Drupal core implementation.
  */
 class Core extends AbstractCore implements
-  CoreAuthenticationInterface,
   AuthenticationCapabilityInterface,
   CacheCapabilityInterface,
   ConfigCapabilityInterface,
