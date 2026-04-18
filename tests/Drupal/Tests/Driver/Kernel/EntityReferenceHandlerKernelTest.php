@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel;
 
+use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\user\Entity\User;
 
 /**
@@ -20,7 +22,20 @@ class EntityReferenceHandlerKernelTest extends FieldHandlerKernelTestBase {
    *
    * @var array<string>
    */
-  protected static $modules = self::BASE_MODULES;
+  protected static $modules = [
+    ...self::BASE_MODULES,
+    'taxonomy',
+    'text',
+    'filter',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    $this->installEntitySchema('taxonomy_term');
+  }
 
   /**
    * Tests round-trip for an entity_reference field targeting users by name.
@@ -51,6 +66,25 @@ class EntityReferenceHandlerKernelTest extends FieldHandlerKernelTestBase {
     $user->save();
 
     $this->assertFieldRoundTripViaDriver('field_owner', [(int) $user->id()]);
+  }
+
+  /**
+   * Tests round-trip for an entity_reference field targeting taxonomy terms.
+   *
+   * Modern Drupal uses entity_reference for taxonomy links, so the driver
+   * resolves EntityReferenceHandler rather than the legacy
+   * TaxonomyTermReferenceHandler. Kept here rather than a separate test
+   * because it's the same handler exercising a different target_type.
+   */
+  public function testTaxonomyTermReferenceByNameRoundTrip(): void {
+    Vocabulary::create(['vid' => 'tags', 'name' => 'Tags'])->save();
+    Term::create(['name' => 'drupal', 'vid' => 'tags'])->save();
+
+    $this->attachField('field_tags', 'entity_reference', [
+      'target_type' => 'taxonomy_term',
+    ]);
+
+    $this->assertFieldRoundTripViaDriver('field_tags', ['drupal']);
   }
 
 }
