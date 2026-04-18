@@ -10,9 +10,9 @@ use Drupal\Driver\Exception\BootstrapException;
 use Symfony\Component\Process\Process;
 
 /**
- * Implements DriverInterface.
+ * Drives a Drupal site via the Drush CLI.
  */
-class DrushDriver extends BaseDriver {
+class DrushDriver implements DrushDriverInterface {
   /**
    * Store a drush alias for tests requiring shell access.
    */
@@ -247,7 +247,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role): void {
+  public function userAddRole(\stdClass $user, string $role): void {
     $arguments = [
       sprintf('"%s"', $role),
       sprintf('"%s"', $user->name),
@@ -258,7 +258,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog($count = 10, $type = NULL, $severity = NULL): string {
+  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
     $options = [
       'count' => $count,
       'type' => $type,
@@ -270,7 +270,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function clearCache($type = 'all'): void {
+  public function clearCache(?string $type = 'all'): void {
     if (self::$isLegacyDrush) {
       $this->drush('cache-clear', [$type], []);
       return;
@@ -321,7 +321,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function createEntity($entity_type, \StdClass $entity): object {
+  public function entityCreate(string $entity_type, \stdClass $entity): object {
     $payload = [
       'entity_type' => $entity_type,
       'entity' => $entity,
@@ -333,7 +333,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, \StdClass $entity): void {
+  public function entityDelete(string $entity_type, object $entity): void {
     $payload = [
       'entity_type' => $entity_type,
       'entity' => $entity,
@@ -344,7 +344,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function createNode($node): object {
+  public function nodeCreate(\stdClass $node): object {
     if (isset($node->author)) {
       $user_output = $this->drush('user-information', [sprintf('"%s"', $node->author)]);
       $uid = $this->parseUserId($user_output);
@@ -360,14 +360,14 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node): void {
+  public function nodeDelete(object $node): void {
     $this->drush('behat', ['delete-node', escapeshellarg(json_encode($node))], []);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createTerm(\stdClass $term): object {
+  public function termCreate(\stdClass $term): object {
     return $this->callBehatCommand('create-term', $term);
   }
 
@@ -391,7 +391,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term): bool {
+  public function termDelete(object $term): bool {
     $this->drush('behat', ['delete-term', escapeshellarg(json_encode($term))], []);
     return TRUE;
   }
@@ -399,7 +399,7 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name): bool {
+  public function isField(string $entity_type, string $field_name): bool {
     // If the Behat Drush Endpoint is not installed on the site-under-test,
     // then the drush() method will throw an exception. In this instance, we
     // want to treat all potential fields as non-fields.  This allows the
@@ -414,6 +414,71 @@ class DrushDriver extends BaseDriver {
     catch (\Exception) {
       return FALSE;
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isBaseField(string $entity_type, string $field_name): bool {
+    // Drush does not expose base-field introspection without extra modules;
+    // return FALSE as a safe default so consumers treat the field as
+    // non-base.
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configGet(string $name, string $key = ''): mixed {
+    $arguments = $key !== '' ? [$name, $key] : [$name];
+    $output = $this->drush('config:get', $arguments, ['format' => 'json']);
+
+    return $this->decodeJsonObject($output);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configGetOriginal(string $name, string $key = ''): mixed {
+    // Drush persists every 'configSet' change to the active store; there is
+    // no separate "original" layer to read, so this returns the same value
+    // as 'configGet'.
+    return $this->configGet($name, $key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet(string $name, string $key, mixed $value): void {
+    $payload = json_encode($value);
+    $this->drush('config:set', [$name, $key, escapeshellarg((string) $payload)], [
+      'yes' => NULL,
+      'input-format' => 'json',
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function roleCreate(array $permissions): int|string {
+    $random = $this->getRandom();
+    $rid = strtolower($random->name(8, TRUE));
+    $label = trim($random->name(8, TRUE));
+
+    $this->drush('role:create', [$rid, sprintf('"%s"', $label)], []);
+
+    foreach ($permissions as $permission) {
+      $this->drush('role:perm:add', [$rid, sprintf('"%s"', $permission)], []);
+    }
+
+    return $rid;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function roleDelete(string $role_name): void {
+    $this->drush('role:delete', [$role_name], []);
   }
 
   /**
@@ -516,14 +581,14 @@ class DrushDriver extends BaseDriver {
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name): void {
+  public function moduleInstall(string $module_name): void {
     $this->drush('pm-enable', [$module_name], ['yes' => TRUE]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name): void {
+  public function moduleUninstall(string $module_name): void {
     $this->drush('pm-uninstall', [$module_name], ['yes' => TRUE]);
   }
 
