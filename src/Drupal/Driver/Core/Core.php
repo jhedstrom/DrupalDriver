@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Core;
 
+use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
@@ -17,6 +18,8 @@ use Drupal\Driver\Capability\ModuleCapabilityInterface;
 use Drupal\Driver\Capability\RoleCapabilityInterface;
 use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Capability\WatchdogCapabilityInterface;
+use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -28,13 +31,15 @@ use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
 /**
  * Default Drupal core implementation.
  */
-class Core extends AbstractCore implements
+class Core implements
+  CoreInterface,
   AuthenticationCapabilityInterface,
   CacheCapabilityInterface,
   ConfigCapabilityInterface,
@@ -48,6 +53,21 @@ class Core extends AbstractCore implements
   WatchdogCapabilityInterface {
 
   /**
+   * System path to the Drupal installation.
+   */
+  protected string $drupalRoot;
+
+  /**
+   * URI of the Drupal site.
+   */
+  protected string $uri;
+
+  /**
+   * Random value generator.
+   */
+  protected Random $random;
+
+  /**
    * Tracks original configuration values.
    *
    * This is necessary since configurations modified here are actually saved so
@@ -57,6 +77,92 @@ class Core extends AbstractCore implements
    *   An array of data, keyed by configuration name.
    */
   protected array $originalConfiguration = [];
+
+  /**
+   * Set up the Core implementation.
+   *
+   * @param string $drupal_root
+   *   The absolute path to the Drupal root directory.
+   * @param string $uri
+   *   URI that is accessing Drupal. Defaults to 'default'.
+   * @param \Drupal\Component\Utility\Random|null $random
+   *   Optional random-value generator.
+   */
+  public function __construct(string $drupal_root, string $uri = 'default', ?Random $random = NULL) {
+    $this->drupalRoot = realpath($drupal_root);
+    $this->uri = $uri;
+    $this->random = $random ?? new Random();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRandom(): Random {
+    return $this->random;
+  }
+
+  /**
+   * Returns the Drupal major version this Core targets.
+   *
+   * The default Core returns 0 - the lookup chain iterates only when version
+   * is >= 10, so 0 skips the versioned directories and falls through to the
+   * default handlers in 'Core\Field\'.
+   *
+   * @return int
+   *   The Drupal major version, or 0 for the default (no version-specific dir).
+   */
+  protected function getVersion(): int {
+    return 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface {
+    $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
+    $camelized_type = Container::camelize($field_types[$field_name]);
+    $version = $this->getVersion();
+
+    $candidates = [];
+    for ($n = $version; $n >= 10; $n--) {
+      $candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\%sHandler', $n, $camelized_type);
+    }
+    $candidates[] = sprintf('\\Drupal\\Driver\\Core\\Field\\%sHandler', $camelized_type);
+
+    $default_candidates = [];
+    for ($n = $version; $n >= 10; $n--) {
+      $default_candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\DefaultHandler', $n);
+    }
+    $default_candidates[] = DefaultHandler::class;
+
+    foreach (array_merge($candidates, $default_candidates) as $class) {
+      if (class_exists($class)) {
+        return new $class($entity, $entity_type, $field_name);
+      }
+    }
+    throw new \RuntimeException(sprintf('No field handler found for type "%s".', $camelized_type));
+  }
+
+  /**
+   * Expands properties on the given entity object to the expected structure.
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param \stdClass $entity
+   *   Entity object.
+   * @param array<string> $base_fields
+   *   Optional. Define base fields that will be expanded in addition to user
+   *   defined fields.
+   */
+  protected function expandEntityFields(string $entity_type, \stdClass $entity, array $base_fields = []): void {
+    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
+    foreach (array_keys($field_types) as $field_name) {
+      if (isset($entity->$field_name)) {
+        $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
+          ->expand($entity->$field_name);
+      }
+    }
+  }
 
   /**
    * {@inheritdoc}
@@ -493,7 +599,7 @@ class Core extends AbstractCore implements
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = []): array {
+  public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array {
     $return = [];
     $entity_field_manager = $this->getEntityFieldManager();
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);

@@ -11,14 +11,14 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Driver\Core\AbstractCore;
+use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core\Field\AddressHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core99\Field\FileHandler as Core99FileHandler;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests AbstractCore::getFieldHandler() lookup chain.
+ * Tests Core::getFieldHandler() lookup chain.
  */
 class FieldHandlerLookupTest extends TestCase {
 
@@ -130,13 +130,13 @@ class FieldHandlerLookupTest extends TestCase {
 }
 
 /**
- * Testable AbstractCore subclass targeting Drupal version 99.
+ * Testable Core subclass targeting Drupal version 99.
  *
  * Overrides 'getVersion()' to drive the lookup chain starting at 99, and
  * 'getEntityFieldTypes()' to return a static map of field name to type so
  * no Drupal bootstrap is required.
  */
-class Core99TestCore extends AbstractCore {
+class Core99TestCore extends Core {
 
   /**
    * {@inheritdoc}
@@ -225,7 +225,7 @@ class Core99TestCore extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function termCreate(\stdClass $term): object {
+  public function termCreate(\stdClass $term): \stdClass {
     return new \stdClass();
   }
 
