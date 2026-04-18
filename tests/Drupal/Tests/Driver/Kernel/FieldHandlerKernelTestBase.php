@@ -132,7 +132,14 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
       ->getStorage(self::ENTITY_TYPE)
       ->loadUnchanged($stub->id);
 
-    foreach ($stub->$field_name as $delta => $expected) {
+    // Some handlers (e.g. ImageHandler) emit a flat associative array as
+    // single-delta shorthand rather than a list of deltas. Normalise that
+    // shape into a one-element list so the iteration below is uniform.
+    $deltas = is_array($stub->$field_name) && !array_is_list($stub->$field_name)
+      ? [$stub->$field_name]
+      : $stub->$field_name;
+
+    foreach ($deltas as $delta => $expected) {
       $item = $reloaded->get($field_name)->get($delta);
       $this->assertNotNull($item, sprintf('Field "%s" is missing delta %d.', $field_name, $delta));
 
