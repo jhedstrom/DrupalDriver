@@ -164,7 +164,7 @@ class Core99TestCore extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function clearCache(): void {}
+  public function clearCache(?string $type = NULL): void {}
 
   /**
    * {@inheritdoc}
@@ -176,7 +176,7 @@ class Core99TestCore extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete(\stdClass $node): void {}
+  public function nodeDelete(object $node): void {}
 
   /**
    * {@inheritdoc}
@@ -232,7 +232,7 @@ class Core99TestCore extends AbstractCore {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term): bool {
+  public function termDelete(object $term): bool {
     return FALSE;
   }
 

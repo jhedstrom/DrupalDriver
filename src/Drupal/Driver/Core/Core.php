@@ -6,6 +6,17 @@ namespace Drupal\Driver\Core;
 
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
+use Drupal\Driver\Capability\CacheCapabilityInterface;
+use Drupal\Driver\Capability\ConfigCapabilityInterface;
+use Drupal\Driver\Capability\ContentCapabilityInterface;
+use Drupal\Driver\Capability\FieldCapabilityInterface;
+use Drupal\Driver\Capability\LanguageCapabilityInterface;
+use Drupal\Driver\Capability\MailCapabilityInterface;
+use Drupal\Driver\Capability\ModuleCapabilityInterface;
+use Drupal\Driver\Capability\RoleCapabilityInterface;
+use Drupal\Driver\Capability\UserCapabilityInterface;
+use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -23,7 +34,19 @@ use Symfony\Component\Routing\Route;
 /**
  * Default Drupal core implementation.
  */
-class Core extends AbstractCore implements CoreAuthenticationInterface {
+class Core extends AbstractCore implements
+  CoreAuthenticationInterface,
+  AuthenticationCapabilityInterface,
+  CacheCapabilityInterface,
+  ConfigCapabilityInterface,
+  ContentCapabilityInterface,
+  FieldCapabilityInterface,
+  LanguageCapabilityInterface,
+  MailCapabilityInterface,
+  ModuleCapabilityInterface,
+  RoleCapabilityInterface,
+  UserCapabilityInterface,
+  WatchdogCapabilityInterface {
 
   /**
    * Tracks original configuration values.
@@ -70,7 +93,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCache(): void {
+  public function clearCache(?string $type = NULL): void {
     // Need to change into the Drupal root directory or the registry explodes.
     drupal_flush_all_caches();
   }
@@ -78,7 +101,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeCreate($node): object {
+  public function nodeCreate(\stdClass $node): object {
     // Throw an exception if the node type is missing or does not exist.
     /** @var \stdClass $node */
     if (!isset($node->type) || !$node->type) {
@@ -111,7 +134,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node): void {
+  public function nodeDelete(object $node): void {
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
     if ($node instanceof NodeInterface) {
       $node->delete();
@@ -125,6 +148,70 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
     $_SERVER['REQUEST_TIME'] = time();
     \Drupal::request()->server->set('REQUEST_TIME', $_SERVER['REQUEST_TIME']);
     return \Drupal::service('cron')->run();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+    if (!\Drupal::moduleHandler()->moduleExists('dblog')) {
+      throw new \RuntimeException('The dblog module is not installed; cannot fetch watchdog entries.');
+    }
+
+    $query = \Drupal::database()->select('watchdog', 'w')
+      ->fields('w', ['type', 'severity', 'message', 'variables'])
+      ->orderBy('wid', 'DESC')
+      ->range(0, $count);
+
+    if ($type !== NULL) {
+      $query->condition('type', $type);
+    }
+
+    if ($severity !== NULL) {
+      $query->condition('severity', $this->resolveSeverityLevel($severity));
+    }
+
+    $lines = [];
+    foreach ($query->execute() as $row) {
+      $variables = $row->variables ? @unserialize($row->variables, ['allowed_classes' => FALSE]) : [];
+      $replacements = [];
+      if (is_array($variables)) {
+        foreach ($variables as $placeholder => $value) {
+          $replacements[$placeholder] = is_scalar($value) ? (string) $value : '';
+        }
+      }
+      $message = strtr((string) $row->message, $replacements);
+      $lines[] = sprintf('[%s/%s] %s', $row->type, $row->severity, $message);
+    }
+
+    return implode("\n", $lines);
+  }
+
+  /**
+   * Maps a severity name or numeric string to an RFC 5424 log level integer.
+   */
+  protected function resolveSeverityLevel(string $severity): int {
+    static $levels = [
+      'emergency' => 0,
+      'alert' => 1,
+      'critical' => 2,
+      'error' => 3,
+      'warning' => 4,
+      'notice' => 5,
+      'info' => 6,
+      'debug' => 7,
+    ];
+
+    $key = strtolower($severity);
+    if (isset($levels[$key])) {
+      return $levels[$key];
+    }
+
+    if (ctype_digit($severity)) {
+      return (int) $severity;
+    }
+
+    throw new \InvalidArgumentException(sprintf('Unknown severity level: %s', $severity));
   }
 
   /**
@@ -181,7 +268,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleDelete($role_name): void {
+  public function roleDelete(string $role_name): void {
     $role = Role::load($role_name);
 
     if ($role) {
@@ -264,12 +351,12 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role_name): void {
+  public function userAddRole(\stdClass $user, string $role): void {
     // Allow both machine and human role names.
     $query = \Drupal::entityQuery('user_role');
     $conditions = $query->orConditionGroup()
-      ->condition('id', $role_name)
-      ->condition('label', $role_name);
+      ->condition('id', $role)
+      ->condition('label', $role);
     $rids = $query
       ->condition($conditions)
       ->execute();
@@ -360,7 +447,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term): bool {
+  public function termDelete(object $term): bool {
     $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
     if ($term instanceof TermInterface) {
       $term->delete();
@@ -426,7 +513,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name): bool {
+  public function isField(string $entity_type, string $field_name): bool {
     $fields = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
@@ -434,7 +521,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isBaseField($entity_type, $field_name): bool {
+  public function isBaseField(string $entity_type, string $field_name): bool {
     $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
     return isset($base_fields[$field_name]);
   }
@@ -490,21 +577,21 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function configGet($name, $key = ''): mixed {
+  public function configGet(string $name, string $key = ''): mixed {
     return \Drupal::config($name)->get($key);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configGetOriginal($name, $key = ''): mixed {
+  public function configGetOriginal(string $name, string $key = ''): mixed {
     return \Drupal::config($name)->getOriginal($key, FALSE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configSet($name, $key, $value): void {
+  public function configSet(string $name, string $key, mixed $value): void {
     \Drupal::configFactory()->getEditable($name)
       ->set($key, $value)
       ->save();
@@ -513,7 +600,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityCreate($entity_type, $entity): EntityInterface {
+  public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface {
     // If the bundle field is empty, put the inferred bundle value in it.
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
@@ -546,7 +633,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, $entity): void {
+  public function entityDelete(string $entity_type, object $entity): void {
     $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
     if ($entity instanceof EntityInterface) {
       $entity->delete();
@@ -556,14 +643,14 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name): void {
+  public function moduleInstall(string $module_name): void {
     \Drupal::service('module_installer')->install([$module_name]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name): void {
+  public function moduleUninstall(string $module_name): void {
     \Drupal::service('module_installer')->uninstall([$module_name]);
   }
 
@@ -614,7 +701,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function sendMail($body = '', $subject = '', $to = '', $langcode = ''): bool {
+  public function sendMail(string $body, string $subject, string $to, string $langcode): bool {
     // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;

@@ -42,13 +42,13 @@ interface ContentCapabilityInterface {
   /**
    * Deletes a taxonomy term.
    *
-   * @param \stdClass $term
-   *   The term to delete.
+   * @param object $term
+   *   The term stub or loaded term entity to delete.
    *
    * @return bool
    *   TRUE when the term was deleted.
    */
-  public function termDelete(\stdClass $term): bool;
+  public function termDelete(object $term): bool;
 
   /**
    * Creates an entity of a given type.
@@ -68,9 +68,9 @@ interface ContentCapabilityInterface {
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param \stdClass $entity
-   *   The entity to delete.
+   * @param object $entity
+   *   The entity stub or loaded entity to delete.
    */
-  public function entityDelete(string $entity_type, \stdClass $entity): void;
+  public function entityDelete(string $entity_type, object $entity): void;
 
 }

@@ -53,8 +53,11 @@ interface CoreInterface {
 
   /**
    * Clear caches.
+   *
+   * @param string|null $type
+   *   Cache bin to clear. NULL or 'all' clears everything.
    */
-  public function clearCache(): void;
+  public function clearCache(?string $type = NULL): void;
 
   /**
    * Run cron.
@@ -78,10 +81,10 @@ interface CoreInterface {
   /**
    * Delete a node.
    *
-   * @param \stdClass $node
-   *   The node object.
+   * @param object $node
+   *   The node stub or loaded node to delete.
    */
-  public function nodeDelete(\stdClass $node): void;
+  public function nodeDelete(object $node): void;
 
   /**
    * Create a user.
@@ -129,10 +132,13 @@ interface CoreInterface {
   /**
    * Deletes a taxonomy term.
    *
+   * @param object $term
+   *   The term stub or loaded term to delete.
+   *
    * @return bool
-   *   Status constant indicating deletion.
+   *   TRUE when the term was deleted.
    */
-  public function termDelete(\stdClass $term): bool;
+  public function termDelete(object $term): bool;
 
   /**
    * Creates a role.
@@ -277,13 +283,13 @@ interface CoreInterface {
    *
    * @param string $entity_type
    *   Entity type machine name.
-   * @param object $entity
+   * @param \stdClass $entity
    *   The field values and properties desired for the new entity.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   A new entity object.
    */
-  public function entityCreate(string $entity_type, object $entity): EntityInterface;
+  public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface;
 
   /**
    * Delete an entity.
