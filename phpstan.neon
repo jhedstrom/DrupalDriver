@@ -25,3 +25,9 @@ parameters:
       # static \Drupal:: calls are the intended access pattern here.
       identifier: globalDrupalDependencyInjection.useDependencyInjection
       path: src/*
+    -
+      # entity_test_create_bundle() is deprecated in Drupal 11.2 in favour of
+      # EntityTestHelper::createBundle(); kept as a fallback for Drupal 10 and
+      # earlier 11.x where the helper class does not yet exist.
+      message: '#Call to deprecated function entity_test_create_bundle\(\).*#'
+      path: tests/Drupal/Tests/Driver/Kernel/FieldHandlerKernelTestBase.php
