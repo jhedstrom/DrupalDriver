@@ -49,6 +49,12 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
 
   /**
    * Tests 'entityCreate()' followed by 'entityDelete()' using a stub object.
+   *
+   * The user entity type's id key is 'uid', so entityCreate should populate
+   * the stub under 'uid' (not the generic 'id' property), and entityDelete
+   * should load by that same key. This matches the convention already used
+   * by nodeCreate/nodeDelete (nid), userCreate (uid), and termCreate/
+   * termDelete (tid).
    */
   public function testEntityCreateAndDeleteWithStub(): void {
     $stub = (object) [
@@ -60,13 +66,37 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     $created = $this->core->entityCreate('user', $stub);
 
     $this->assertInstanceOf(EntityInterface::class, $created);
-    $this->assertNotEmpty($stub->id, 'entityCreate set the id on the stub.');
+    $this->assertNotEmpty($stub->uid, 'entityCreate populated the entity type id key (uid) on the stub.');
+    $this->assertFalse(property_exists($stub, 'id'), 'entityCreate did not populate a generic "id" property on the stub.');
 
     // Delete via the stub, which triggers the load-by-id branch of
-    // entityDelete().
+    // entityDelete() resolved against the entity type id key.
     $this->core->entityDelete('user', $stub);
 
-    $this->assertNull(User::load((int) $stub->id));
+    $this->assertNull(User::load((int) $stub->uid));
+  }
+
+  /**
+   * Tests 'entityCreate()' auto-expands base fields set on the stub.
+   *
+   * 'name' is a base field on the user entity type. Base fields are not
+   * registered field storage configs, so without auto-detection the field
+   * handler pipeline would skip them and values like entity references on
+   * a base field (e.g. 'commerce_product.variations', 'user.roles') would
+   * reach entity storage in their raw scalar form. With auto-detection,
+   * DefaultHandler wraps the scalar value into the array form expected by
+   * the field API - observable here by inspecting the stub after create.
+   */
+  public function testEntityCreateAutoExpandsBaseFieldsSetOnStub(): void {
+    $stub = (object) [
+      'name' => 'uma',
+      'mail' => 'uma@example.com',
+      'status' => 1,
+    ];
+
+    $this->core->entityCreate('user', $stub);
+
+    $this->assertSame(['uma'], $stub->name, 'base field "name" was routed through the handler pipeline.');
   }
 
   /**
