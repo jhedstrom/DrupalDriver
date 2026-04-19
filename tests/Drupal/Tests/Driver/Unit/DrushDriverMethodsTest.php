@@ -139,6 +139,69 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
+   * Tests 'nodeCreate()' looks up the author uid when 'author' is set.
+   */
+  public function testNodeCreateWithAuthorLooksUpUid(): void {
+    $driver = new AuthorAwareDrushDriver('alias');
+    $driver->userInfoResponse = "User ID   :   42\nUser name :   alice\n";
+    $driver->nodeCreateResponse = '{"nid":1,"uid":42}';
+
+    $node = (object) ['type' => 'article', 'author' => 'alice'];
+    $driver->nodeCreate($node);
+
+    $this->assertSame('user-information', $driver->invocations[0]['command']);
+    $this->assertSame('behat', $driver->invocations[1]['command']);
+    $this->assertSame(42, $node->uid);
+  }
+
+  /**
+   * Tests 'userCreate()' applies roles when the user object declares them.
+   */
+  public function testUserCreateWithRolesInvokesRoleAssignment(): void {
+    $driver = $this->createDriver();
+    $driver->drushResponse = "User ID   :   7\nUser name :   bob\n";
+
+    $user = (object) [
+      'name' => 'bob',
+      'pass' => 'pw',
+      'mail' => 'bob@ex.co',
+      'roles' => ['editor', 'reviewer'],
+    ];
+    $driver->userCreate($user);
+
+    $commands = array_column($driver->invocations, 'command');
+    $this->assertSame('user-create', $commands[0]);
+    $this->assertContains('user-add-role', $commands, 'Expected a user-add-role invocation for each role.');
+    $this->assertSame(2, array_count_values($commands)['user-add-role'] ?? 0);
+  }
+
+  /**
+   * Tests 'cacheClear()' on legacy Drush with a drush-only bin.
+   */
+  public function testCacheClearDrushOnlyOnModernDrushSkipsRebuild(): void {
+    $driver = $this->createDriver();
+    $driver->drushResponse = "12.5.2.0\n";
+    $driver->bootstrap();
+    $driver->invocations = [];
+
+    $driver->cacheClear('drush');
+
+    $this->assertCount(1, $driver->invocations);
+    $this->assertSame('cache-clear', $driver->invocations[0]['command']);
+    $this->assertSame(['drush'], $driver->invocations[0]['arguments']);
+  }
+
+  /**
+   * Tests 'isLegacyDrush()' treats 'version' failure as legacy.
+   */
+  public function testIsLegacyDrushTreatsExceptionAsLegacy(): void {
+    $driver = $this->createDriver();
+    $driver->drushThrows = TRUE;
+
+    $this->assertTrue($driver->callIsLegacyDrushWithThrowing());
+  }
+
+  /**
  * Tests every command-issuing method drives 'drush()' as expected.
  *
  * @param string $method
@@ -243,6 +306,51 @@ class RecordingDrushDriver extends DrushDriver {
     }
 
     return $this->drushResponse;
+  }
+
+  /**
+   * Exposes 'isLegacyDrush()' for testing the exception-path coverage.
+   */
+  public function callIsLegacyDrushWithThrowing(): bool {
+    return $this->isLegacyDrush();
+  }
+
+}
+
+/**
+ * Subclass of 'RecordingDrushDriver' that returns distinct responses per call.
+ *
+ * Used for paths that call 'drush()' more than once (e.g. 'nodeCreate()' with
+ * an 'author' that first triggers a 'user-information' lookup then a
+ * 'create-node' call).
+ */
+class AuthorAwareDrushDriver extends RecordingDrushDriver {
+
+  /**
+   * Response for the user-information call.
+   */
+  public string $userInfoResponse = '';
+
+  /**
+   * Response for the create-node call.
+   */
+  public string $nodeCreateResponse = '';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function drush(string $command, array $arguments = [], array $options = []): string {
+    $this->invocations[] = [
+      'command' => $command,
+      'arguments' => $arguments,
+      'options' => $options,
+    ];
+
+    if ($command === 'user-information') {
+      return $this->userInfoResponse;
+    }
+
+    return $this->nodeCreateResponse;
   }
 
 }
