@@ -18,7 +18,7 @@ DrupalExtension integrations) may need updating.
 | Driver | Composite contract | Capability set |
 |---|---|---|
 | `DrupalDriver` | `DrupalDriverInterface` | All capabilities + `SubDriverFinderInterface` |
-| `DrushDriver` | `DrushDriverInterface` | Cache, Config, Content, Cron, Field, Module, Role, User, Watchdog |
+| `DrushDriver` | `DrushDriverInterface` | Cache, Config, Cron, Module, Role, User, Watchdog |
 | `BlackboxDriver` | `BlackboxDriverInterface` | None |
 
 ### Removed classes and interfaces
@@ -32,6 +32,27 @@ DrupalExtension integrations) may need updating.
 - `Drupal\Driver\Core\AbstractCore` - merged into `Core`. Custom cores should
   extend `Core` directly and override the methods they need.
 
+### DrushDriver no longer supports Content or Field capabilities
+
+`DrushDriver` used to rely on a companion module installed on the
+site-under-test to provide entity CRUD and field introspection over Drush.
+That indirection has been removed: `DrushDriver` now exposes only operations
+that Drush services natively.
+
+`DrushDriverInterface` no longer extends `ContentCapabilityInterface` or
+`FieldCapabilityInterface`. The following methods are gone from `DrushDriver`:
+
+- `nodeCreate`, `nodeDelete`
+- `termCreate`, `termDelete`
+- `entityCreate`, `entityDelete`
+- `fieldExists`, `fieldIsBase`
+
+Consumers that need entity CRUD or field introspection should use
+`DrupalDriver` (which bootstraps Drupal and delegates to `Core`) or
+implement the missing behaviour themselves. Test the capability with
+`instanceof ContentCapabilityInterface` / `instanceof FieldCapabilityInterface`
+before calling.
+
 ### CoreInterface expanded
 
 `Drupal\Driver\Core\CoreInterface` now extends every capability interface in
@@ -44,7 +65,8 @@ type hint.
 ### Renamed driver methods
 
 Every method now starts with its capability name for consistency. Renames
-on `DrupalDriver`, `DrushDriver`, and `Core`:
+on `DrupalDriver` and `Core` (and on `DrushDriver` where it still supports
+that capability):
 
 | v2 | v3 | Capability |
 |---|---|---|

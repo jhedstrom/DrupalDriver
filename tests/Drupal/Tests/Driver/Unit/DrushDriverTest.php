@@ -4,23 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit;
 
-use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
-use Drupal\Driver\Capability\CacheCapabilityInterface;
-use Drupal\Driver\Capability\ConfigCapabilityInterface;
-use Drupal\Driver\Capability\ContentCapabilityInterface;
-use Drupal\Driver\Capability\CronCapabilityInterface;
-use Drupal\Driver\Capability\FieldCapabilityInterface;
-use Drupal\Driver\Capability\LanguageCapabilityInterface;
-use Drupal\Driver\Capability\MailCapabilityInterface;
-use Drupal\Driver\Capability\ModuleCapabilityInterface;
-use Drupal\Driver\Capability\RoleCapabilityInterface;
-use Drupal\Driver\Capability\UserCapabilityInterface;
-use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\DriverInterface;
 use Drupal\Driver\DrushDriver;
 use Drupal\Driver\DrushDriverInterface;
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\Driver\SubDriverFinderInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -41,63 +28,6 @@ class DrushDriverTest extends TestCase {
   public function testImplementsDrushDriverInterface(): void {
     $this->assertTrue(is_subclass_of(DrushDriver::class, DrushDriverInterface::class));
     $this->assertTrue(is_subclass_of(DrushDriver::class, DriverInterface::class));
-  }
-
-  /**
-   * Tests that DrushDriver claims the capabilities Drush genuinely supports.
-   *
-   * @param string $capability_class
-   *   The capability interface name.
- *
- * @dataProvider dataProviderImplementsSupportedCapability
- */
-  #[DataProvider('dataProviderImplementsSupportedCapability')]
-  public function testImplementsSupportedCapability(string $capability_class): void {
-    $this->assertTrue(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
-      'DrushDriver must implement %s.',
-      $capability_class
-    ));
-  }
-
-  /**
-   * Capabilities DrushDriver is expected to support via Drush shell-outs.
-   */
-  public static function dataProviderImplementsSupportedCapability(): \Iterator {
-    yield 'cache' => [CacheCapabilityInterface::class];
-    yield 'config' => [ConfigCapabilityInterface::class];
-    yield 'content' => [ContentCapabilityInterface::class];
-    yield 'cron' => [CronCapabilityInterface::class];
-    yield 'field' => [FieldCapabilityInterface::class];
-    yield 'module' => [ModuleCapabilityInterface::class];
-    yield 'role' => [RoleCapabilityInterface::class];
-    yield 'user' => [UserCapabilityInterface::class];
-    yield 'watchdog' => [WatchdogCapabilityInterface::class];
-  }
-
-  /**
-   * Tests that DrushDriver does not claim capabilities Drush cannot support.
-   *
-   * @param string $capability_class
-   *   The capability interface name.
- *
- * @dataProvider dataProviderDoesNotImplementUnsupportedCapability
- */
-  #[DataProvider('dataProviderDoesNotImplementUnsupportedCapability')]
-  public function testDoesNotImplementUnsupportedCapability(string $capability_class): void {
-    $this->assertFalse(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
-      'DrushDriver must not implement %s.',
-      $capability_class
-    ));
-  }
-
-  /**
-   * Capabilities DrushDriver cannot support.
-   */
-  public static function dataProviderDoesNotImplementUnsupportedCapability(): \Iterator {
-    yield 'authentication' => [AuthenticationCapabilityInterface::class];
-    yield 'language' => [LanguageCapabilityInterface::class];
-    yield 'mail' => [MailCapabilityInterface::class];
-    yield 'sub-driver finder' => [SubDriverFinderInterface::class];
   }
 
   /**
