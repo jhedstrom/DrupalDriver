@@ -16,8 +16,7 @@
   </php>
   <testsuites>
     <testsuite name="unit">
-      <directory>./tests/Drupal/</directory>
-      <exclude>./tests/Drupal/Tests/Driver/Kernel</exclude>
+      <directory>./tests/Drupal/Tests/Driver/Unit</directory>
     </testsuite>
     <testsuite name="kernel">
       <directory>./tests/Drupal/Tests/Driver/Kernel</directory>

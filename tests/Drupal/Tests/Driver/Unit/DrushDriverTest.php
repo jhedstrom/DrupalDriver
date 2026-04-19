@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Unit;
 
 use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
 use Drupal\Driver\Capability\CacheCapabilityInterface;

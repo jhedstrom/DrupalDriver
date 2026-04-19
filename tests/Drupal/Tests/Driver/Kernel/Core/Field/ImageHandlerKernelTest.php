@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Kernel;
+namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\file\Entity\File;
 
@@ -50,7 +50,7 @@ class ImageHandlerKernelTest extends FieldHandlerKernelTestBase {
   public function testImageRoundTrip(): void {
     $this->attachField('field_photo', 'image');
 
-    $fixture = dirname(__DIR__, 4) . '/fixtures/files/sample.jpg';
+    $fixture = dirname(__DIR__, 6) . '/fixtures/files/sample.jpg';
 
     // ImageHandler takes [$path] or [$path, 'alt' => ..., 'title' => ...].
     // The alt/title keys come in as associative keys beside the numeric path.

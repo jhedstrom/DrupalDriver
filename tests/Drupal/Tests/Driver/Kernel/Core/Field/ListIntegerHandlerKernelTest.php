@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Kernel;
+namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 /**
  * Kernel round-trip test for ListIntegerHandler via the Core driver.

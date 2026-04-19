@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Kernel;
+namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 /**
  * Kernel round-trip test for link fields via the Core driver.

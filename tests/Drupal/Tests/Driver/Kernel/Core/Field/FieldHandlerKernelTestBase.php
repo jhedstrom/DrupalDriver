@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Kernel;
+namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Driver\Core\Core;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Kernel;
+namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\filter\Entity\FilterFormat;
 
@@ -55,7 +55,7 @@ class SupportedImageHandlerKernelTest extends FieldHandlerKernelTestBase {
   public function testSupportedImageRoundTrip(): void {
     $this->attachField('field_hero', 'supported_image');
 
-    $fixture = dirname(__DIR__, 4) . '/fixtures/files/sample.jpg';
+    $fixture = dirname(__DIR__, 6) . '/fixtures/files/sample.jpg';
 
     $this->assertFieldRoundTripViaDriver('field_hero', [
       [

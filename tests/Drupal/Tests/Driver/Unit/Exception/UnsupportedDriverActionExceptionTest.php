@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Exception;
+namespace Drupal\Tests\Driver\Unit\Exception;
 
 use Drupal\Driver\DriverInterface;
 use Drupal\Driver\Exception\UnsupportedDriverActionException;

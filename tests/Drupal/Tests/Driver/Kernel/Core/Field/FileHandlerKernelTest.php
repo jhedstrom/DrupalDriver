@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Kernel;
+namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\file\Entity\File;
 
@@ -49,7 +49,7 @@ class FileHandlerKernelTest extends FieldHandlerKernelTestBase {
   public function testFileRoundTrip(): void {
     $this->attachField('field_attachment', 'file');
 
-    $fixture = dirname(__DIR__, 4) . '/fixtures/files/sample.txt';
+    $fixture = dirname(__DIR__, 6) . '/fixtures/files/sample.txt';
 
     $this->assertFieldRoundTripViaDriver('field_attachment', [$fixture]);
 

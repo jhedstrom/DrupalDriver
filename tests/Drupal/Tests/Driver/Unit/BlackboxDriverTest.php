@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Unit;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\BlackboxDriver;

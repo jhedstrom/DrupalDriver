@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Core\Field;
+namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;

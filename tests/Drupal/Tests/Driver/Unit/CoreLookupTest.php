@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver;
+namespace Drupal\Tests\Driver\Unit;
 
 use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core99\Core as Core99Core;
