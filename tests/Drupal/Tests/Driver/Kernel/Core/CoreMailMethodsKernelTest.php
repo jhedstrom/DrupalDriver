@@ -72,4 +72,30 @@ class CoreMailMethodsKernelTest extends KernelTestBase {
     $this->assertSame([], $this->core->mailGet());
   }
 
+  /**
+   * Tests mail collection swaps mailsystem senders when the module is on.
+   *
+   * Exercises 'replaceMailSenders()', 'mailStartCollectingSystemMail()', and
+   * 'mailStopCollectingSystemMail()'.
+   */
+  public function testMailCollectionRedirectsMailsystemSenders(): void {
+    \Drupal::service('module_installer')->install(['mailsystem']);
+
+    $config = \Drupal::configFactory()->getEditable('mailsystem.settings');
+    $config->set('defaults.sender', 'php_mail')
+      ->set('defaults.formatter', 'php_mail')
+      ->save();
+    $original = $config->get();
+
+    $this->core->mailStartCollecting();
+
+    $swapped = \Drupal::configFactory()->get('mailsystem.settings')->get();
+    $this->assertSame('test_mail_collector', $swapped['defaults']['sender']);
+
+    $this->core->mailStopCollecting();
+
+    $restored = \Drupal::configFactory()->get('mailsystem.settings')->get();
+    $this->assertSame($original['defaults']['sender'], $restored['defaults']['sender']);
+  }
+
 }

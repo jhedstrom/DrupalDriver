@@ -202,6 +202,80 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
+   * Tests that 'drush()' actually spawns the configured binary.
+   *
+   * Uses 'echo' as the binary so the test runs deterministically without
+   * requiring a real Drush install. Echo prints the assembled command back on
+   * stdout, which 'drush()' then returns.
+   */
+  public function testDrushExecutesBinaryAndReturnsOutput(): void {
+    $echo = $this->resolveSystemBinary('echo');
+    if ($echo === NULL) {
+      $this->markTestSkipped('echo binary is not available on this system.');
+    }
+
+    $driver = new DrushDriver('alias', binary: $echo);
+
+    $result = $driver->drush('version', [], ['format' => 'json']);
+
+    $this->assertStringContainsString('@alias', $result);
+    $this->assertStringContainsString('--format=json', $result);
+    $this->assertStringContainsString('version', $result);
+  }
+
+  /**
+   * Tests that 'drush()' throws a 'RuntimeException' on a non-zero exit.
+   */
+  public function testDrushThrowsRuntimeExceptionOnFailure(): void {
+    $false = $this->resolveSystemBinary('false');
+    if ($false === NULL) {
+      $this->markTestSkipped('false binary is not available on this system.');
+    }
+
+    $driver = new DrushDriver('alias', binary: $false);
+
+    $this->expectException(\RuntimeException::class);
+    $driver->drush('version');
+  }
+
+  /**
+   * Returns the first executable location for a system utility, or NULL.
+   */
+  protected function resolveSystemBinary(string $name): ?string {
+    foreach (['/bin/' . $name, '/usr/bin/' . $name] as $candidate) {
+      if (is_executable($candidate)) {
+        return $candidate;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Tests 'parseArguments()' serialises boolean and value options.
+   *
+   * @param array<string, string|bool|null> $options
+   *   Options passed to 'parseArguments()'.
+   * @param string $expected
+   *   The expected concatenated CLI option string.
+   */
+  #[DataProvider('dataProviderParseArguments')]
+  public function testParseArguments(array $options, string $expected): void {
+    $this->assertSame($expected, ArgumentsExposingDrushDriver::expose($options));
+  }
+
+  /**
+   * Data provider for 'testParseArguments()'.
+   */
+  public static function dataProviderParseArguments(): \Iterator {
+    yield 'empty' => [[], ''];
+    yield 'single flag' => [['yes' => NULL], ' --yes'];
+    yield 'single valued option' => [['format' => 'json'], ' --format=json'];
+    yield 'flag and valued' => [['yes' => NULL, 'format' => 'json'], ' --yes --format=json'];
+    yield 'multiple valued' => [['format' => 'json', 'root' => '/var/www'], ' --format=json --root=/var/www'];
+  }
+
+  /**
  * Tests every command-issuing method drives 'drush()' as expected.
  *
  * @param string $method
@@ -313,6 +387,29 @@ class RecordingDrushDriver extends DrushDriver {
    */
   public function callIsLegacyDrushWithThrowing(): bool {
     return $this->isLegacyDrush();
+  }
+
+}
+
+/**
+ * Subclass of 'DrushDriver' that exposes the protected static parser.
+ *
+ * Used only by 'DrushDriverMethodsTest::testParseArguments()' to invoke the
+ * protected 'parseArguments()' method directly without a Drush binary.
+ */
+class ArgumentsExposingDrushDriver extends DrushDriver {
+
+  /**
+   * Public wrapper over the protected static parser.
+   *
+   * @param array<string, string|bool|null> $arguments
+   *   Argument map to serialise.
+   *
+   * @return string
+   *   The CLI option string produced by 'parseArguments()'.
+   */
+  public static function expose(array $arguments): string {
+    return self::parseArguments($arguments);
   }
 
 }
