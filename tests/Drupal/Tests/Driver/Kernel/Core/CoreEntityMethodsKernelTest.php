@@ -26,7 +26,7 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
    *
    * @var array<string>
    */
-  protected static $modules = ['system', 'user'];
+  protected static $modules = ['system', 'user', 'entity_test'];
 
   /**
    * The Core driver under test.
@@ -114,6 +114,24 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     $this->core->expandEntityBaseFields('user', $stub, ['name']);
 
     $this->assertSame(['bobbie'], $stub->name);
+  }
+
+  /**
+   * Tests that 'entityCreate()' rejects an unknown bundle for a bundled type.
+   *
+   * 'entity_test' has a 'type' bundle key but no bundles registered unless
+   * explicitly created; any supplied bundle therefore triggers the guard.
+   */
+  public function testEntityCreateRejectsUnknownBundle(): void {
+    $stub = (object) [
+      'type' => 'not_a_real_bundle',
+      'name' => 'orphan',
+    ];
+
+    $this->expectException(\Exception::class);
+    $this->expectExceptionMessageMatches("/Cannot create entity because provided bundle 'not_a_real_bundle' does not exist/");
+
+    $this->core->entityCreate('entity_test', $stub);
   }
 
 }

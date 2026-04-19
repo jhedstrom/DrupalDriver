@@ -70,6 +70,21 @@ class CoreErrorPathsTest extends TestCase {
   }
 
   /**
+   * Tests that 'entityCreate()' rejects an empty entity type before booting.
+   *
+   * The throw happens before any 'Drupal::service()' call, so no kernel is
+   * needed.
+   */
+  public function testEntityCreateRejectsEmptyEntityType(): void {
+    $core = $this->createCore();
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/You must specify an entity type/');
+
+    $core->entityCreate('', (object) []);
+  }
+
+  /**
    * Helper to build a Core instance pointed at a valid path.
    */
   protected function createCore(): Core {

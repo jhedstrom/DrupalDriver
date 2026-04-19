@@ -26,14 +26,6 @@ class FileHandler extends AbstractHandler {
       /** @var \Drupal\file\FileInterface $file */
       $file = \Drupal::service('file.repository')
         ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
-
-      // @codeCoverageIgnoreStart
-      // 'file.repository::writeData' returns a File entity or throws;
-      // retained here as a defensive guard against older writeData shims.
-      if ($file === FALSE) {
-        throw new \Exception('Error saving file.');
-      }
-      // @codeCoverageIgnoreEnd
       $file->save();
 
       $return[] = [

@@ -48,14 +48,9 @@ class DatetimeHandler extends AbstractHandler {
       return NULL;
     }
 
-    // @codeCoverageIgnoreStart
-    // The 'relative:' prefix is a convention used by consumers who feed the
-    // handler values like 'relative:-1 day'; the kernel suite does not
-    // exercise that shorthand.
     if (str_contains($value, 'relative:')) {
       $value = trim(str_replace('relative:', '', $value));
     }
-    // @codeCoverageIgnoreEnd
     $is_date_only = $this->fieldInfo->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE;
 
     $date = new DrupalDateTime($value, $site_timezone);

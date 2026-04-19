@@ -50,4 +50,24 @@ class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
     $this->assertFieldRoundTripViaDriver('field_birthday', ['2026-07-15']);
   }
 
+  /**
+   * Tests the 'relative:' prefix shorthand resolves to a concrete timestamp.
+   */
+  public function testRelativePrefixIsResolved(): void {
+    $this->attachField('field_seen', 'datetime', [
+      'datetime_type' => DateTimeItem::DATETIME_TYPE_DATETIME,
+    ]);
+
+    $stub = (object) [
+      'type' => self::BUNDLE,
+      'name' => 'relative-date',
+      'field_seen' => ['relative:2026-01-02 03:04:05'],
+    ];
+    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+
+    // The 'relative:' prefix is stripped before parsing; the resulting value
+    // matches the same storage string the plain timestamp would have produced.
+    $this->assertSame(['2026-01-02T03:04:05'], $stub->field_seen);
+  }
+
 }

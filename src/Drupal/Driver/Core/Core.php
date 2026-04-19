@@ -117,18 +117,14 @@ class Core implements CoreInterface {
     for ($n = $version; $n >= 10; $n--) {
       $default_candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\DefaultHandler', $n);
     }
-    $default_candidates[] = DefaultHandler::class;
 
     foreach (array_merge($candidates, $default_candidates) as $class) {
       if (class_exists($class)) {
         return new $class($entity, $entity_type, $field_name);
       }
     }
-    // @codeCoverageIgnoreStart
-    // 'DefaultHandler' always exists in the default namespace so the chain
-    // above is guaranteed to match. This throw is defensive.
-    throw new \RuntimeException(sprintf('No field handler found for type "%s".', $camelized_type));
-    // @codeCoverageIgnoreEnd
+
+    return new DefaultHandler($entity, $entity_type, $field_name);
   }
 
   /**
@@ -276,11 +272,7 @@ class Core implements CoreInterface {
       $replacements = [];
       if (is_array($variables)) {
         foreach ($variables as $placeholder => $value) {
-          // @codeCoverageIgnoreStart
-          // Drupal's logger normalises context values to scalars before
-          // serialisation; the non-scalar branch is defensive.
           $replacements[$placeholder] = is_scalar($value) ? (string) $value : '';
-          // @codeCoverageIgnoreEnd
         }
       }
       $message = strtr((string) $row->message, $replacements);
@@ -373,19 +365,12 @@ class Core implements CoreInterface {
     ]);
     $result = $role->save();
 
-    if ($result === SAVED_NEW) {
-      // Grant the specified permissions to the role, if any.
-      if (!empty($permissions)) {
-        user_role_grant_permissions($role->id(), $permissions);
-      }
-      return $role->id();
+    // A freshly created role always saves as SAVED_NEW.
+    if (!empty($permissions)) {
+      user_role_grant_permissions($role->id(), $permissions);
     }
 
-    // @codeCoverageIgnoreStart
-    // A freshly created role always saves as SAVED_NEW; this throw guards
-    // against unexpected states from a storage override.
-    throw new \RuntimeException(sprintf('Failed to create a role with "%s" permission(s).', implode(', ', $permissions)));
-    // @codeCoverageIgnoreEnd
+    return $role->id();
   }
 
   /**
@@ -674,13 +659,6 @@ class Core implements CoreInterface {
     // Enable a language only if it has not been enabled already.
     if (!ConfigurableLanguage::load($langcode)) {
       $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
-      // @codeCoverageIgnoreStart
-      // Drupal's createFromLangcode returns a language for any code on
-      // supported versions; retained for older-Drupal compatibility.
-      if (!$created_language) {
-        throw new \InvalidArgumentException(sprintf("There is no predefined language with langcode '%s'.", $langcode));
-      }
-      // @codeCoverageIgnoreEnd
       $created_language->save();
       return $language;
     }
@@ -734,6 +712,10 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface {
+    if ($entity_type === '') {
+      throw new \InvalidArgumentException('You must specify an entity type to create an entity.');
+    }
+
     // If the bundle field is empty, put the inferred bundle value in it.
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
@@ -745,24 +727,10 @@ class Core implements CoreInterface {
       /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
       $bundle_info = \Drupal::service('entity_type.bundle.info');
       $bundles = $bundle_info->getBundleInfo($entity_type);
-      // @codeCoverageIgnoreStart
-      // 'Core::nodeCreate()' funnels through 'entityCreate()' and has its
-      // own, equally tested unknown-bundle throw. This entityCreate path
-      // is reached only when 'entityCreate()' is called directly with a
-      // stub that names a bundled type and a bogus bundle - tested more
-      // naturally through 'nodeCreate()'.
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
         throw new \Exception(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
       }
-      // @codeCoverageIgnoreEnd
     }
-    // @codeCoverageIgnoreStart
-    // 'entity_type' is typed 'string' and callers always provide a non-empty
-    // value; retained as a defensive guard for clarity.
-    if (empty($entity_type)) {
-      throw new \Exception("You must specify an entity type to create an entity.");
-    }
-    // @codeCoverageIgnoreEnd
     $this->expandEntityFields($entity_type, $entity);
     $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $created_entity->save();

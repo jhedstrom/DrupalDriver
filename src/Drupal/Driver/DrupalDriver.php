@@ -173,10 +173,6 @@ class DrupalDriver implements DrupalDriverInterface {
     $version_string = $this->readVersionConstant();
     $major = explode('.', $version_string)[0];
 
-    // @codeCoverageIgnoreStart
-    // 'Drupal::VERSION' is a dotted string; these two guards catch a
-    // malformed or pre-10 version that would only appear if a consumer
-    // loaded a third-party VERSION constant before invoking the driver.
     if (!is_numeric($major)) {
       throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version_string));
     }
@@ -184,24 +180,18 @@ class DrupalDriver implements DrupalDriverInterface {
     if ((int) $major < 10) {
       throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 10 or higher is required.', $version_string));
     }
-    // @codeCoverageIgnoreEnd
+
     return (int) $major;
   }
 
   /**
    * Reads the Drupal VERSION constant.
+   *
+   * Subclasses override this to return a synthetic version for testing the
+   * non-numeric and sub-10 branches of 'detectMajorVersion()'.
    */
   protected function readVersionConstant(): string {
-    if (defined(\Drupal::class . '::VERSION')) {
-      return \Drupal::VERSION;
-    }
-
-    // @codeCoverageIgnoreStart
-    // The driver is always used with a loaded Drupal autoloader; this
-    // fallback fires only if the consumer somehow discards '\Drupal'
-    // between bootstrap and version read.
-    throw new BootstrapException('Unable to determine Drupal core version. Supported versions are 10 and 11.');
-    // @codeCoverageIgnoreEnd
+    return \Drupal::VERSION;
   }
 
   /**
@@ -233,18 +223,15 @@ class DrupalDriver implements DrupalDriverInterface {
     for ($n = $version; $n >= 10; $n--) {
       $candidates[] = sprintf('Drupal\\Driver\\Core%d\\Core', $n);
     }
-    $candidates[] = Core::class;
+
     foreach ($candidates as $class) {
       if (class_exists($class)) {
         $this->core = new $class($this->drupalRoot, $this->uri);
         return;
       }
     }
-    // @codeCoverageIgnoreStart
-    // The default 'Drupal\Driver\Core\Core' is always present, so this
-    // throw is unreachable in normal usage.
-    throw new BootstrapException(sprintf('No Core implementation found for Drupal version %s.', $version));
-    // @codeCoverageIgnoreEnd
+
+    $this->core = new Core($this->drupalRoot, $this->uri);
   }
 
   /**

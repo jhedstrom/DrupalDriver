@@ -18,7 +18,9 @@ use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\DriverInterface;
 use Drupal\Driver\DrupalDriver;
 use Drupal\Driver\DrupalDriverInterface;
+use Drupal\Driver\Exception\BootstrapException;
 use Drupal\Driver\SubDriverFinderInterface;
+use Drupal\Tests\Driver\Unit\Fixtures\FakeVersionDrupalDriver;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -76,6 +78,31 @@ class DrupalDriverTest extends TestCase {
     yield 'role' => [RoleCapabilityInterface::class];
     yield 'user' => [UserCapabilityInterface::class];
     yield 'watchdog' => [WatchdogCapabilityInterface::class];
+  }
+
+  /**
+   * Tests that 'detectMajorVersion()' rejects an unparseable version string.
+   *
+   * Uses a fixture subclass to inject a non-numeric version value without
+   * touching the real '\Drupal::VERSION' constant.
+   */
+  public function testDetectMajorVersionRejectsNonNumeric(): void {
+    $this->expectException(BootstrapException::class);
+    $this->expectExceptionMessageMatches('/Unable to extract major Drupal core version/');
+
+    FakeVersionDrupalDriver::$nextVersion = 'zz.x';
+    new FakeVersionDrupalDriver(__DIR__, 'default');
+  }
+
+  /**
+   * Tests that 'detectMajorVersion()' rejects pre-10 versions.
+   */
+  public function testDetectMajorVersionRejectsPre10(): void {
+    $this->expectException(BootstrapException::class);
+    $this->expectExceptionMessageMatches('/Unsupported Drupal core version/');
+
+    FakeVersionDrupalDriver::$nextVersion = '9.5.0';
+    new FakeVersionDrupalDriver(__DIR__, 'default');
   }
 
 }

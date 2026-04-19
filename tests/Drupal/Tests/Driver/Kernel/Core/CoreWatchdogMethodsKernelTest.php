@@ -108,4 +108,33 @@ class CoreWatchdogMethodsKernelTest extends KernelTestBase {
     $this->core->watchdogFetch();
   }
 
+  /**
+   * Tests that non-scalar replacement variables are rendered as empty strings.
+   *
+   * Drupal's logger normalises context values, but malformed rows written by
+   * third-party code may carry non-scalar replacements. The fetcher swaps
+   * them for '' so 'strtr()' does not crash.
+   */
+  public function testWatchdogFetchHandlesNonScalarReplacementVariables(): void {
+    \Drupal::database()->insert('watchdog')
+      ->fields([
+        'uid' => 0,
+        'type' => 'test',
+        'message' => 'object was @thing',
+        'variables' => serialize(['@thing' => ['nested' => 'value']]),
+        'severity' => 6,
+        'link' => '',
+        'location' => '',
+        'referer' => '',
+        'hostname' => '127.0.0.1',
+        'timestamp' => time(),
+      ])
+      ->execute();
+
+    $output = $this->core->watchdogFetch();
+
+    $this->assertStringContainsString('object was ', $output);
+    $this->assertStringNotContainsString('nested', $output);
+  }
+
 }
