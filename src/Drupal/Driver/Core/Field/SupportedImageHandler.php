@@ -18,12 +18,12 @@ class SupportedImageHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values): array {
-    $return_values = [];
-
     // Standardize single/multi-value input.
     if (is_string($values) || isset($values['target_id'])) {
       $values = [$values];
     }
+
+    $images = [];
 
     foreach ($values as $value) {
       $file_path = (string) ($value['target_id'] ?? $value);
@@ -39,7 +39,7 @@ class SupportedImageHandler extends AbstractHandler {
         ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
       $file->save();
 
-      $return_values[] = [
+      $images[] = [
         'target_id' => $file->id(),
         'alt' => $value['alt'] ?? NULL,
         'title' => $value['title'] ?? NULL,
@@ -50,7 +50,7 @@ class SupportedImageHandler extends AbstractHandler {
       ];
     }
 
-    return $return_values;
+    return $images;
   }
 
 }

@@ -13,9 +13,11 @@ class FileHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values): array {
-    $return = [];
+    $files = [];
+
     foreach ((array) $values as $value) {
-      $file_path = (string) (is_array($value) ? $value['target_id'] ?? $value[0] : $value);
+      $is_array = is_array($value);
+      $file_path = (string) ($is_array ? $value['target_id'] ?? $value[0] : $value);
       $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
       $data = file_get_contents($file_path);
 
@@ -28,13 +30,14 @@ class FileHandler extends AbstractHandler {
         ->writeData($data, 'public://' . uniqid() . '.' . $file_extension);
       $file->save();
 
-      $return[] = [
+      $files[] = [
         'target_id' => $file->id(),
-        'display' => is_array($value) ? ($value['display'] ?? 1) : 1,
-        'description' => is_array($value) ? ($value['description'] ?? '') : '',
+        'display' => $is_array ? ($value['display'] ?? 1) : 1,
+        'description' => $is_array ? ($value['description'] ?? '') : '',
       ];
     }
-    return $return;
+
+    return $files;
   }
 
 }

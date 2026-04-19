@@ -13,19 +13,21 @@ class TaxonomyTermReferenceHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values): array {
-    $return = [];
+    $ids = [];
+
     foreach ($values as $name) {
       $terms = \Drupal::entityTypeManager()
         ->getStorage('taxonomy_term')
         ->loadByProperties(['name' => $name]);
-      if ($terms) {
-        $return[] = array_shift($terms)->id();
-      }
-      else {
+
+      if (!$terms) {
         throw new \Exception(sprintf("No term '%s' exists.", $name));
       }
+
+      $ids[] = array_shift($terms)->id();
     }
-    return $return;
+
+    return $ids;
   }
 
 }

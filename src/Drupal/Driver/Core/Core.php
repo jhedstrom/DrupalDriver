@@ -67,9 +67,11 @@ class Core implements CoreInterface {
    */
   public function __construct(string $drupal_root, string $uri = 'default', ?Random $random = NULL) {
     $resolved = realpath($drupal_root);
+
     if ($resolved === FALSE) {
       throw new BootstrapException(sprintf('Could not resolve Drupal root "%s".', $drupal_root));
     }
+
     $this->drupalRoot = $resolved;
     $this->uri = $uri;
     $this->random = $random ?? new Random();
@@ -101,27 +103,32 @@ class Core implements CoreInterface {
    */
   public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface {
     $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
+
     if (!isset($field_types[$field_name])) {
       throw new \RuntimeException(sprintf('Field "%s" not found on entity type "%s".', $field_name, $entity_type));
     }
+
     $camelized_type = Container::camelize($field_types[$field_name]);
     $version = $this->getVersion();
 
     $candidates = [];
+
     for ($n = $version; $n >= 10; $n--) {
       $candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\%sHandler', $n, $camelized_type);
     }
+
     $candidates[] = sprintf('\\Drupal\\Driver\\Core\\Field\\%sHandler', $camelized_type);
 
-    $default_candidates = [];
     for ($n = $version; $n >= 10; $n--) {
-      $default_candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\DefaultHandler', $n);
+      $candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\DefaultHandler', $n);
     }
 
-    foreach (array_merge($candidates, $default_candidates) as $class) {
-      if (class_exists($class)) {
-        return new $class($entity, $entity_type, $field_name);
+    foreach ($candidates as $class) {
+      if (!class_exists($class)) {
+        continue;
       }
+
+      return new $class($entity, $entity_type, $field_name);
     }
 
     return new DefaultHandler($entity, $entity_type, $field_name);
@@ -140,6 +147,7 @@ class Core implements CoreInterface {
    */
   protected function expandEntityFields(string $entity_type, \stdClass $entity, array $base_fields = []): void {
     $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
+
     foreach (array_keys($field_types) as $field_name) {
       if (isset($entity->$field_name)) {
         $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
@@ -206,17 +214,21 @@ class Core implements CoreInterface {
     /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
     $bundle_info = \Drupal::service('entity_type.bundle.info');
     $bundles = $bundle_info->getBundleInfo('node');
+
     if (!in_array($node->type, array_keys($bundles))) {
       throw new \Exception(sprintf('Cannot create content because provided content type %s does not exist.', $node->type));
     }
+
     // If 'author' is set, remap it to 'uid'.
     if (isset($node->author)) {
+      /** @var \Drupal\user\Entity\User|null $user */
       $user = user_load_by_name($node->author);
-      /** @var \Drupal\user\Entity\User $user */
+
       if ($user) {
         $node->uid = $user->id();
       }
     }
+
     $this->expandEntityFields('node', $node);
     $entity = Node::create((array) $node);
     $entity->save();
@@ -267,14 +279,17 @@ class Core implements CoreInterface {
     }
 
     $lines = [];
+
     foreach ($query->execute() as $row) {
       $variables = $row->variables ? @unserialize($row->variables, ['allowed_classes' => FALSE]) : [];
       $replacements = [];
+
       if (is_array($variables)) {
         foreach ($variables as $placeholder => $value) {
           $replacements[$placeholder] = is_scalar($value) ? (string) $value : '';
         }
       }
+
       $message = strtr((string) $row->message, $replacements);
       $lines[] = sprintf('[%s/%s] %s', $row->type, $this->resolveSeverityLabel((int) $row->severity), $message);
     }
@@ -288,6 +303,7 @@ class Core implements CoreInterface {
   protected function resolveSeverityLevel(string $severity): int {
     $key = strtolower($severity);
     $levels = array_flip($this->severityLabels());
+
     if (isset($levels[$key])) {
       return $levels[$key];
     }
@@ -346,22 +362,15 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function roleCreate(array $permissions): string {
-    // Generate a random, lowercase machine name.
     $rid = strtolower($this->random->name(8, TRUE));
+    $label = trim($this->random->name(8, TRUE));
 
-    // Generate a random label.
-    $name = trim($this->random->name(8, TRUE));
-
-    // Convert labels to machine names.
     $this->convertPermissions($permissions);
-
-    // Check the all the permissions strings are valid.
     $this->checkPermissions($permissions);
 
-    // Create new role.
     $role = \Drupal::entityTypeManager()->getStorage('user_role')->create([
       'id' => $rid,
-      'label' => $name,
+      'label' => $label,
     ]);
     $role->save();
 
@@ -387,7 +396,9 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function processBatch(): void {
-    if ($batch =& batch_get()) {
+    $batch =& batch_get();
+
+    if ($batch) {
       $batch['progressive'] = FALSE;
       batch_process();
     }
@@ -423,9 +434,12 @@ class Core implements CoreInterface {
       // for permission titles, which would never strictly equal the plain
       // string labels supplied by callers.
       $key = array_search((string) $definition['title'], $permissions, TRUE);
-      if ($key !== FALSE) {
-        $permissions[$key] = $name;
+
+      if ($key === FALSE) {
+        continue;
       }
+
+      $permissions[$key] = $name;
     }
   }
 
@@ -439,9 +453,11 @@ class Core implements CoreInterface {
     $available = array_keys($this->getAllPermissions());
 
     foreach ($permissions as $permission) {
-      if (!in_array($permission, $available)) {
-        throw new \RuntimeException(sprintf('Invalid permission "%s".', $permission));
+      if (in_array($permission, $available)) {
+        continue;
       }
+
+      throw new \RuntimeException(sprintf('Invalid permission "%s".', $permission));
     }
   }
 
@@ -464,9 +480,8 @@ class Core implements CoreInterface {
     $conditions = $query->orConditionGroup()
       ->condition('id', $role)
       ->condition('label', $role);
-    $rids = $query
-      ->condition($conditions)
-      ->execute();
+    $rids = $query->condition($conditions)->execute();
+
     if (!$rids) {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role));
     }
@@ -539,11 +554,12 @@ class Core implements CoreInterface {
     $term->vid = $term->vocabulary_machine_name;
 
     if (!empty($term->parent)) {
-      $query = \Drupal::entityQuery('taxonomy_term')
+      $parent_terms = \Drupal::entityQuery('taxonomy_term')
         ->accessCheck(FALSE)
         ->condition('name', $term->parent)
-        ->condition('vid', $term->vocabulary_machine_name);
-      $parent_terms = $query->execute();
+        ->condition('vid', $term->vocabulary_machine_name)
+        ->execute();
+
       if (!empty($parent_terms)) {
         $term->parent = reset($parent_terms);
       }
@@ -554,6 +570,7 @@ class Core implements CoreInterface {
     $entity->save();
 
     $term->tid = $entity->id();
+
     return $term;
   }
 
@@ -562,11 +579,14 @@ class Core implements CoreInterface {
    */
   public function termDelete(object $term): bool {
     $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
-    if ($term instanceof TermInterface) {
-      $term->delete();
-      return TRUE;
+
+    if (!$term instanceof TermInterface) {
+      return FALSE;
     }
-    return FALSE;
+
+    $term->delete();
+
+    return TRUE;
   }
 
   /**
@@ -608,19 +628,27 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array {
-    $return = [];
     $entity_field_manager = $this->getEntityFieldManager();
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
+
     if ($base_fields !== []) {
       $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
     }
+
+    $types = [];
+
     foreach ($fields as $field_name => $field) {
-      if ($this->fieldExists($entity_type, $field_name)
-        || (in_array($field_name, $base_fields) && $this->fieldIsBase($entity_type, $field_name))) {
-        $return[$field_name] = $field->getType();
+      $is_configured = $this->fieldExists($entity_type, $field_name);
+      $is_requested_base = in_array($field_name, $base_fields) && $this->fieldIsBase($entity_type, $field_name);
+
+      if (!$is_configured && !$is_requested_base) {
+        continue;
       }
+
+      $types[$field_name] = $field->getType();
     }
-    return $return;
+
+    return $types;
   }
 
   /**
@@ -653,16 +681,14 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function languageCreate(\stdClass $language): \stdClass|false {
-    $langcode = $language->langcode;
-
     // Enable a language only if it has not been enabled already.
-    if (!ConfigurableLanguage::load($langcode)) {
-      $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
-      $created_language->save();
-      return $language;
+    if (ConfigurableLanguage::load($language->langcode)) {
+      return FALSE;
     }
 
-    return FALSE;
+    ConfigurableLanguage::createFromLangcode($language->langcode)->save();
+
+    return $language;
   }
 
   /**
@@ -679,6 +705,7 @@ class Core implements CoreInterface {
   public function cacheClearStatic(): void {
     drupal_static_reset();
     \Drupal::service('cache_tags.invalidator')->resetChecksums();
+
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
       \Drupal::entityTypeManager()->getAccessControlHandler($definition->id())->resetCache();
     }
@@ -717,6 +744,7 @@ class Core implements CoreInterface {
 
     // If the bundle field is empty, put the inferred bundle value in it.
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
+
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
       $entity->$bundle_key = $entity->step_bundle;
     }
@@ -726,10 +754,12 @@ class Core implements CoreInterface {
       /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
       $bundle_info = \Drupal::service('entity_type.bundle.info');
       $bundles = $bundle_info->getBundleInfo($entity_type);
+
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
         throw new \Exception(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
       }
     }
+
     $this->expandEntityFields($entity_type, $entity);
     $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $created_entity->save();
@@ -745,6 +775,7 @@ class Core implements CoreInterface {
    */
   public function entityDelete(string $entity_type, object $entity): void {
     $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
+
     if ($entity instanceof EntityInterface) {
       $entity->delete();
     }
@@ -869,9 +900,13 @@ class Core implements CoreInterface {
    * If the Mail System module is enabled, stop collecting those mails.
    */
   protected function mailStopCollectingSystemMail(): void {
-    if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
-      \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
+    if (!\Drupal::moduleHandler()->moduleExists('mailsystem')) {
+      return;
     }
+
+    \Drupal::configFactory()->getEditable('mailsystem.settings')
+      ->setData($this->originalConfiguration['mailsystem.settings'])
+      ->save();
   }
 
   /**

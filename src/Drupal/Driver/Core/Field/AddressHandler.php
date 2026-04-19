@@ -85,18 +85,19 @@ class AddressHandler extends AbstractHandler {
     foreach ($value as $key => $field_value) {
       if (in_array($key, $visible_fields, TRUE)) {
         $normalised[$key] = $field_value;
+        continue;
       }
-      elseif (is_numeric($key)) {
-        if (!isset($visible_fields[$position])) {
-          throw new \RuntimeException(sprintf('Too many address sub-field values supplied; only %d visible fields available.', count($visible_fields)));
-        }
 
-        $normalised[$visible_fields[$position]] = $field_value;
-        $position++;
-      }
-      else {
+      if (!is_numeric($key)) {
         throw new \RuntimeException(sprintf('Invalid address sub-field key: %s.', $key));
       }
+
+      if (!isset($visible_fields[$position])) {
+        throw new \RuntimeException(sprintf('Too many address sub-field values supplied; only %d visible fields available.', count($visible_fields)));
+      }
+
+      $normalised[$visible_fields[$position]] = $field_value;
+      $position++;
     }
 
     if (!isset($normalised['country_code'])) {

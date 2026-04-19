@@ -13,17 +13,21 @@ class TimeHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values): array {
-    return array_map(function ($value) {
-      // Value is numeric so it is safe to assume we have the seconds passed in
-      // the storage format (seconds past midnight).
+    $seconds = [];
+
+    foreach ($values as $value) {
+      // Numeric values are already in storage format (seconds past midnight).
       if (is_numeric($value)) {
-        return $value;
+        $seconds[] = $value;
+        continue;
       }
 
       // Support anything that can be passed to strtotime.
       $midnight = strtotime('today midnight');
-      return strtotime($value) - $midnight;
-    }, $values);
+      $seconds[] = strtotime((string) $value) - $midnight;
+    }
+
+    return $seconds;
   }
 
 }
