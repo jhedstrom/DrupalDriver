@@ -18,7 +18,7 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * Track whether Drupal has been bootstrapped.
    */
-  private bool $bootstrapped = FALSE;
+  protected bool $bootstrapped = FALSE;
 
   /**
    * Drupal core object.
@@ -28,12 +28,12 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * System path to the Drupal installation.
    */
-  private readonly string $drupalRoot;
+  protected readonly string $drupalRoot;
 
   /**
    * URI for the Drupal installation.
    */
-  private readonly string $uri;
+  protected readonly string $uri;
 
   /**
    * Drupal core version.
@@ -86,55 +86,8 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user): void {
-    $this->getCore()->userCreate($user);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userDelete(\stdClass $user): void {
-    $this->getCore()->userDelete($user);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function processBatch(): void {
     $this->getCore()->processBatch();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userAddRole(\stdClass $user, string $role): void {
-    $this->getCore()->userAddRole($user, $role);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
-    return $this->getCore()->watchdogFetch($count, $type, $severity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function cacheClear(?string $type = NULL): void {
-    $this->getCore()->cacheClear($type);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSubDriverPaths(): array {
-    // Ensure system is bootstrapped.
-    if (!$this->isBootstrapped()) {
-      $this->bootstrap();
-    }
-
-    return $this->getCore()->getExtensionPathList();
   }
 
   /**
@@ -150,48 +103,6 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function getDrupalVersion(): int {
     return $this->version;
-  }
-
-  /**
-   * Detects the major Drupal version from the filesystem.
-   *
-   * @return int
-   *   The actual major version number (10, 11, 12, etc.).
-   */
-  protected function detectMajorVersion(): int {
-    $version_files = [
-      '/autoload.php',
-      '/core/includes/bootstrap.inc',
-    ];
-
-    foreach ($version_files as $path) {
-      if (file_exists($this->drupalRoot . $path)) {
-        require_once $this->drupalRoot . $path;
-      }
-    }
-
-    $version_string = $this->readVersionConstant();
-    $major = explode('.', $version_string)[0];
-
-    if (!is_numeric($major)) {
-      throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version_string));
-    }
-
-    if ((int) $major < 10) {
-      throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 10 or higher is required.', $version_string));
-    }
-
-    return (int) $major;
-  }
-
-  /**
-   * Reads the Drupal VERSION constant.
-   *
-   * Subclasses override this to return a synthetic version for testing the
-   * non-numeric and sub-10 branches of 'detectMajorVersion()'.
-   */
-  protected function readVersionConstant(): string {
-    return \Drupal::VERSION;
   }
 
   /**
@@ -244,6 +155,75 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function getSubDriverPaths(): array {
+    // Ensure system is bootstrapped.
+    if (!$this->isBootstrapped()) {
+      $this->bootstrap();
+    }
+
+    return $this->getCore()->getExtensionPathList();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function login(\stdClass $user): void {
+    $auth = $this->getAuthCore();
+
+    if ($auth instanceof AuthenticationCapabilityInterface) {
+      $auth->login($user);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function logout(): void {
+    $auth = $this->getAuthCore();
+
+    if ($auth instanceof AuthenticationCapabilityInterface) {
+      $auth->logout();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function cacheClear(?string $type = NULL): void {
+    $this->getCore()->cacheClear($type);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function cacheClearStatic(): void {
+    $this->getCore()->cacheClearStatic();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configGet(string $name, string $key = ''): mixed {
+    return $this->getCore()->configGet($name, $key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configGetOriginal(string $name, string $key = ''): mixed {
+    return $this->getCore()->configGetOriginal($name, $key);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configSet(string $name, string $key, mixed $value): void {
+    $this->getCore()->configSet($name, $key, $value);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function nodeCreate(\stdClass $node): object {
     return $this->getCore()->nodeCreate($node);
   }
@@ -253,13 +233,6 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function nodeDelete(object $node): void {
     $this->getCore()->nodeDelete($node);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function cronRun(): bool {
-    return $this->getCore()->cronRun();
   }
 
   /**
@@ -279,15 +252,22 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): string {
-    return $this->getCore()->roleCreate($permissions);
+  public function entityCreate(string $entity_type, \stdClass $entity): object {
+    return $this->getCore()->entityCreate($entity_type, $entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function roleDelete(string $role_name): void {
-    $this->getCore()->roleDelete($role_name);
+  public function entityDelete(string $entity_type, object $entity): void {
+    $this->getCore()->entityDelete($entity_type, $entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function cronRun(): bool {
+    return $this->getCore()->cronRun();
   }
 
   /**
@@ -316,48 +296,6 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function languageDelete(\stdClass $language): void {
     $this->getCore()->languageDelete($language);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function configGet(string $name, string $key = ''): mixed {
-    return $this->getCore()->configGet($name, $key);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function configGetOriginal(string $name, string $key = ''): mixed {
-    return $this->getCore()->configGetOriginal($name, $key);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function configSet(string $name, string $key, mixed $value): void {
-    $this->getCore()->configSet($name, $key, $value);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function cacheClearStatic(): void {
-    $this->getCore()->cacheClearStatic();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityCreate(string $entity_type, \stdClass $entity): object {
-    return $this->getCore()->entityCreate($entity_type, $entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityDelete(string $entity_type, object $entity): void {
-    $this->getCore()->entityDelete($entity_type, $entity);
   }
 
   /**
@@ -412,23 +350,85 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function login(\stdClass $user): void {
-    $auth = $this->getAuthCore();
-
-    if ($auth instanceof AuthenticationCapabilityInterface) {
-      $auth->login($user);
-    }
+  public function roleCreate(array $permissions): string {
+    return $this->getCore()->roleCreate($permissions);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function logout(): void {
-    $auth = $this->getAuthCore();
+  public function roleDelete(string $role_name): void {
+    $this->getCore()->roleDelete($role_name);
+  }
 
-    if ($auth instanceof AuthenticationCapabilityInterface) {
-      $auth->logout();
+  /**
+   * {@inheritdoc}
+   */
+  public function userCreate(\stdClass $user): void {
+    $this->getCore()->userCreate($user);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDelete(\stdClass $user): void {
+    $this->getCore()->userDelete($user);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userAddRole(\stdClass $user, string $role): void {
+    $this->getCore()->userAddRole($user, $role);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+    return $this->getCore()->watchdogFetch($count, $type, $severity);
+  }
+
+  /**
+   * Detects the major Drupal version from the filesystem.
+   *
+   * @return int
+   *   The actual major version number (10, 11, 12, etc.).
+   */
+  protected function detectMajorVersion(): int {
+    $version_files = [
+      '/autoload.php',
+      '/core/includes/bootstrap.inc',
+    ];
+
+    foreach ($version_files as $path) {
+      if (file_exists($this->drupalRoot . $path)) {
+        require_once $this->drupalRoot . $path;
+      }
     }
+
+    $version_string = $this->readVersionConstant();
+    $major = explode('.', $version_string)[0];
+
+    if (!is_numeric($major)) {
+      throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version_string));
+    }
+
+    if ((int) $major < 10) {
+      throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 10 or higher is required.', $version_string));
+    }
+
+    return (int) $major;
+  }
+
+  /**
+   * Reads the Drupal VERSION constant.
+   *
+   * Subclasses override this to return a synthetic version for testing the
+   * non-numeric and sub-10 branches of 'detectMajorVersion()'.
+   */
+  protected function readVersionConstant(): string {
+    return \Drupal::VERSION;
   }
 
   /**

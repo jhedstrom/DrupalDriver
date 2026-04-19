@@ -17,7 +17,7 @@ class BlackboxDriver implements BlackboxDriverInterface {
   /**
    * Random generator.
    */
-  private readonly Random $random;
+  protected readonly Random $random;
 
   /**
    * Set up the driver with an optional random generator.
