@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\user\Entity\User;
@@ -70,6 +72,55 @@ class EntityReferenceHandlerKernelTest extends FieldHandlerKernelTestBase {
     $user->save();
 
     $this->assertFieldRoundTripViaDriver('field_owner', [(int) $user->id()]);
+  }
+
+  /**
+   * Tests round-trip when a delta is an associative array.
+   *
+   * Callers passing the field-item shape used by file / image /
+   * entity_reference_revisions values - e.g. '['target_id' => 'alice',
+   * 'display' => 1]' - previously crashed because the array was handed to
+   * 'query->condition()' directly, producing a SQL parameter-binding error.
+   * The handler should treat the main property value as the lookup label,
+   * resolve it to an id, and preserve the original array shape so any extra
+   * item properties round-trip through to storage.
+   */
+  public function testUserReferenceResolvesAssociativeArrayDelta(): void {
+    $this->attachField('field_owner', 'entity_reference', [
+      'target_type' => 'user',
+    ]);
+
+    User::create(['name' => 'alice'])->save();
+
+    $this->assertFieldRoundTripViaDriver('field_owner', [['target_id' => 'alice']]);
+  }
+
+  /**
+   * Tests round-trip when deltas mix scalar labels and associative arrays.
+   */
+  public function testUserReferenceResolvesMixedScalarAndAssociativeDeltas(): void {
+    // Needs an unlimited-cardinality field to store two deltas; attachField()
+    // always creates a single-value field, so configure the storage inline.
+    FieldStorageConfig::create([
+      'field_name' => 'field_owners',
+      'entity_type' => self::ENTITY_TYPE,
+      'type' => 'entity_reference',
+      'cardinality' => FieldStorageConfig::CARDINALITY_UNLIMITED,
+      'settings' => ['target_type' => 'user'],
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_owners',
+      'entity_type' => self::ENTITY_TYPE,
+      'bundle' => self::BUNDLE,
+    ])->save();
+
+    User::create(['name' => 'alice'])->save();
+    User::create(['name' => 'bob'])->save();
+
+    $this->assertFieldRoundTripViaDriver('field_owners', [
+      ['target_id' => 'alice'],
+      'bob',
+    ]);
   }
 
   /**
