@@ -19,30 +19,40 @@ class EntityReferenceHandler extends AbstractHandler {
 
     // User entities return FALSE for getKey('label'), so use 'name' directly.
     $label_key = $entity_type_id !== 'user' ? $entity_definition->getKey('label') : 'name';
+    $main_property = $this->fieldInfo->getMainPropertyName();
 
     // Determine target bundle restrictions.
     $target_bundles = $this->getTargetBundles();
     $target_bundle_key = $target_bundles ? $entity_definition->getKey('bundle') : NULL;
 
-    $ids = [];
+    $resolved = [];
 
     foreach ((array) $values as $value) {
+      // A delta may be a scalar (label or id) OR an associative array carrying
+      // the main property plus additional item columns (e.g. 'display' on file
+      // references or 'target_revision_id' on entity_reference_revisions).
+      // When the main property is present, use its value as the lookup label
+      // and preserve the rest of the array so those extras round-trip through
+      // to storage.
+      $has_extras = is_string($main_property) && is_array($value) && array_key_exists($main_property, $value);
+      $lookup = $has_extras ? $value[$main_property] : $value;
+
       $query = \Drupal::entityQuery($entity_type_id);
       $query->accessCheck(FALSE);
 
       if ($label_key) {
-        $is_numeric_id = is_int($value) || (is_string($value) && ctype_digit($value));
+        $is_numeric_id = is_int($lookup) || (is_string($lookup) && ctype_digit($lookup));
         $or = $query->orConditionGroup();
 
         if ($is_numeric_id) {
-          $or->condition($id_key, (int) $value);
+          $or->condition($id_key, (int) $lookup);
         }
 
-        $or->condition($label_key, $value);
+        $or->condition($label_key, $lookup);
         $query->condition($or);
       }
       else {
-        $query->condition($id_key, $value);
+        $query->condition($id_key, $lookup);
       }
 
       if ($target_bundles && $target_bundle_key) {
@@ -52,13 +62,21 @@ class EntityReferenceHandler extends AbstractHandler {
       $entities = $query->execute();
 
       if (!$entities) {
-        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $value, $entity_type_id));
+        throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $lookup, $entity_type_id));
       }
 
-      $ids[] = array_shift($entities);
+      $resolved_id = array_shift($entities);
+
+      if ($has_extras) {
+        $value[$main_property] = $resolved_id;
+        $resolved[] = $value;
+      }
+      else {
+        $resolved[] = $resolved_id;
+      }
     }
 
-    return $ids;
+    return $resolved;
   }
 
   /**
