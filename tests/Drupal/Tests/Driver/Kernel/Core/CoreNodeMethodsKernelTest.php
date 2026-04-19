@@ -9,6 +9,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel test for node-related methods on Core via the driver.
@@ -17,6 +18,7 @@ use Drupal\user\Entity\User;
  * validation, optional 'author' → 'uid' remapping, expandEntityFields
  * (no fields attached here, so it's a noop), save, and delete.
  */
+#[Group('core')]
 class CoreNodeMethodsKernelTest extends KernelTestBase {
 
   /**

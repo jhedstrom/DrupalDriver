@@ -16,10 +16,13 @@ use Drupal\Driver\Core\Field\AddressHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core99\Field\FileHandler as Core99FileHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests Core::getFieldHandler() lookup chain.
  */
+#[Group('core')]
+#[Group('fields')]
 class FieldHandlerLookupTest extends TestCase {
 
   /**

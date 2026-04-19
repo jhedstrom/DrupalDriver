@@ -9,10 +9,12 @@ use Drupal\Driver\Core\Field\ListFloatHandler;
 use Drupal\Driver\Core\Field\ListIntegerHandler;
 use Drupal\Driver\Core\Field\ListStringHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the List* field handlers (shared ListHandlerBase logic).
  */
+#[Group('fields')]
 class ListHandlerTest extends TestCase {
 
   /**

@@ -7,10 +7,12 @@ namespace Drupal\Tests\Driver\Unit\Exception;
 use Drupal\Driver\DriverInterface;
 use Drupal\Driver\Exception\UnsupportedDriverActionException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the UnsupportedDriverActionException.
  */
+#[Group('exception')]
 class UnsupportedDriverActionExceptionTest extends TestCase {
 
   /**

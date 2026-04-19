@@ -20,11 +20,15 @@ use Drupal\Driver\DrushDriver;
 use Drupal\Driver\DrushDriverInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\Driver\SubDriverFinderInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Drush driver.
  */
+#[Group('drivers')]
+#[Group('drush')]
 class DrushDriverTest extends TestCase {
 
   /**
@@ -40,27 +44,11 @@ class DrushDriverTest extends TestCase {
    *
    * @param string $capability_class
    *   The capability interface name.
-   *
-   * @dataProvider dataProviderImplementsSupportedCapability
    */
+  #[DataProvider('dataProviderImplementsSupportedCapability')]
   public function testImplementsSupportedCapability(string $capability_class): void {
     $this->assertTrue(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
       'DrushDriver must implement %s.',
-      $capability_class
-    ));
-  }
-
-  /**
-   * Tests that DrushDriver does not claim capabilities Drush cannot support.
-   *
-   * @param string $capability_class
-   *   The capability interface name.
-   *
-   * @dataProvider dataProviderDoesNotImplementUnsupportedCapability
-   */
-  public function testDoesNotImplementUnsupportedCapability(string $capability_class): void {
-    $this->assertFalse(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
-      'DrushDriver must not implement %s.',
       $capability_class
     ));
   }
@@ -77,6 +65,20 @@ class DrushDriverTest extends TestCase {
     yield 'role' => [RoleCapabilityInterface::class];
     yield 'user' => [UserCapabilityInterface::class];
     yield 'watchdog' => [WatchdogCapabilityInterface::class];
+  }
+
+  /**
+   * Tests that DrushDriver does not claim capabilities Drush cannot support.
+   *
+   * @param string $capability_class
+   *   The capability interface name.
+   */
+  #[DataProvider('dataProviderDoesNotImplementUnsupportedCapability')]
+  public function testDoesNotImplementUnsupportedCapability(string $capability_class): void {
+    $this->assertFalse(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
+      'DrushDriver must not implement %s.',
+      $capability_class
+    ));
   }
 
   /**
@@ -124,48 +126,14 @@ class DrushDriverTest extends TestCase {
   }
 
   /**
-   * Tests `isLegacyDrush()` correctly detects version from noisy output.
-   *
-   * @dataProvider dataProviderIsLegacyDrush
+   * Tests 'isLegacyDrush()' correctly detects version from noisy output.
    */
+  #[DataProvider('dataProviderIsLegacyDrush')]
   public function testIsLegacyDrush(string $drush_output, bool $expected): void {
     $driver = new TestDrushDriver('alias');
     $driver->drushOutput = $drush_output;
     $result = $driver->callIsLegacyDrush();
     $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Tests 'parseUserId()' correctly extracts UID from drush output.
-   *
-   * @dataProvider dataProviderParseUserId
-   */
-  public function testParseUserId(string $drush_output, ?int $expected): void {
-    $driver = new TestDrushDriver('alias');
-    $result = $driver->callParseUserId($drush_output);
-    $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Data provider for testParseUserId().
-   */
-  public static function dataProviderParseUserId(): \Iterator {
-    yield 'legacy key-value format' => [
-      "User ID   :   550895\nUser name :   test\n",
-      550895,
-    ];
-    yield 'drush 12 table format' => [
-      " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  550895    test        test@ex.co  authenticated   1            \n --------- ----------- ----------- --------------- ------------- \n",
-      550895,
-    ];
-    yield 'no user id present' => [
-      "Some random output\n",
-      NULL,
-    ];
-    yield 'drush 12 table uid 1' => [
-      " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  1         admin       a@ex.co     administrator   1            \n --------- ----------- ----------- --------------- ------------- \n",
-      1,
-    ];
   }
 
   /**
@@ -198,15 +166,47 @@ class DrushDriverTest extends TestCase {
     ];
   }
 
+  /**
+   * Tests 'parseUserId()' correctly extracts UID from drush output.
+   */
+  #[DataProvider('dataProviderParseUserId')]
+  public function testParseUserId(string $drush_output, ?int $expected): void {
+    $driver = new TestDrushDriver('alias');
+    $result = $driver->callParseUserId($drush_output);
+    $this->assertSame($expected, $result);
+  }
+
+  /**
+   * Data provider for testParseUserId().
+   */
+  public static function dataProviderParseUserId(): \Iterator {
+    yield 'legacy key-value format' => [
+      "User ID   :   550895\nUser name :   test\n",
+      550895,
+    ];
+    yield 'drush 12 table format' => [
+      " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  550895    test        test@ex.co  authenticated   1            \n --------- ----------- ----------- --------------- ------------- \n",
+      550895,
+    ];
+    yield 'no user id present' => [
+      "Some random output\n",
+      NULL,
+    ];
+    yield 'drush 12 table uid 1' => [
+      " --------- ----------- ----------- --------------- ------------- \n  User ID   User name   User mail   User roles      User status  \n --------- ----------- ----------- --------------- ------------- \n  1         admin       a@ex.co     administrator   1            \n --------- ----------- ----------- --------------- ------------- \n",
+      1,
+    ];
+  }
+
 }
 
 /**
- * Testable subclass that stubs the `drush()` method.
+ * Testable subclass that stubs the 'drush()' method.
  */
 class TestDrushDriver extends DrushDriver {
 
   /**
-   * The output to return from `drush()`.
+   * The output to return from 'drush()'.
    */
   public string $drushOutput = '';
 
@@ -218,14 +218,14 @@ class TestDrushDriver extends DrushDriver {
   }
 
   /**
-   * Exposes `isLegacyDrush()` for testing.
+   * Exposes 'isLegacyDrush()' for testing.
    */
   public function callIsLegacyDrush(): bool {
     return $this->isLegacyDrush();
   }
 
   /**
-   * Exposes `parseUserId()` for testing.
+   * Exposes 'parseUserId()' for testing.
    */
   public function callParseUserId(string $info): ?int {
     return $this->parseUserId($info);

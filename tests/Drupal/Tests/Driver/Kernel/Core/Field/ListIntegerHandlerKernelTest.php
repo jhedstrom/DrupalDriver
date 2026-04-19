@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for ListIntegerHandler via the Core driver.
  *
@@ -11,6 +13,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * behaviour mirrors ListStringHandler; the difference is storage stores an
  * integer, not a string. This test verifies the integer key round-trips.
  */
+#[Group('fields')]
 class ListIntegerHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

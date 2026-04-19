@@ -20,6 +20,8 @@ use Drupal\Driver\DrupalDriver;
 use Drupal\Driver\DrupalDriverInterface;
 use Drupal\Driver\SubDriverFinderInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests that DrupalDriver declares the full capability surface.
@@ -27,6 +29,8 @@ use PHPUnit\Framework\TestCase;
  * Class-level conformance only; runtime behaviour requires a real Drupal
  * bootstrap and is exercised by the Kernel test suite.
  */
+#[Group('drivers')]
+#[Group('drupal')]
 class DrupalDriverTest extends TestCase {
 
   /**
@@ -39,13 +43,12 @@ class DrupalDriverTest extends TestCase {
   }
 
   /**
-   * Tests that DrupalDriver advertises every capability.
-   *
-   * @param string $capability_class
-   *   The capability interface name.
-   *
-   * @dataProvider dataProviderImplementsCapability
-   */
+ * Tests that DrupalDriver advertises every capability.
+ *
+ * @param string $capability_class
+ *   The capability interface name.
+ */
+  #[DataProvider('dataProviderImplementsCapability')]
   public function testImplementsCapability(string $capability_class): void {
     $this->assertTrue(is_subclass_of(DrupalDriver::class, $capability_class), sprintf(
       'DrupalDriver must implement %s.',

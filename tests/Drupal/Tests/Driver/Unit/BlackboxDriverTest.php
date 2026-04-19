@@ -20,10 +20,14 @@ use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\DriverInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests BlackboxDriver's interface and capability surface.
  */
+#[Group('drivers')]
+#[Group('blackbox')]
 class BlackboxDriverTest extends TestCase {
 
   /**
@@ -70,13 +74,12 @@ class BlackboxDriverTest extends TestCase {
   }
 
   /**
-   * Tests that BlackboxDriver does not claim unsupported capabilities.
-   *
-   * @param string $capability_class
-   *   The fully qualified capability interface name.
-   *
-   * @dataProvider dataProviderDoesNotImplementCapability
-   */
+ * Tests that BlackboxDriver does not claim unsupported capabilities.
+ *
+ * @param string $capability_class
+ *   The fully qualified capability interface name.
+ */
+  #[DataProvider('dataProviderDoesNotImplementCapability')]
   public function testDoesNotImplementCapability(string $capability_class): void {
     $driver = new BlackboxDriver();
     $this->assertNotInstanceOf($capability_class, $driver, sprintf(

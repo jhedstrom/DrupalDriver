@@ -12,6 +12,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Driver\Core\Field\DatetimeHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DatetimeHandler field handler.
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
  * the language_manager service and a full Drupal container, so only the
  * early-return paths (empty values) are asserted here.
  */
+#[Group('fields')]
 class DatetimeHandlerTest extends TestCase {
 
   /**

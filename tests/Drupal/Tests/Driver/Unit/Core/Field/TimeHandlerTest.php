@@ -6,22 +6,24 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Driver\Core\Field\TimeHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the TimeHandler field handler.
  */
+#[Group('fields')]
 class TimeHandlerTest extends TestCase {
 
   /**
-   * Tests time field expansion.
-   *
-   * @param array<int, mixed> $input
-   *   The input values to expand.
-   * @param array<int, mixed> $expected
-   *   The expected expanded values.
-   *
-   * @dataProvider dataProviderExpand
-   */
+ * Tests time field expansion.
+ *
+ * @param array<int, mixed> $input
+ *   The input values to expand.
+ * @param array<int, mixed> $expected
+ *   The expected expanded values.
+ */
+  #[DataProvider('dataProviderExpand')]
   public function testExpand(array $input, array $expected): void {
     $handler = $this->createHandler();
     $result = $handler->expand($input);

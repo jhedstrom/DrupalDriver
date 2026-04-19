@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for TimeHandler via the Core driver.
  *
@@ -11,6 +13,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * parseable time string (e.g. "9:30 AM") and emits the storage integer.
  * The 'time' field type is provided by drupal/time_field.
  */
+#[Group('fields')]
 class TimeHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

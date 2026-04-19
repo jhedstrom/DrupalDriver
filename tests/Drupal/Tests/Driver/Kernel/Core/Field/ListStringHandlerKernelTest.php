@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\entity_test\Entity\EntityTest;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for list_string fields via the Core driver.
@@ -15,6 +16,7 @@ use Drupal\entity_test\Entity\EntityTest;
  * receives a label, the handler swaps it for the key, storage accepts the
  * key, and the round-trip returns the key unchanged.
  */
+#[Group('fields')]
 class ListStringHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

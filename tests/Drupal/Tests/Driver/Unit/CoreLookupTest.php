@@ -8,10 +8,13 @@ use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core99\Core as Core99Core;
 use Drupal\Driver\DrupalDriver;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests DrupalDriver::setCoreFromVersion() lookup chain.
  */
+#[Group('drivers')]
+#[Group('drupal')]
 class CoreLookupTest extends TestCase {
 
   /**

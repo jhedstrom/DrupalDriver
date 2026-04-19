@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\file\Entity\File;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for FileHandler via the Core driver.
@@ -14,6 +15,7 @@ use Drupal\file\Entity\File;
  * payload (target_id, display, description). This kernel test runs the whole
  * chain against real storage and asserts the reference round-trips.
  */
+#[Group('fields')]
 class FileHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

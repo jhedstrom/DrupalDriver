@@ -6,10 +6,12 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Driver\Core\Field\TextWithSummaryHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TextWithSummaryHandler field handler.
  */
+#[Group('fields')]
 class TextWithSummaryHandlerTest extends TestCase {
 
   /**

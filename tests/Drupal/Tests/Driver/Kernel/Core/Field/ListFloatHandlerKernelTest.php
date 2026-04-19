@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for ListFloatHandler via the Core driver.
  */
+#[Group('fields')]
 class ListFloatHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

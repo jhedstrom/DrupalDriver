@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for DefaultHandler via the Core driver.
  *
@@ -13,6 +15,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * type has no DrupalDriver handler, so the lookup chain lands on
  * DefaultHandler.
  */
+#[Group('fields')]
 class DefaultHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

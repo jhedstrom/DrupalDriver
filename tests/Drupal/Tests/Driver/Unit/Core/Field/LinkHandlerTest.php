@@ -6,22 +6,24 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Driver\Core\Field\LinkHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the LinkHandler field handler.
  */
+#[Group('fields')]
 class LinkHandlerTest extends TestCase {
 
   /**
-   * Tests link field expansion.
-   *
-   * @param array<int, mixed> $input
-   *   The input values to expand.
-   * @param array<int, mixed> $expected
-   *   The expected expanded values.
-   *
-   * @dataProvider dataProviderExpand
-   */
+ * Tests link field expansion.
+ *
+ * @param array<int, mixed> $input
+ *   The input values to expand.
+ * @param array<int, mixed> $expected
+ *   The expected expanded values.
+ */
+  #[DataProvider('dataProviderExpand')]
   public function testExpand(array $input, array $expected): void {
     $handler = $this->createHandler();
     $result = $handler->expand($input);

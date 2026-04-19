@@ -7,10 +7,12 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Driver\Core\Field\FileHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the FileHandler field handler.
  */
+#[Group('fields')]
 class FileHandlerTest extends TestCase {
 
   /**

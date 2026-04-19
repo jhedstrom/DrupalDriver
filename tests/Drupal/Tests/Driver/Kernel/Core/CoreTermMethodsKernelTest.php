@@ -8,6 +8,7 @@ use Drupal\Driver\Core\Core;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel test for taxonomy term methods on Core via the driver.
@@ -15,6 +16,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
  * Exercises Core::termCreate (with optional parent lookup by name) and
  * Core::termDelete against real taxonomy_term storage.
  */
+#[Group('core')]
 class CoreTermMethodsKernelTest extends KernelTestBase {
 
   /**

@@ -10,10 +10,12 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for the default Drupal Core class.
  */
+#[Group('core')]
 class CoreTest extends TestCase {
 
   /**

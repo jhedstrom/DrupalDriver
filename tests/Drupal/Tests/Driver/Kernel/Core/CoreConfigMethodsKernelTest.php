@@ -6,10 +6,12 @@ namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
 use Drupal\KernelTests\KernelTestBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel test for config-related methods on Core via the driver.
  */
+#[Group('core')]
 class CoreConfigMethodsKernelTest extends KernelTestBase {
 
   /**

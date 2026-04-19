@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for DaterangeHandler via the Core driver.
  *
@@ -12,6 +14,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * resolves DaterangeHandler for type 'daterange' and that the dual-column
  * storage accepts what the handler emits.
  */
+#[Group('fields')]
 class DaterangeHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

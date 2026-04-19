@@ -6,10 +6,12 @@ namespace Drupal\Tests\Driver\Unit\Core;
 
 use Drupal\Driver\Core\Core;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests permission label and machine name conversion in the Drupal 8+ driver.
  */
+#[Group('core')]
 class CorePermissionsTest extends TestCase {
 
   /**

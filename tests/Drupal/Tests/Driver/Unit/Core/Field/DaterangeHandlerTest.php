@@ -11,6 +11,7 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Driver\Core\Field\DaterangeHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DaterangeHandler field handler.
@@ -18,6 +19,7 @@ use PHPUnit\Framework\TestCase;
  * Only empty/null ranges are exercised - full date parsing exercises
  * DrupalDateTime and requires the full Drupal container.
  */
+#[Group('fields')]
 class DaterangeHandlerTest extends TestCase {
 
   /**

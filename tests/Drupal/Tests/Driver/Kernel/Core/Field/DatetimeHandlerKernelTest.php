@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for datetime fields via the Core driver.
@@ -14,6 +15,7 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
  * its lookup chain, the handler's output is accepted by real datetime field
  * storage, and the stored value round-trips unchanged.
  */
+#[Group('fields')]
 class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

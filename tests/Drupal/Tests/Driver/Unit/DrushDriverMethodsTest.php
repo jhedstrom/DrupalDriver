@@ -7,6 +7,8 @@ namespace Drupal\Tests\Driver\Unit;
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\DrushDriver;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Exercises every 'DrushDriver' public method to guarantee line coverage.
@@ -15,6 +17,8 @@ use PHPUnit\Framework\TestCase;
  * expected Drush command is invoked at least once. The actual Drush binary is
  * never executed here; end-to-end behaviour is covered separately.
  */
+#[Group('drivers')]
+#[Group('drush')]
 class DrushDriverMethodsTest extends TestCase {
 
   /**
@@ -132,19 +136,18 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
-   * Tests every command-issuing method drives 'drush()' as expected.
-   *
-   * @param string $method
-   *   The driver method name.
-   * @param array<int, mixed> $args
-   *   Positional arguments for the driver method.
-   * @param string|null $expected_command
-   *   The first Drush command string expected to be invoked.
-   * @param string $drush_response
-   *   Raw output returned by the stubbed 'drush()' call.
-   *
-   * @dataProvider dataProviderInvokesDrush
-   */
+ * Tests every command-issuing method drives 'drush()' as expected.
+ *
+ * @param string $method
+ *   The driver method name.
+ * @param array<int, mixed> $args
+ *   Positional arguments for the driver method.
+ * @param string|null $expected_command
+ *   The first Drush command string expected to be invoked.
+ * @param string $drush_response
+ *   Raw output returned by the stubbed 'drush()' call.
+ */
+  #[DataProvider('dataProviderInvokesDrush')]
   public function testInvokesDrush(string $method, array $args, ?string $expected_command, string $drush_response = ''): void {
     $driver = $this->createDriver();
     $driver->drushResponse = $drush_response;

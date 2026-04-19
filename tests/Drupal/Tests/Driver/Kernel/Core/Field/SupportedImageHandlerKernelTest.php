@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\filter\Entity\FilterFormat;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for SupportedImageHandler via the Core driver.
@@ -13,6 +14,7 @@ use Drupal\filter\Entity\FilterFormat;
  * caption and attribution columns on top of the standard image file reference.
  * The handler mirrors ImageHandler's disk read/write but emits richer payload.
  */
+#[Group('fields')]
 class SupportedImageHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

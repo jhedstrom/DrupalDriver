@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\file\Entity\File;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for ImageHandler via the Core driver.
@@ -15,6 +16,7 @@ use Drupal\file\Entity\File;
  * normalisation handles that shape, so the assertion is identical to the
  * other multi-property handlers.
  */
+#[Group('fields')]
 class ImageHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

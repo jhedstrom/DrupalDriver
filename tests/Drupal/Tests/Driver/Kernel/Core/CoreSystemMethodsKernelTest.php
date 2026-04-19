@@ -8,6 +8,7 @@ use Drupal\Driver\Core\Core;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel tests for system-level methods on Core via the driver.
@@ -16,6 +17,7 @@ use Drupal\user\Entity\User;
  * retrieval, and the account switcher login/logout pair in a single class
  * to amortise per-method KernelTestBase bootstrap cost.
  */
+#[Group('core')]
 class CoreSystemMethodsKernelTest extends KernelTestBase {
 
   /**

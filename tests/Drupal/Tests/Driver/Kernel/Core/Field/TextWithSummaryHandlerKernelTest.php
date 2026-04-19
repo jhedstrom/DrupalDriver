@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\filter\Entity\FilterFormat;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for TextWithSummaryHandler via the Core driver.
@@ -13,6 +14,7 @@ use Drupal\filter\Entity\FilterFormat;
  * handler is a passthrough, so this test verifies the multi-property payload
  * reaches storage intact via the driver's lookup + expand chain.
  */
+#[Group('fields')]
 class TextWithSummaryHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

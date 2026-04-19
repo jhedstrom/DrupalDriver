@@ -7,10 +7,12 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Driver\Core\Field\AddressHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the AddressHandler field handler.
  */
+#[Group('fields')]
 class AddressHandlerTest extends TestCase {
 
   /**

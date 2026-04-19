@@ -8,6 +8,8 @@ use Drupal\Component\Utility\Random;
 use Drupal\Driver\Core\CoreInterface;
 use Drupal\Driver\DrupalDriver;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Exercises every 'DrupalDriver' public method to guarantee line coverage.
@@ -16,6 +18,8 @@ use PHPUnit\Framework\TestCase;
  * that each method delegates to the corresponding core method. Kernel tests
  * under 'Kernel/Core/' exercise the behaviour end-to-end.
  */
+#[Group('drivers')]
+#[Group('drupal')]
 class DrupalDriverDelegationTest extends TestCase {
 
   /**
@@ -107,17 +111,16 @@ class DrupalDriverDelegationTest extends TestCase {
   }
 
   /**
-   * Tests that every delegating method forwards to the matching core method.
-   *
-   * @param string $driver_method
-   *   The 'DrupalDriver' method to invoke.
-   * @param array<int, mixed> $args
-   *   Positional arguments.
-   * @param string $core_method
-   *   The expected core method to be invoked with the same args.
-   *
-   * @dataProvider dataProviderForwardsToCore
-   */
+ * Tests that every delegating method forwards to the matching core method.
+ *
+ * @param string $driver_method
+ *   The 'DrupalDriver' method to invoke.
+ * @param array<int, mixed> $args
+ *   Positional arguments.
+ * @param string $core_method
+ *   The expected core method to be invoked with the same args.
+ */
+  #[DataProvider('dataProviderForwardsToCore')]
   public function testForwardsToCore(string $driver_method, array $args, string $core_method): void {
     $core = $this->createMock(CoreInterface::class);
     $core->expects($this->once())->method($core_method)->with(...$args);

@@ -12,6 +12,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Core\Field\EntityReferenceHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the EntityReferenceHandler field handler.
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  * Full happy-path coverage requires a live Drupal kernel; these tests focus
  * on the helper logic and error paths that can be verified in isolation.
  */
+#[Group('fields')]
 class EntityReferenceHandlerTest extends TestCase {
 
   /**

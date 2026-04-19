@@ -9,22 +9,25 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Driver\Core\Core;
 use Drupal\field\Entity\FieldStorageConfig;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests 'fieldIsBase()', 'fieldExists()', and 'getEntityFieldTypes()' methods.
  */
+#[Group('core')]
+#[Group('fields')]
 class CoreFieldMethodsTest extends TestCase {
 
   /**
-   * Tests that 'fieldIsBase()' correctly identifies base fields.
-   *
-   * @param string $field_name
-   *   The field name to check.
-   * @param bool $expected
-   *   The expected result.
-   *
-   * @dataProvider dataProviderIsBaseField
-   */
+ * Tests that 'fieldIsBase()' correctly identifies base fields.
+ *
+ * @param string $field_name
+ *   The field name to check.
+ * @param bool $expected
+ *   The expected result.
+ */
+  #[DataProvider('dataProviderIsBaseField')]
   public function testIsBaseField(string $field_name, bool $expected): void {
     $core = $this->createTestCore();
     $this->assertSame($expected, $core->fieldIsBase('node', $field_name));
@@ -41,15 +44,14 @@ class CoreFieldMethodsTest extends TestCase {
   }
 
   /**
-   * Tests that 'fieldExists()' correctly identifies configurable fields.
-   *
-   * @param string $field_name
-   *   The field name to check.
-   * @param bool $expected
-   *   The expected result.
-   *
-   * @dataProvider dataProviderIsField
-   */
+ * Tests that 'fieldExists()' correctly identifies configurable fields.
+ *
+ * @param string $field_name
+ *   The field name to check.
+ * @param bool $expected
+ *   The expected result.
+ */
+  #[DataProvider('dataProviderIsField')]
   public function testIsField(string $field_name, bool $expected): void {
     $core = $this->createTestCore();
     $this->assertSame($expected, $core->fieldExists('node', $field_name));
@@ -66,17 +68,16 @@ class CoreFieldMethodsTest extends TestCase {
   }
 
   /**
-   * Tests that 'getEntityFieldTypes()' includes computed base fields.
-   *
-   * @param array<string> $base_fields_arg
-   *   The $base_fields argument to pass.
-   * @param array<string> $expected_fields
-   *   The expected field names in the result.
-   * @param array<string> $unexpected_fields
-   *   Field names that should NOT be in the result.
-   *
-   * @dataProvider dataProviderGetEntityFieldTypes
-   */
+ * Tests that 'getEntityFieldTypes()' includes computed base fields.
+ *
+ * @param array<string> $base_fields_arg
+ *   The $base_fields argument to pass.
+ * @param array<string> $expected_fields
+ *   The expected field names in the result.
+ * @param array<string> $unexpected_fields
+ *   Field names that should NOT be in the result.
+ */
+  #[DataProvider('dataProviderGetEntityFieldTypes')]
   public function testGetEntityFieldTypes(array $base_fields_arg, array $expected_fields, array $unexpected_fields): void {
     $core = $this->createTestCore();
     $result = $core->getEntityFieldTypes('node', $base_fields_arg);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for AddressHandler via the Core driver.
  *
@@ -12,6 +14,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * array, or associative array) against the visible sub-field list configured
  * on the field. This test exercises the associative path.
  */
+#[Group('fields')]
 class AddressHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

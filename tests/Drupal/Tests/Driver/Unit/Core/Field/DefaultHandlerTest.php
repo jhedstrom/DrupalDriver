@@ -6,10 +6,12 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Driver\Core\Field\DefaultHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DefaultHandler field handler.
  */
+#[Group('fields')]
 class DefaultHandlerTest extends TestCase {
 
   /**

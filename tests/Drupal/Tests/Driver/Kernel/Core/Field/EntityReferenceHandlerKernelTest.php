@@ -7,6 +7,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for EntityReferenceHandler via the Core driver.
@@ -15,6 +16,7 @@ use Drupal\user\Entity\User;
  * to entity ids. This test exercises the label-to-id lookup against a real
  * user, then verifies the stored target_id round-trips.
  */
+#[Group('fields')]
 class EntityReferenceHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

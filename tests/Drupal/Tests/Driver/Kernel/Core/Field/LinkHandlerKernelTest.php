@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for link fields via the Core driver.
  *
@@ -12,6 +14,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * LinkHandler's output - including the enforced empty 'options' array -
  * round-trips through real storage.
  */
+#[Group('fields')]
 class LinkHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

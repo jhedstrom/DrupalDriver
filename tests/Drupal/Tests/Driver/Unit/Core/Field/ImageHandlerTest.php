@@ -7,10 +7,12 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Driver\Core\Field\ImageHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the ImageHandler field handler.
  */
+#[Group('fields')]
 class ImageHandlerTest extends TestCase {
 
   /**

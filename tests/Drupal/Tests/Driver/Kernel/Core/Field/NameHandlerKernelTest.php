@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Kernel round-trip test for NameHandler via the Core driver.
  *
@@ -12,6 +14,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
  * numeric array, associative array) and normalises them into the same
  * per-component keyed structure.
  */
+#[Group('fields')]
 class NameHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**

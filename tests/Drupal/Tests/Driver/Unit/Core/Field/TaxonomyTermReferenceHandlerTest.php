@@ -9,10 +9,12 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Driver\Core\Field\TaxonomyTermReferenceHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TaxonomyTermReferenceHandler field handler.
  */
+#[Group('fields')]
 class TaxonomyTermReferenceHandlerTest extends TestCase {
 
   /**

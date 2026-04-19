@@ -8,6 +8,7 @@ use Drupal\Driver\Core\Core;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel test for user-related methods on Core.
@@ -21,6 +22,7 @@ use Drupal\user\Entity\User;
  * To actually run this test, see the bootstrap/env notes in
  * DatetimeHandlerKernelTest.
  */
+#[Group('core')]
 class CoreUserMethodsKernelTest extends KernelTestBase {
 
   /**
