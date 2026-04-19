@@ -14,6 +14,8 @@ use PHPUnit\Framework\Attributes\Group;
  * the passthrough output round-trips through real storage. The 'string' field
  * type has no DrupalDriver handler, so the lookup chain lands on
  * DefaultHandler.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class DefaultHandlerKernelTest extends FieldHandlerKernelTestBase {

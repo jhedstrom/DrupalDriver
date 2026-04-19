@@ -10,6 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TextWithSummaryHandler field handler.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class TextWithSummaryHandlerTest extends TestCase {

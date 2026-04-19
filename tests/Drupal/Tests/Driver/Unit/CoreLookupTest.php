@@ -12,6 +12,9 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests DrupalDriver::setCoreFromVersion() lookup chain.
+ *
+ * @group drivers
+ * @group drupal
  */
 #[Group('drivers')]
 #[Group('drupal')]

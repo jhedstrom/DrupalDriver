@@ -8,6 +8,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel round-trip test for ListFloatHandler via the Core driver.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class ListFloatHandlerKernelTest extends FieldHandlerKernelTestBase {

@@ -14,6 +14,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for 'Core::cronRun()' on the default Drupal core.
+ *
+ * @group core
  */
 #[Group('core')]
 class CoreCronMethodsTest extends TestCase {

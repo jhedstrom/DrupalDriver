@@ -15,6 +15,8 @@ use PHPUnit\Framework\Attributes\Group;
  * ['target_id' => X, 'alt' => Y, 'title' => Z]. The base helper's
  * normalisation handles that shape, so the assertion is identical to the
  * other multi-property handlers.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class ImageHandlerKernelTest extends FieldHandlerKernelTestBase {

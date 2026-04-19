@@ -12,6 +12,8 @@ use PHPUnit\Framework\Attributes\Group;
  * TimeHandler accepts a numeric number of seconds past midnight or a
  * parseable time string (e.g. "9:30 AM") and emits the storage integer.
  * The 'time' field type is provided by drupal/time_field.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class TimeHandlerKernelTest extends FieldHandlerKernelTestBase {

@@ -18,6 +18,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * Only empty/null ranges are exercised - full date parsing exercises
  * DrupalDateTime and requires the full Drupal container.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class DaterangeHandlerTest extends TestCase {

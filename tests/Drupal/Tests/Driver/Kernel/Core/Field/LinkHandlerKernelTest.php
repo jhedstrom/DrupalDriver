@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * the base class helper handles associative-array deltas correctly and that
  * LinkHandler's output - including the enforced empty 'options' array -
  * round-trips through real storage.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class LinkHandlerKernelTest extends FieldHandlerKernelTestBase {

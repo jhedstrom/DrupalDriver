@@ -21,6 +21,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * To actually run this test, see the bootstrap/env notes in
  * DatetimeHandlerKernelTest.
+ *
+ * @group core
  */
 #[Group('core')]
 class CoreUserMethodsKernelTest extends KernelTestBase {

@@ -26,6 +26,9 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the Drush driver.
+ *
+ * @group drivers
+ * @group drush
  */
 #[Group('drivers')]
 #[Group('drush')]
@@ -44,7 +47,9 @@ class DrushDriverTest extends TestCase {
    *
    * @param string $capability_class
    *   The capability interface name.
-   */
+ *
+ * @dataProvider dataProviderImplementsSupportedCapability
+ */
   #[DataProvider('dataProviderImplementsSupportedCapability')]
   public function testImplementsSupportedCapability(string $capability_class): void {
     $this->assertTrue(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
@@ -72,7 +77,9 @@ class DrushDriverTest extends TestCase {
    *
    * @param string $capability_class
    *   The capability interface name.
-   */
+ *
+ * @dataProvider dataProviderDoesNotImplementUnsupportedCapability
+ */
   #[DataProvider('dataProviderDoesNotImplementUnsupportedCapability')]
   public function testDoesNotImplementUnsupportedCapability(string $capability_class): void {
     $this->assertFalse(is_subclass_of(DrushDriver::class, $capability_class), sprintf(
@@ -127,7 +134,9 @@ class DrushDriverTest extends TestCase {
 
   /**
    * Tests 'isLegacyDrush()' correctly detects version from noisy output.
-   */
+ *
+ * @dataProvider dataProviderIsLegacyDrush
+ */
   #[DataProvider('dataProviderIsLegacyDrush')]
   public function testIsLegacyDrush(string $drush_output, bool $expected): void {
     $driver = new TestDrushDriver('alias');
@@ -168,7 +177,9 @@ class DrushDriverTest extends TestCase {
 
   /**
    * Tests 'parseUserId()' correctly extracts UID from drush output.
-   */
+ *
+ * @dataProvider dataProviderParseUserId
+ */
   #[DataProvider('dataProviderParseUserId')]
   public function testParseUserId(string $drush_output, ?int $expected): void {
     $driver = new TestDrushDriver('alias');

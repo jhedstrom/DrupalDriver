@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the UnsupportedDriverActionException.
+ *
+ * @group exception
  */
 #[Group('exception')]
 class UnsupportedDriverActionExceptionTest extends TestCase {

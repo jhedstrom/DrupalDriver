@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * module. The handler normalises input (scalar first name, numeric-indexed
  * array, or associative array) against the visible sub-field list configured
  * on the field. This test exercises the associative path.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class AddressHandlerKernelTest extends FieldHandlerKernelTestBase {

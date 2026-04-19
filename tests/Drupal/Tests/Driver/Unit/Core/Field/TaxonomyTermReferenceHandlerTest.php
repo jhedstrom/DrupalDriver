@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TaxonomyTermReferenceHandler field handler.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class TaxonomyTermReferenceHandlerTest extends TestCase {

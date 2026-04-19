@@ -15,6 +15,8 @@ use PHPUnit\Framework\Attributes\Group;
  * The handler resolves human-readable labels (user names, node titles, etc.)
  * to entity ids. This test exercises the label-to-id lookup against a real
  * user, then verifies the stored target_id round-trips.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class EntityReferenceHandlerKernelTest extends FieldHandlerKernelTestBase {

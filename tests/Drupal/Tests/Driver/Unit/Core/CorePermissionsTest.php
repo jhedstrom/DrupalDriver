@@ -10,6 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests permission label and machine name conversion in the Drupal 8+ driver.
+ *
+ * @group core
  */
 #[Group('core')]
 class CorePermissionsTest extends TestCase {

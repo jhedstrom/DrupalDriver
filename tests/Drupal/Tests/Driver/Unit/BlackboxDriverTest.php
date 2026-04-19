@@ -25,6 +25,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests BlackboxDriver's interface and capability surface.
+ *
+ * @group drivers
+ * @group blackbox
  */
 #[Group('drivers')]
 #[Group('blackbox')]
@@ -78,6 +81,8 @@ class BlackboxDriverTest extends TestCase {
  *
  * @param string $capability_class
  *   The fully qualified capability interface name.
+ *
+ * @dataProvider dataProviderDoesNotImplementCapability
  */
   #[DataProvider('dataProviderDoesNotImplementCapability')]
   public function testDoesNotImplementCapability(string $capability_class): void {

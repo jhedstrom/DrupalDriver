@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * module. The handler accepts three input shapes (shorthand string,
  * numeric array, associative array) and normalises them into the same
  * per-component keyed structure.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class NameHandlerKernelTest extends FieldHandlerKernelTestBase {

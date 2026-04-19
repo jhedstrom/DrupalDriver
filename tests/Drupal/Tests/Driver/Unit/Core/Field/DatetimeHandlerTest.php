@@ -20,6 +20,8 @@ use PHPUnit\Framework\Attributes\Group;
  * Full date-parsing behaviour exercises DrupalDateTime, which in turn requires
  * the language_manager service and a full Drupal container, so only the
  * early-return paths (empty values) are asserted here.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class DatetimeHandlerTest extends TestCase {

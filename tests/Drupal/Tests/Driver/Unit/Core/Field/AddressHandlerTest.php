@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the AddressHandler field handler.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class AddressHandlerTest extends TestCase {

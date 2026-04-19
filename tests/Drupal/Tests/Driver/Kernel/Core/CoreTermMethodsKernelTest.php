@@ -15,6 +15,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * Exercises Core::termCreate (with optional parent lookup by name) and
  * Core::termDelete against real taxonomy_term storage.
+ *
+ * @group core
  */
 #[Group('core')]
 class CoreTermMethodsKernelTest extends KernelTestBase {

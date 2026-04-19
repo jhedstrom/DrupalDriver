@@ -10,6 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DefaultHandler field handler.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class DefaultHandlerTest extends TestCase {

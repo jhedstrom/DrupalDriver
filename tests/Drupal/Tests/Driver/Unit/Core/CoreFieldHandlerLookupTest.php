@@ -20,6 +20,9 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests Core::getFieldHandler() lookup chain.
+ *
+ * @group core
+ * @group fields
  */
 #[Group('core')]
 #[Group('fields')]

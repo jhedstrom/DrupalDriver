@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * ({value, end_value}). The kernel test's value is proving the driver
  * resolves DaterangeHandler for type 'daterange' and that the dual-column
  * storage accepts what the handler emits.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class DaterangeHandlerKernelTest extends FieldHandlerKernelTestBase {

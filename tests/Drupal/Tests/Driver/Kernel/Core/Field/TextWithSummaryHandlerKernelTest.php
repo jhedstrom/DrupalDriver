@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * The text_with_summary field is multi-property (value, summary, format). The
  * handler is a passthrough, so this test verifies the multi-property payload
  * reaches storage intact via the driver's lookup + expand chain.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class TextWithSummaryHandlerKernelTest extends FieldHandlerKernelTestBase {

@@ -14,6 +14,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests 'fieldIsBase()', 'fieldExists()', and 'getEntityFieldTypes()' methods.
+ *
+ * @group core
+ * @group fields
  */
 #[Group('core')]
 #[Group('fields')]
@@ -26,6 +29,8 @@ class CoreFieldMethodsTest extends TestCase {
  *   The field name to check.
  * @param bool $expected
  *   The expected result.
+ *
+ * @dataProvider dataProviderIsBaseField
  */
   #[DataProvider('dataProviderIsBaseField')]
   public function testIsBaseField(string $field_name, bool $expected): void {
@@ -50,6 +55,8 @@ class CoreFieldMethodsTest extends TestCase {
  *   The field name to check.
  * @param bool $expected
  *   The expected result.
+ *
+ * @dataProvider dataProviderIsField
  */
   #[DataProvider('dataProviderIsField')]
   public function testIsField(string $field_name, bool $expected): void {
@@ -76,6 +83,8 @@ class CoreFieldMethodsTest extends TestCase {
  *   The expected field names in the result.
  * @param array<string> $unexpected_fields
  *   Field names that should NOT be in the result.
+ *
+ * @dataProvider dataProviderGetEntityFieldTypes
  */
   #[DataProvider('dataProviderGetEntityFieldTypes')]
   public function testGetEntityFieldTypes(array $base_fields_arg, array $expected_fields, array $unexpected_fields): void {

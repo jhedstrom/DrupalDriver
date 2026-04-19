@@ -17,6 +17,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * 'DrupalDriver' is a thin facade over 'CoreInterface'; the tests here verify
  * that each method delegates to the corresponding core method. Kernel tests
  * under 'Kernel/Core/' exercise the behaviour end-to-end.
+ *
+ * @group drivers
+ * @group drupal
  */
 #[Group('drivers')]
 #[Group('drupal')]
@@ -119,6 +122,8 @@ class DrupalDriverDelegationTest extends TestCase {
  *   Positional arguments.
  * @param string $core_method
  *   The expected core method to be invoked with the same args.
+ *
+ * @dataProvider dataProviderForwardsToCore
  */
   #[DataProvider('dataProviderForwardsToCore')]
   public function testForwardsToCore(string $driver_method, array $args, string $core_method): void {

@@ -16,6 +16,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Each test replaces the 'drush()' method with a recorder and verifies the
  * expected Drush command is invoked at least once. The actual Drush binary is
  * never executed here; end-to-end behaviour is covered separately.
+ *
+ * @group drivers
+ * @group drush
  */
 #[Group('drivers')]
 #[Group('drush')]
@@ -146,6 +149,8 @@ class DrushDriverMethodsTest extends TestCase {
  *   The first Drush command string expected to be invoked.
  * @param string $drush_response
  *   Raw output returned by the stubbed 'drush()' call.
+ *
+ * @dataProvider dataProviderInvokesDrush
  */
   #[DataProvider('dataProviderInvokesDrush')]
   public function testInvokesDrush(string $method, array $args, ?string $expected_command, string $drush_response = ''): void {

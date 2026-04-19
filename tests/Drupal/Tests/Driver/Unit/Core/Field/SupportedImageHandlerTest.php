@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the SupportedImageHandler field handler.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class SupportedImageHandlerTest extends TestCase {

@@ -10,6 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Kernel test for config-related methods on Core via the driver.
+ *
+ * @group core
  */
 #[Group('core')]
 class CoreConfigMethodsKernelTest extends KernelTestBase {

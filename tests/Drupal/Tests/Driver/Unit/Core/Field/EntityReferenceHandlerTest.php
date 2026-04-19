@@ -19,6 +19,8 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * Full happy-path coverage requires a live Drupal kernel; these tests focus
  * on the helper logic and error paths that can be verified in isolation.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class EntityReferenceHandlerTest extends TestCase {

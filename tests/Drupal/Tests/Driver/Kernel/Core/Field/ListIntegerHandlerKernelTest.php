@@ -12,6 +12,8 @@ use PHPUnit\Framework\Attributes\Group;
  * ListIntegerHandler inherits ListHandlerBase, so the label-to-key translation
  * behaviour mirrors ListStringHandler; the difference is storage stores an
  * integer, not a string. This test verifies the integer key round-trips.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class ListIntegerHandlerKernelTest extends FieldHandlerKernelTestBase {

@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the List* field handlers (shared ListHandlerBase logic).
+ *
+ * @group fields
  */
 #[Group('fields')]
 class ListHandlerTest extends TestCase {

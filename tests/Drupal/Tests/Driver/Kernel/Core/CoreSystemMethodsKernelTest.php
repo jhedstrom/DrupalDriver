@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\Group;
  * Covers module install/uninstall, language create/delete, module list
  * retrieval, and the account switcher login/logout pair in a single class
  * to amortise per-method KernelTestBase bootstrap cost.
+ *
+ * @group core
  */
 #[Group('core')]
 class CoreSystemMethodsKernelTest extends KernelTestBase {

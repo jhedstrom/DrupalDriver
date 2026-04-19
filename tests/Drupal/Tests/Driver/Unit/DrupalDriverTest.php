@@ -28,6 +28,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
  *
  * Class-level conformance only; runtime behaviour requires a real Drupal
  * bootstrap and is exercised by the Kernel test suite.
+ *
+ * @group drivers
+ * @group drupal
  */
 #[Group('drivers')]
 #[Group('drupal')]
@@ -47,6 +50,8 @@ class DrupalDriverTest extends TestCase {
  *
  * @param string $capability_class
  *   The capability interface name.
+ *
+ * @dataProvider dataProviderImplementsCapability
  */
   #[DataProvider('dataProviderImplementsCapability')]
   public function testImplementsCapability(string $capability_class): void {

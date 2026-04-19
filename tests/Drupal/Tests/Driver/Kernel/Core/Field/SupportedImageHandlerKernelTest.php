@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Group;
  * The 'supported_image' field (provided by drupal/supported_image) adds
  * caption and attribution columns on top of the standard image file reference.
  * The handler mirrors ImageHandler's disk read/write but emits richer payload.
+ *
+ * @group fields
  */
 #[Group('fields')]
 class SupportedImageHandlerKernelTest extends FieldHandlerKernelTestBase {
