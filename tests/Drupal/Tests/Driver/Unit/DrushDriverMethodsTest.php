@@ -132,41 +132,6 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
-   * Tests that 'fieldExists()' returns FALSE when the Drush call throws.
-   */
-  public function testFieldExistsReturnsFalseOnFailure(): void {
-    $driver = $this->createDriver();
-    $driver->drushThrows = TRUE;
-
-    $this->assertFalse($driver->fieldExists('node', 'title'));
-  }
-
-  /**
-   * Tests that 'fieldIsBase()' always returns FALSE.
-   */
-  public function testFieldIsBaseReturnsFalse(): void {
-    $driver = $this->createDriver();
-
-    $this->assertFalse($driver->fieldIsBase('node', 'title'));
-  }
-
-  /**
-   * Tests 'nodeCreate()' looks up the author uid when 'author' is set.
-   */
-  public function testNodeCreateWithAuthorLooksUpUid(): void {
-    $driver = new AuthorAwareDrushDriver('alias');
-    $driver->userInfoResponse = "User ID   :   42\nUser name :   alice\n";
-    $driver->nodeCreateResponse = '{"nid":1,"uid":42}';
-
-    $node = (object) ['type' => 'article', 'author' => 'alice'];
-    $driver->nodeCreate($node);
-
-    $this->assertSame('user-information', $driver->invocations[0]['command']);
-    $this->assertSame('behat', $driver->invocations[1]['command']);
-    $this->assertSame(42, $node->uid);
-  }
-
-  /**
    * Tests 'userCreate()' applies roles when the user object declares them.
    */
   public function testUserCreateWithRolesInvokesRoleAssignment(): void {
@@ -403,25 +368,15 @@ class DrushDriverMethodsTest extends TestCase {
    */
   public static function dataProviderInvokesDrush(): \Iterator {
     $user = (object) ['name' => 'alice', 'pass' => 'pw', 'mail' => 'alice@ex.co'];
-    $node = (object) ['type' => 'article', 'title' => 'Hello'];
-    $term = (object) ['name' => 'Tag', 'vocabulary_machine_name' => 'tags'];
-    $entity = (object) ['name' => 'X'];
 
     yield 'userCreate' => ['userCreate', [$user], 'user-create'];
     yield 'userDelete' => ['userDelete', [$user], 'user-cancel'];
     yield 'userAddRole' => ['userAddRole', [$user, 'admin'], 'user-add-role'];
-    yield 'nodeCreate' => ['nodeCreate', [$node], 'behat', '{"nid":1}'];
-    yield 'nodeDelete' => ['nodeDelete', [$node], 'behat'];
-    yield 'termCreate' => ['termCreate', [$term], 'behat', '{"tid":1}'];
-    yield 'termDelete' => ['termDelete', [$term], 'behat'];
-    yield 'entityCreate' => ['entityCreate', ['node', $entity], 'behat', '{"id":1}'];
-    yield 'entityDelete' => ['entityDelete', ['node', $entity], 'behat'];
     yield 'watchdogFetch' => ['watchdogFetch', [10], 'watchdog-show'];
     yield 'watchdogFetch filtered' => ['watchdogFetch', [10, 'php', 'error'], 'watchdog-show'];
     yield 'cronRun' => ['cronRun', [], 'cron'];
     yield 'moduleInstall' => ['moduleInstall', ['dblog'], 'pm-enable'];
     yield 'moduleUninstall' => ['moduleUninstall', ['dblog'], 'pm-uninstall'];
-    yield 'fieldExists' => ['fieldExists', ['node', 'title'], 'behat', "true\n"];
     yield 'configGet' => ['configGet', ['system.site', 'name'], 'config:get', '"Example"'];
     yield 'configGetOriginal' => ['configGetOriginal', ['system.site'], 'config:get', '{}'];
     yield 'configSet' => ['configSet', ['system.site', 'name', 'v'], 'config:set'];
@@ -506,44 +461,6 @@ class ArgumentsExposingDrushDriver extends DrushDriver {
    */
   public static function expose(array $arguments): string {
     return self::parseArguments($arguments);
-  }
-
-}
-
-/**
- * Subclass of 'RecordingDrushDriver' that returns distinct responses per call.
- *
- * Used for paths that call 'drush()' more than once (e.g. 'nodeCreate()' with
- * an 'author' that first triggers a 'user-information' lookup then a
- * 'create-node' call).
- */
-class AuthorAwareDrushDriver extends RecordingDrushDriver {
-
-  /**
-   * Response for the user-information call.
-   */
-  public string $userInfoResponse = '';
-
-  /**
-   * Response for the create-node call.
-   */
-  public string $nodeCreateResponse = '';
-
-  /**
-   * {@inheritdoc}
-   */
-  public function drush(string $command, array $arguments = [], array $options = []): string {
-    $this->invocations[] = [
-      'command' => $command,
-      'arguments' => $arguments,
-      'options' => $options,
-    ];
-
-    if ($command === 'user-information') {
-      return $this->userInfoResponse;
-    }
-
-    return $this->nodeCreateResponse;
   }
 
 }

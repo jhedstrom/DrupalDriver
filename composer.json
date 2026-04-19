@@ -38,7 +38,6 @@
         "drupal/name": "^1.2",
         "drupal/supported_image": "^1",
         "drupal/time_field": "^2.2.1",
-        "drush-ops/behat-drush-endpoint": "*",
         "ergebnis/composer-normalize": "^2.50",
         "mglaman/phpstan-drupal": "^1.1.25 || ^2.0",
         "mockery/mockery": "^1.5",
