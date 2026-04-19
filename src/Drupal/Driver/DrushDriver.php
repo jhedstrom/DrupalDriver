@@ -33,17 +33,17 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * Track bootstrapping.
    */
-  private bool $bootstrapped = FALSE;
+  protected bool $bootstrapped = FALSE;
 
   /**
    * Random generator.
    */
-  private readonly Random $random;
+  protected readonly Random $random;
 
   /**
    * Global arguments or options for drush commands.
    */
-  private string $arguments = '';
+  protected string $arguments = '';
 
   /**
    * Tracks legacy drush.
@@ -95,31 +95,6 @@ class DrushDriver implements DrushDriverInterface {
   }
 
   /**
-   * Resolves the project-level Drush binary path.
-   *
-   * @param string $fallback
-   *   The fallback binary path if project-level Drush is not found.
-   *
-   * @return string
-   *   The resolved binary path.
-   */
-  protected function resolveProjectDrush(string $fallback): string {
-    // Try Composer's runtime bin directory.
-    $composer_bin = getenv('COMPOSER_BIN_DIR');
-    if ($composer_bin && file_exists($composer_bin . '/drush')) {
-      return $composer_bin . '/drush';
-    }
-
-    // Try common vendor/bin location relative to working directory.
-    $cwd = getcwd();
-    if ($cwd && file_exists($cwd . '/vendor/bin/drush')) {
-      return $cwd . '/vendor/bin/drush';
-    }
-
-    return $fallback;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getRandom(): Random {
@@ -138,29 +113,6 @@ class DrushDriver implements DrushDriverInterface {
   }
 
   /**
-   * Determine if drush is a legacy version.
-   *
-   * @return bool
-   *   Returns TRUE if drush is older than drush 9.
-   */
-  protected function isLegacyDrush(): bool {
-    try {
-      // Try for a drush 9 version.
-      $output = trim($this->drush('version', [], ['format' => 'string']));
-      // On PHP 8.4, deprecation warnings from Drush dependencies may be
-      // written to stdout before the version string. Extract the actual
-      // version number from the output to avoid misdetection.
-      $version = preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches) ? $matches[1] : $output;
-      return version_compare($version, '9', '<=');
-    }
-    catch (\RuntimeException) {
-      // The version of drush is old enough that only `--version` was available,
-      // so this is a legacy version.
-      return TRUE;
-    }
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function isBootstrapped(): bool {
@@ -170,98 +122,9 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user): void {
-    $arguments = [
-      sprintf('"%s"', $user->name),
-    ];
-    $options = [
-      'password' => $user->pass,
-      'mail' => $user->mail,
-    ];
-    $result = $this->drush('user-create', $arguments, $options);
-    if ($uid = $this->parseUserId($result)) {
-      $user->uid = $uid;
-    }
-    if (isset($user->roles) && is_array($user->roles)) {
-      foreach ($user->roles as $role) {
-        $this->userAddRole($user, $role);
-      }
-    }
-  }
-
-  /**
-   * Parse user id from drush user-information output.
-   *
-   * Supports both the legacy key-value format ("User ID : 123") and the
-   * Drush 12+ table format where the ID is the first numeric value in the
-   * data row.
-   */
-  protected function parseUserId(string $info): ?int {
-    // Legacy format: "User ID : 123".
-    if (preg_match('/User ID\s+:\s+(\d+)/', $info, $matches)) {
-      return (int) $matches[1];
-    }
-
-    // Drush 12+ table format: extract the first numeric value from the first
-    // data row (the row after the header separator).
-    if (preg_match('/User ID/', $info)) {
-      $lines = explode("\n", trim($info));
-      foreach ($lines as $line) {
-        // Skip header, separator, and empty lines.
-        $trimmed = trim($line, " \t\n\r\0\x0B-");
-        if ($trimmed === '') {
-          continue;
-        }
-        if (str_contains($trimmed, 'User ID')) {
-          continue;
-        }
-        // The first column in the data row is the User ID.
-        if (preg_match('/^\s*(\d+)\s/', $line, $matches)) {
-          return (int) $matches[1];
-        }
-      }
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userDelete(\stdClass $user): void {
-    $arguments = [sprintf('"%s"', $user->name)];
-    $options = [
-      'yes' => NULL,
-      'delete-content' => NULL,
-    ];
-    $this->drush('user-cancel', $arguments, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userAddRole(\stdClass $user, string $role): void {
-    $arguments = [
-      sprintf('"%s"', $role),
-      sprintf('"%s"', $user->name),
-    ];
-    $this->drush('user-add-role', $arguments);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
-    // parseArguments() maps NULL values to bare --flag, so only include
-    // filters that have been explicitly set.
-    $options = ['count' => $count];
-    if ($type !== NULL) {
-      $options['type'] = $type;
-    }
-    if ($severity !== NULL) {
-      $options['severity'] = $severity;
-    }
-
-    return $this->drush('watchdog-show', [], $options);
+  public function processBatch(): void {
+    // Do nothing. Drush should internally handle any needs for processing
+    // batch ops.
   }
 
   /**
@@ -333,6 +196,28 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function cronRun(): bool {
+    $this->drush('cron');
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleInstall(string $module_name): void {
+    $this->drush('pm-enable', [$module_name], ['yes' => NULL]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function moduleUninstall(string $module_name): void {
+    $this->drush('pm-uninstall', [$module_name], ['yes' => NULL]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function roleCreate(array $permissions): string {
     $random = $this->getRandom();
     $rid = strtolower($random->name(8, TRUE));
@@ -355,6 +240,68 @@ class DrushDriver implements DrushDriverInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function userCreate(\stdClass $user): void {
+    $arguments = [
+      sprintf('"%s"', $user->name),
+    ];
+    $options = [
+      'password' => $user->pass,
+      'mail' => $user->mail,
+    ];
+    $result = $this->drush('user-create', $arguments, $options);
+    if ($uid = $this->parseUserId($result)) {
+      $user->uid = $uid;
+    }
+    if (isset($user->roles) && is_array($user->roles)) {
+      foreach ($user->roles as $role) {
+        $this->userAddRole($user, $role);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userDelete(\stdClass $user): void {
+    $arguments = [sprintf('"%s"', $user->name)];
+    $options = [
+      'yes' => NULL,
+      'delete-content' => NULL,
+    ];
+    $this->drush('user-cancel', $arguments, $options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function userAddRole(\stdClass $user, string $role): void {
+    $arguments = [
+      sprintf('"%s"', $role),
+      sprintf('"%s"', $user->name),
+    ];
+    $this->drush('user-add-role', $arguments);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+    // parseArguments() maps NULL values to bare --flag, so only include
+    // filters that have been explicitly set.
+    $options = ['count' => $count];
+    if ($type !== NULL) {
+      $options['type'] = $type;
+    }
+    if ($severity !== NULL) {
+      $options['severity'] = $severity;
+    }
+
+    return $this->drush('watchdog-show', [], $options);
+  }
+
+  /**
    * Sets common drush arguments or options.
    *
    * @param string $arguments
@@ -369,29 +316,6 @@ class DrushDriver implements DrushDriverInterface {
    */
   public function getArguments(): string {
     return $this->arguments;
-  }
-
-  /**
-   * Parse arguments into a string.
-   *
-   * @param array<string, string|null> $arguments
-   *   An array of argument/option names to values.
-   *
-   * @return string
-   *   The parsed arguments.
-   */
-  protected static function parseArguments(array $arguments): string {
-    $option_string = '';
-
-    foreach ($arguments as $name => $value) {
-      if ($value === NULL) {
-        $option_string .= ' --' . $name;
-      }
-      else {
-        $option_string .= ' --' . $name . '=' . $value;
-      }
-    }
-    return $option_string;
   }
 
   /**
@@ -436,36 +360,6 @@ class DrushDriver implements DrushDriverInterface {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function processBatch(): void {
-    // Do nothing. Drush should internally handle any needs for processing
-    // batch ops.
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function cronRun(): bool {
-    $this->drush('cron');
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function moduleInstall(string $module_name): void {
-    $this->drush('pm-enable', [$module_name], ['yes' => NULL]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function moduleUninstall(string $module_name): void {
-    $this->drush('pm-uninstall', [$module_name], ['yes' => NULL]);
-  }
-
-  /**
    * Run Drush commands dynamically from a DrupalContext.
    *
    * @param string $name
@@ -478,6 +372,112 @@ class DrushDriver implements DrushDriverInterface {
    */
   public function __call(string $name, array $arguments): string {
     return $this->drush($name, $arguments);
+  }
+
+  /**
+   * Resolves the project-level Drush binary path.
+   *
+   * @param string $fallback
+   *   The fallback binary path if project-level Drush is not found.
+   *
+   * @return string
+   *   The resolved binary path.
+   */
+  protected function resolveProjectDrush(string $fallback): string {
+    // Try Composer's runtime bin directory.
+    $composer_bin = getenv('COMPOSER_BIN_DIR');
+    if ($composer_bin && file_exists($composer_bin . '/drush')) {
+      return $composer_bin . '/drush';
+    }
+
+    // Try common vendor/bin location relative to working directory.
+    $cwd = getcwd();
+    if ($cwd && file_exists($cwd . '/vendor/bin/drush')) {
+      return $cwd . '/vendor/bin/drush';
+    }
+
+    return $fallback;
+  }
+
+  /**
+   * Determine if drush is a legacy version.
+   *
+   * @return bool
+   *   Returns TRUE if drush is older than drush 9.
+   */
+  protected function isLegacyDrush(): bool {
+    try {
+      // Try for a drush 9 version.
+      $output = trim($this->drush('version', [], ['format' => 'string']));
+      // On PHP 8.4, deprecation warnings from Drush dependencies may be
+      // written to stdout before the version string. Extract the actual
+      // version number from the output to avoid misdetection.
+      $version = preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches) ? $matches[1] : $output;
+      return version_compare($version, '9', '<=');
+    }
+    catch (\RuntimeException) {
+      // The version of drush is old enough that only `--version` was available,
+      // so this is a legacy version.
+      return TRUE;
+    }
+  }
+
+  /**
+   * Parse user id from drush user-information output.
+   *
+   * Supports both the legacy key-value format ("User ID : 123") and the
+   * Drush 12+ table format where the ID is the first numeric value in the
+   * data row.
+   */
+  protected function parseUserId(string $info): ?int {
+    // Legacy format: "User ID : 123".
+    if (preg_match('/User ID\s+:\s+(\d+)/', $info, $matches)) {
+      return (int) $matches[1];
+    }
+
+    // Drush 12+ table format: extract the first numeric value from the first
+    // data row (the row after the header separator).
+    if (preg_match('/User ID/', $info)) {
+      $lines = explode("\n", trim($info));
+      foreach ($lines as $line) {
+        // Skip header, separator, and empty lines.
+        $trimmed = trim($line, " \t\n\r\0\x0B-");
+        if ($trimmed === '') {
+          continue;
+        }
+        if (str_contains($trimmed, 'User ID')) {
+          continue;
+        }
+        // The first column in the data row is the User ID.
+        if (preg_match('/^\s*(\d+)\s/', $line, $matches)) {
+          return (int) $matches[1];
+        }
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Parse arguments into a string.
+   *
+   * @param array<string, string|null> $arguments
+   *   An array of argument/option names to values.
+   *
+   * @return string
+   *   The parsed arguments.
+   */
+  protected static function parseArguments(array $arguments): string {
+    $option_string = '';
+
+    foreach ($arguments as $name => $value) {
+      if ($value === NULL) {
+        $option_string .= ' --' . $name;
+      }
+      else {
+        $option_string .= ' --' . $name . '=' . $value;
+      }
+    }
+    return $option_string;
   }
 
 }
