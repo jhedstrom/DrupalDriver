@@ -258,6 +258,8 @@ class DrushDriverMethodsTest extends TestCase {
    *   Options passed to 'parseArguments()'.
    * @param string $expected
    *   The expected concatenated CLI option string.
+   *
+   * @dataProvider dataProviderParseArguments
    */
   #[DataProvider('dataProviderParseArguments')]
   public function testParseArguments(array $options, string $expected): void {
