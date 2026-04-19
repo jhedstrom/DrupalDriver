@@ -53,9 +53,11 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function __construct(string $drupal_root, string $uri) {
     $resolved = realpath($drupal_root);
+
     if ($resolved === FALSE) {
       throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
+
     $this->drupalRoot = $resolved;
     $this->uri = $uri;
     $this->version = $this->detectMajorVersion();
@@ -115,6 +117,7 @@ class DrupalDriver implements DrupalDriverInterface {
     if (!isset($available_cores[$this->version])) {
       throw new BootstrapException(sprintf('There is no available Drupal core controller for Drupal version %s.', $this->version));
     }
+
     $this->core = $available_cores[$this->version];
   }
 
@@ -131,15 +134,19 @@ class DrupalDriver implements DrupalDriverInterface {
   public function setCoreFromVersion(): void {
     $version = $this->getDrupalVersion();
     $candidates = [];
+
     for ($n = $version; $n >= 10; $n--) {
       $candidates[] = sprintf('Drupal\\Driver\\Core%d\\Core', $n);
     }
 
     foreach ($candidates as $class) {
-      if (class_exists($class)) {
-        $this->core = new $class($this->drupalRoot, $this->uri);
-        return;
+      if (!class_exists($class)) {
+        continue;
       }
+
+      $this->core = new $class($this->drupalRoot, $this->uri);
+
+      return;
     }
 
     $this->core = new Core($this->drupalRoot, $this->uri);
@@ -402,9 +409,11 @@ class DrupalDriver implements DrupalDriverInterface {
     ];
 
     foreach ($version_files as $path) {
-      if (file_exists($this->drupalRoot . $path)) {
-        require_once $this->drupalRoot . $path;
+      if (!file_exists($this->drupalRoot . $path)) {
+        continue;
       }
+
+      require_once $this->drupalRoot . $path;
     }
 
     $version_string = $this->readVersionConstant();

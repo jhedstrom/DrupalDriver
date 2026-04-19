@@ -67,17 +67,16 @@ class DrushDriver implements DrushDriverInterface {
    *   Thrown when a required parameter is missing.
    */
   public function __construct(?string $alias = NULL, ?string $root_path = NULL, string $binary = 'drush', ?Random $random = NULL) {
+    if (empty($alias) && empty($root_path)) {
+      throw new BootstrapException('A drush alias or root path is required.');
+    }
+
     if (!empty($alias)) {
       // Trim off the '@' symbol if it has been added.
-      $alias = ltrim($alias, '@');
-
-      $this->alias = $alias;
-    }
-    elseif (!empty($root_path)) {
-      $this->root = realpath($root_path);
+      $this->alias = ltrim($alias, '@');
     }
     else {
-      throw new BootstrapException('A drush alias or root path is required.');
+      $this->root = realpath($root_path);
     }
 
     // When the default 'drush' binary is used, try to resolve the
@@ -87,11 +86,7 @@ class DrushDriver implements DrushDriverInterface {
     }
 
     $this->binary = $binary;
-
-    if (!isset($random)) {
-      $random = new Random();
-    }
-    $this->random = $random;
+    $this->random = $random ?? new Random();
   }
 
   /**
@@ -243,21 +238,25 @@ class DrushDriver implements DrushDriverInterface {
    * {@inheritdoc}
    */
   public function userCreate(\stdClass $user): void {
-    $arguments = [
-      sprintf('"%s"', $user->name),
-    ];
+    $arguments = [sprintf('"%s"', $user->name)];
     $options = [
       'password' => $user->pass,
       'mail' => $user->mail,
     ];
+
     $result = $this->drush('user-create', $arguments, $options);
-    if ($uid = $this->parseUserId($result)) {
+    $uid = $this->parseUserId($result);
+
+    if ($uid) {
       $user->uid = $uid;
     }
-    if (isset($user->roles) && is_array($user->roles)) {
-      foreach ($user->roles as $role) {
-        $this->userAddRole($user, $role);
-      }
+
+    if (!isset($user->roles) || !is_array($user->roles)) {
+      return;
+    }
+
+    foreach ($user->roles as $role) {
+      $this->userAddRole($user, $role);
     }
   }
 
@@ -291,9 +290,11 @@ class DrushDriver implements DrushDriverInterface {
     // parseArguments() maps NULL values to bare --flag, so only include
     // filters that have been explicitly set.
     $options = ['count' => $count];
+
     if ($type !== NULL) {
       $options['type'] = $type;
     }
+
     if ($severity !== NULL) {
       $options['severity'] = $severity;
     }
@@ -339,7 +340,7 @@ class DrushDriver implements DrushDriverInterface {
     }
 
     $option_string = static::parseArguments($options);
-    $alias = $this->alias !== NULL ? '@' . $this->alias : '--root=' . $this->root;
+    $alias = isset($this->alias) ? '@' . $this->alias : '--root=' . $this->root;
     $global = $this->getArguments();
 
     $cmd = sprintf('%s %s %s %s %s %s', $this->binary, $alias, $option_string, $global, $command, $argument_string);
@@ -439,21 +440,26 @@ class DrushDriver implements DrushDriverInterface {
     // data row (the row after the header separator).
     if (preg_match('/User ID/', $info)) {
       $lines = explode("\n", trim($info));
+
       foreach ($lines as $line) {
         // Skip header, separator, and empty lines.
         $trimmed = trim($line, " \t\n\r\0\x0B-");
+
         if ($trimmed === '') {
           continue;
         }
+
         if (str_contains($trimmed, 'User ID')) {
           continue;
         }
+
         // The first column in the data row is the User ID.
         if (preg_match('/^\s*(\d+)\s/', $line, $matches)) {
           return (int) $matches[1];
         }
       }
     }
+
     return NULL;
   }
 

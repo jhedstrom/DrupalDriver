@@ -15,14 +15,14 @@ class NameHandler extends AbstractHandler {
    * {@inheritdoc}
    */
   public function expand($values): array {
-    $return = [];
     $components = ['title', 'given', 'middle', 'family', 'generational', 'credentials'];
+    $names = [];
 
     foreach ($values as $value) {
       if (is_string($value)) {
         // Support "Family, Given" shorthand.
         $parts = array_map(trim(...), explode(',', $value));
-        $return[] = [
+        $names[] = [
           'family' => $parts[0] ?? NULL,
           'given' => $parts[1] ?? NULL,
         ];
@@ -30,22 +30,42 @@ class NameHandler extends AbstractHandler {
       }
 
       if (is_array($value)) {
-        $return_value = [];
-        $idx = 0;
-        foreach ($value as $k => $v) {
-          if (in_array($k, $components, TRUE)) {
-            $return_value[$k] = $v;
-          }
-          elseif (is_numeric($k) && isset($components[$idx])) {
-            $return_value[$components[$idx]] = $v;
-            $idx++;
-          }
-        }
-        $return[] = $return_value;
+        $names[] = $this->normaliseComponents($value, $components);
       }
     }
 
-    return $return;
+    return $names;
+  }
+
+  /**
+   * Normalises a name value array into a keyed components array.
+   *
+   * @param array<int|string, mixed> $value
+   *   The raw name value. Keys may be component names (title, given, family,
+   *   ...) or numeric indices mapping into the component order.
+   * @param array<int, string> $components
+   *   The ordered list of recognised name component keys.
+   *
+   * @return array<string, mixed>
+   *   A keyed array of name components.
+   */
+  protected function normaliseComponents(array $value, array $components): array {
+    $name = [];
+    $position = 0;
+
+    foreach ($value as $key => $field_value) {
+      if (in_array($key, $components, TRUE)) {
+        $name[$key] = $field_value;
+        continue;
+      }
+
+      if (is_numeric($key) && isset($components[$position])) {
+        $name[$components[$position]] = $field_value;
+        $position++;
+      }
+    }
+
+    return $name;
   }
 
 }
