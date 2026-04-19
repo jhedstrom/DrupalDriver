@@ -363,9 +363,8 @@ class Core implements CoreInterface {
       'id' => $rid,
       'label' => $name,
     ]);
-    $result = $role->save();
+    $role->save();
 
-    // A freshly created role always saves as SAVED_NEW.
     if (!empty($permissions)) {
       user_role_grant_permissions($role->id(), $permissions);
     }

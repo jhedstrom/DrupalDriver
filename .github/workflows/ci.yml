@@ -9,7 +9,7 @@ on:
       - master
 
 env:
-  CI_COVERAGE_THRESHOLD: '35'
+  CI_COVERAGE_THRESHOLD: '95'
 
 jobs:
   lint:

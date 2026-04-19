@@ -431,9 +431,10 @@ class DrushDriver implements DrushDriverInterface {
     $output = trim($this->drush('config:get', $arguments, ['format' => 'json']));
 
     // 'drush config:get' returns whatever JSON shape the value has (object,
-    // array, scalar). 'decodeJsonObject()' would strip non-object payloads,
-    // so decode the trimmed output directly.
-    return json_decode($output);
+    // array, scalar). Decode objects to associative arrays so the return
+    // shape matches 'Core::configGet()', which delegates to Drupal's config
+    // API and hands back arrays.
+    return json_decode($output, TRUE);
   }
 
   /**

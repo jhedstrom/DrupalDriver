@@ -53,7 +53,7 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function __construct(string $drupal_root, string $uri) {
     $resolved = realpath($drupal_root);
-    if ($resolved === FALSE || $resolved === '') {
+    if ($resolved === FALSE) {
       throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
     $this->drupalRoot = $resolved;

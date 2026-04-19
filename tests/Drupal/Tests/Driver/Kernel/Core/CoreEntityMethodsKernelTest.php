@@ -6,6 +6,7 @@ namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Driver\Core\Core;
+use Drupal\entity_test\EntityTestHelper;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
@@ -40,6 +41,7 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     parent::setUp();
 
     $this->installEntitySchema('user');
+    $this->installEntitySchema('entity_test');
     $this->installSchema('user', ['users_data']);
     $this->installConfig(['system', 'user']);
     $this->core = new Core($this->root);
@@ -85,22 +87,29 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
 
   /**
    * Tests 'entityCreate()' maps 'step_bundle' onto the real bundle key.
+   *
+   * 'entity_test' has a 'type' bundle key, so the stub's 'step_bundle'
+   * should be promoted to 'type' before the entity is saved.
    */
   public function testEntityCreateMapsStepBundle(): void {
-    // 'user' entity type has no 'type' bundle key (user has no bundles), so
-    // the step_bundle path is exercised via any entity type where the bundle
-    // key is not already present on the stub.
+    // Feature-detect the helper the same way the field-handler base does:
+    // Drupal 11.2+ ships EntityTestHelper; older cores only expose the
+    // procedural helper.
+    if (class_exists(EntityTestHelper::class)) {
+      EntityTestHelper::createBundle('custom_bundle');
+    }
+    else {
+      entity_test_create_bundle('custom_bundle');
+    }
+
     $stub = (object) [
       'name' => 'sam',
-      'mail' => 'sam@example.com',
-      'status' => 1,
-      // 'step_bundle' is ignored for entity types without a bundle key.
-      'step_bundle' => 'user',
+      'step_bundle' => 'custom_bundle',
     ];
-    $created = $this->core->entityCreate('user', $stub);
+    $created = $this->core->entityCreate('entity_test', $stub);
 
-    $this->assertInstanceOf(User::class, $created);
-    $this->assertSame('sam', $created->getAccountName());
+    $this->assertSame('custom_bundle', $stub->type, 'step_bundle was promoted to the bundle key.');
+    $this->assertSame('custom_bundle', $created->bundle());
   }
 
   /**
