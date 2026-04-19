@@ -107,6 +107,19 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
   }
 
   /**
+   * Tests that 'userAddRole()' throws when the role name is unknown.
+   */
+  public function testUserAddRoleThrowsOnUnknownRole(): void {
+    $user = (object) ['name' => 'ghost', 'mail' => 'ghost@example.com', 'pass' => 'pw'];
+    $this->core->userCreate($user);
+
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessageMatches('/No role "nonexistent-role" exists/');
+
+    $this->core->userAddRole($user, 'nonexistent-role');
+  }
+
+  /**
    * Tests that roleCreate rejects unknown permission strings.
    *
    * Kept as a separate method because it exercises a failure path - better

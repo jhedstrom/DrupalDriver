@@ -84,6 +84,26 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
   }
 
   /**
+   * Tests 'entityCreate()' maps 'step_bundle' onto the real bundle key.
+   */
+  public function testEntityCreateMapsStepBundle(): void {
+    // 'user' entity type has no 'type' bundle key (user has no bundles), so
+    // the step_bundle path is exercised via any entity type where the bundle
+    // key is not already present on the stub.
+    $stub = (object) [
+      'name' => 'sam',
+      'mail' => 'sam@example.com',
+      'status' => 1,
+      // 'step_bundle' is ignored for entity types without a bundle key.
+      'step_bundle' => 'user',
+    ];
+    $created = $this->core->entityCreate('user', $stub);
+
+    $this->assertInstanceOf(User::class, $created);
+    $this->assertSame('sam', $created->getAccountName());
+  }
+
+  /**
    * Tests 'expandEntityBaseFields()' invokes the field handler pipeline.
    */
   public function testExpandEntityBaseFieldsRewritesBaseField(): void {

@@ -91,6 +91,19 @@ class CoreFieldHandlerLookupTest extends TestCase {
   }
 
   /**
+   * Tests that 'getFieldHandler()' throws when the field is not resolvable.
+   */
+  public function testHandlerLookupThrowsWhenFieldIsMissing(): void {
+    $core = new Core99TestCore(__DIR__, 'default');
+    $entity = new \stdClass();
+
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessageMatches('/Field "field_missing" not found/');
+
+    $core->getFieldHandler($entity, 'node', 'field_missing');
+  }
+
+  /**
    * Sets up a minimal Drupal container satisfying AbstractHandler::__construct.
    *
    * Provides 'entity_field.manager' and 'entity_type.manager' services with

@@ -133,10 +133,14 @@ class DrushDriver implements DrushDriverInterface {
     // Check that the given alias works.
     // @todo check that this is a functioning alias.
     // See http://drupal.org/node/1615450
+    // @codeCoverageIgnoreStart
+    // The constructor already rejects empty alias+root, so reaching this
+    // branch would require tampering with the typed properties via
+    // reflection. Retained as a defensive guard.
     if ($this->alias === NULL && $this->root === NULL) {
       throw new BootstrapException('A drush alias or root path is required.');
     }
-
+    // @codeCoverageIgnoreEnd
     // Determine if drush version is legacy.
     if (!isset(self::$isLegacyDrush)) {
       self::$isLegacyDrush = $this->isLegacyDrush();

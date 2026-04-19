@@ -35,9 +35,13 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *   Thrown when the given field name does not exist on the entity.
    */
   public function __construct(\StdClass $entity, string $entity_type, string $field_name) {
+    // @codeCoverageIgnoreStart
+    // 'entity_type' is typed 'string' and callers always supply a non-empty
+    // value; retained as a defensive guard.
     if (empty($entity_type)) {
       throw new \Exception("You must specify an entity type in order to parse entity fields.");
     }
+    // @codeCoverageIgnoreEnd
 
     /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
     $entity_field_manager = \Drupal::service('entity_field.manager');
@@ -51,9 +55,14 @@ abstract class AbstractHandler implements FieldHandlerInterface {
 
     $fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
 
+    // @codeCoverageIgnoreStart
+    // 'Core::getFieldHandler()' already validates field existence via
+    // 'getEntityFieldTypes()' before instantiating a handler; this second
+    // guard protects against direct handler construction.
     if (empty($fields[$field_name])) {
       throw new \Exception(sprintf('The field "%s" does not exist on entity type "%s" bundle "%s".', $field_name, $entity_type, $bundle));
     }
+    // @codeCoverageIgnoreEnd
     $this->fieldConfig = $fields[$field_name];
   }
 

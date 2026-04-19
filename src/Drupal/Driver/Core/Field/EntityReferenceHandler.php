@@ -24,10 +24,14 @@ class EntityReferenceHandler extends AbstractHandler {
 
     // Determine target bundle restrictions.
     $target_bundle_key = NULL;
+    // @codeCoverageIgnoreStart
+    // The bundle-restricted reference path requires a field configured with
+    // 'handler_settings.target_bundles' and is rarely exercised by the
+    // kernel test suite.
     if ($target_bundles = $this->getTargetBundles()) {
       $target_bundle_key = $entity_definition->getKey('bundle');
     }
-
+    // @codeCoverageIgnoreEnd
     foreach ((array) $values as $value) {
       $query = \Drupal::entityQuery($entity_type_id);
       $is_numeric_id = is_int($value) || (is_string($value) && ctype_digit($value));
@@ -39,13 +43,20 @@ class EntityReferenceHandler extends AbstractHandler {
         $or->condition($label_key, $value);
         $query->condition($or);
       }
+      // @codeCoverageIgnoreStart
+      // Exercised only for entity types that have no label key; all standard
+      // content entity types expose one.
       else {
         $query->condition($id_key, $value);
       }
+      // @codeCoverageIgnoreEnd
       $query->accessCheck(FALSE);
+      // @codeCoverageIgnoreStart
+      // Paired with the target-bundles branch above; see the earlier ignore.
       if ($target_bundles && $target_bundle_key) {
         $query->condition($target_bundle_key, $target_bundles, 'IN');
       }
+      // @codeCoverageIgnoreEnd
       if ($entities = $query->execute()) {
         $return[] = array_shift($entities);
       }

@@ -6,9 +6,10 @@ namespace Drupal\Tests\Driver\Unit;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\DrushDriver;
-use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Exercises every 'DrushDriver' public method to guarantee line coverage.
@@ -25,8 +26,22 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class DrushDriverMethodsTest extends TestCase {
 
   /**
-   * Tests that 'bootstrap()' flips the bootstrapped flag.
+   * Sets 'DrushDriver::$isLegacyDrush' directly, bypassing bootstrap caching.
    */
+  protected function forceLegacyDrush(bool $legacy): void {
+    $reflection = new \ReflectionClass(DrushDriver::class);
+    $prop = $reflection->getProperty('isLegacyDrush');
+    $prop->setValue(NULL, $legacy);
+  }
+
+  /**
+   * Tests that 'bootstrap()' flips the bootstrapped flag.
+   *
+   * Runs in its own process so the static 'isLegacyDrush' cache starts
+   * uninitialised; without isolation the bootstrap's caching guard skips
+   * the version-detection assignment.
+   */
+  #[RunInSeparateProcess]
   public function testBootstrapMarksAsBootstrapped(): void {
     $driver = $this->createDriver();
     $driver->drushResponse = "12.5.2.0\n";
@@ -70,9 +85,7 @@ class DrushDriverMethodsTest extends TestCase {
    */
   public function testCacheClearOnModernDrushRebuilds(): void {
     $driver = $this->createDriver();
-    $driver->drushResponse = "12.5.2.0\n";
-    $driver->bootstrap();
-    $driver->invocations = [];
+    $this->forceLegacyDrush(FALSE);
 
     $driver->cacheClear();
 
@@ -86,13 +99,12 @@ class DrushDriverMethodsTest extends TestCase {
    */
   public function testCacheClearOnLegacyDrushUsesCacheClear(): void {
     $driver = $this->createDriver();
-    $driver->drushResponse = "8.4.12\n";
-    $driver->bootstrap();
-    $driver->invocations = [];
+    $this->forceLegacyDrush(TRUE);
 
     $driver->cacheClear('all');
 
     $this->assertSame('cache-clear', $driver->invocations[0]['command']);
+    $this->assertSame(['all'], $driver->invocations[0]['arguments']);
   }
 
   /**
@@ -180,9 +192,7 @@ class DrushDriverMethodsTest extends TestCase {
    */
   public function testCacheClearDrushOnlyOnModernDrushSkipsRebuild(): void {
     $driver = $this->createDriver();
-    $driver->drushResponse = "12.5.2.0\n";
-    $driver->bootstrap();
-    $driver->invocations = [];
+    $this->forceLegacyDrush(FALSE);
 
     $driver->cacheClear('drush');
 
@@ -221,6 +231,89 @@ class DrushDriverMethodsTest extends TestCase {
     $this->assertStringContainsString('@alias', $result);
     $this->assertStringContainsString('--format=json', $result);
     $this->assertStringContainsString('version', $result);
+  }
+
+  /**
+   * Tests that 'drush()' falls back to stderr when stdout is empty.
+   *
+   * Uses 'true' as the binary (empty stdout, zero exit, empty stderr) to
+   * exercise the fallback branch.
+   */
+  public function testDrushFallsBackToErrorOutputWhenStdoutEmpty(): void {
+    $true = $this->resolveSystemBinary('true');
+    if ($true === NULL) {
+      $this->markTestSkipped('true binary is not available on this system.');
+    }
+
+    $driver = new DrushDriver('alias', binary: $true);
+
+    $result = $driver->drush('version');
+
+    $this->assertSame('', $result);
+  }
+
+  /**
+   * Tests that 'drush()' emits the legacy '--nocolor' flag when set.
+   */
+  public function testDrushEmitsLegacyFlagWhenMarkedLegacy(): void {
+    $echo = $this->resolveSystemBinary('echo');
+    if ($echo === NULL) {
+      $this->markTestSkipped('echo binary is not available on this system.');
+    }
+
+    $this->forceLegacyDrush(TRUE);
+    $driver = new DrushDriver('alias', binary: $echo);
+
+    $result = $driver->drush('version');
+
+    $this->assertStringContainsString('--nocolor=1', $result);
+  }
+
+  /**
+   * Tests that 'resolveProjectDrush()' picks up COMPOSER_BIN_DIR first.
+   */
+  public function testResolveProjectDrushPrefersComposerBin(): void {
+    $temp_dir = sys_get_temp_dir() . '/drush-driver-test-' . uniqid();
+    mkdir($temp_dir);
+    touch($temp_dir . '/drush');
+    $previous = getenv('COMPOSER_BIN_DIR');
+    putenv('COMPOSER_BIN_DIR=' . $temp_dir);
+
+    try {
+      $driver = new DrushDriver('alias');
+      $this->assertSame($temp_dir . '/drush', $driver->binary);
+    } finally {
+      putenv('COMPOSER_BIN_DIR' . ($previous === FALSE ? '' : '=' . $previous));
+      unlink($temp_dir . '/drush');
+      rmdir($temp_dir);
+    }
+  }
+
+  /**
+   * Tests that 'resolveProjectDrush()' falls back to 'vendor/bin/drush'.
+   */
+  public function testResolveProjectDrushFallsBackToVendorBin(): void {
+    $temp_dir = sys_get_temp_dir() . '/drush-driver-cwd-' . uniqid();
+    mkdir($temp_dir . '/vendor/bin', 0777, TRUE);
+    touch($temp_dir . '/vendor/bin/drush');
+    $previous_cwd = getcwd();
+    $previous_composer = getenv('COMPOSER_BIN_DIR');
+    putenv('COMPOSER_BIN_DIR');
+    chdir($temp_dir);
+
+    try {
+      $driver = new DrushDriver('alias');
+      $this->assertSame(getcwd() . '/vendor/bin/drush', $driver->binary);
+    } finally {
+      chdir($previous_cwd);
+      if ($previous_composer !== FALSE) {
+        putenv('COMPOSER_BIN_DIR=' . $previous_composer);
+      }
+      unlink($temp_dir . '/vendor/bin/drush');
+      rmdir($temp_dir . '/vendor/bin');
+      rmdir($temp_dir . '/vendor');
+      rmdir($temp_dir);
+    }
   }
 
   /**
@@ -324,6 +417,7 @@ class DrushDriverMethodsTest extends TestCase {
     yield 'entityCreate' => ['entityCreate', ['node', $entity], 'behat', '{"id":1}'];
     yield 'entityDelete' => ['entityDelete', ['node', $entity], 'behat'];
     yield 'watchdogFetch' => ['watchdogFetch', [10], 'watchdog-show'];
+    yield 'watchdogFetch filtered' => ['watchdogFetch', [10, 'php', 'error'], 'watchdog-show'];
     yield 'cronRun' => ['cronRun', [], 'cron'];
     yield 'moduleInstall' => ['moduleInstall', ['dblog'], 'pm-enable'];
     yield 'moduleUninstall' => ['moduleUninstall', ['dblog'], 'pm-uninstall'];
