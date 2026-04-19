@@ -23,7 +23,7 @@ use PHPUnit\Framework\Attributes\Group;
  */
 #[Group('core')]
 #[Group('fields')]
-class FieldHandlerLookupTest extends TestCase {
+class CoreFieldHandlerLookupTest extends TestCase {
 
   /**
    * {@inheritdoc}

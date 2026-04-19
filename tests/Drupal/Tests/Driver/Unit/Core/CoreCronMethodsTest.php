@@ -13,10 +13,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
- * Tests for the default Drupal Core class.
+ * Tests for 'Core::cronRun()' on the default Drupal core.
  */
 #[Group('core')]
-class CoreTest extends TestCase {
+class CoreCronMethodsTest extends TestCase {
 
   /**
    * The original REQUEST_TIME value.
