@@ -11,12 +11,12 @@ use Drupal\field\Entity\FieldStorageConfig;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests 'isBaseField()', 'isField()', and 'getEntityFieldTypes()' methods.
+ * Tests 'fieldIsBase()', 'fieldExists()', and 'getEntityFieldTypes()' methods.
  */
 class CoreFieldMethodsTest extends TestCase {
 
   /**
-   * Tests that 'isBaseField()' correctly identifies base fields.
+   * Tests that 'fieldIsBase()' correctly identifies base fields.
    *
    * @param string $field_name
    *   The field name to check.
@@ -27,7 +27,7 @@ class CoreFieldMethodsTest extends TestCase {
    */
   public function testIsBaseField(string $field_name, bool $expected): void {
     $core = $this->createTestCore();
-    $this->assertSame($expected, $core->isBaseField('node', $field_name));
+    $this->assertSame($expected, $core->fieldIsBase('node', $field_name));
   }
 
   /**
@@ -41,7 +41,7 @@ class CoreFieldMethodsTest extends TestCase {
   }
 
   /**
-   * Tests that 'isField()' correctly identifies configurable fields.
+   * Tests that 'fieldExists()' correctly identifies configurable fields.
    *
    * @param string $field_name
    *   The field name to check.
@@ -52,7 +52,7 @@ class CoreFieldMethodsTest extends TestCase {
    */
   public function testIsField(string $field_name, bool $expected): void {
     $core = $this->createTestCore();
-    $this->assertSame($expected, $core->isField('node', $field_name));
+    $this->assertSame($expected, $core->fieldExists('node', $field_name));
   }
 
   /**
@@ -128,7 +128,7 @@ class CoreFieldMethodsTest extends TestCase {
     $moderation_state_field->method('getType')->willReturn('string');
 
     // Configurable field - mock satisfies `instanceof FieldStorageConfig` in
-    // Core::isField without needing the real constructor's array arg.
+    // Core::fieldExists without needing the real constructor's array arg.
     $field_tags = $this->createMock(FieldStorageConfig::class);
     $field_tags->method('getType')->willReturn('entity_reference');
 

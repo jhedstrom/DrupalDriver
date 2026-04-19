@@ -113,15 +113,15 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
-    return $this->getCore()->fetchWatchdog($count, $type, $severity);
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+    return $this->getCore()->watchdogFetch($count, $type, $severity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearCache(?string $type = NULL): void {
-    $this->getCore()->clearCache($type);
+  public function cacheClear(?string $type = NULL): void {
+    $this->getCore()->cacheClear($type);
   }
 
   /**
@@ -263,8 +263,8 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function runCron(): bool {
-    return $this->getCore()->runCron();
+  public function cronRun(): bool {
+    return $this->getCore()->cronRun();
   }
 
   /**
@@ -298,15 +298,15 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function isField(string $entity_type, string $field_name): bool {
-    return $this->getCore()->isField($entity_type, $field_name);
+  public function fieldExists(string $entity_type, string $field_name): bool {
+    return $this->getCore()->fieldExists($entity_type, $field_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isBaseField(string $entity_type, string $field_name): bool {
-    return $this->getCore()->isBaseField($entity_type, $field_name);
+  public function fieldIsBase(string $entity_type, string $field_name): bool {
+    return $this->getCore()->fieldIsBase($entity_type, $field_name);
   }
 
   /**
@@ -347,8 +347,8 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches(): void {
-    $this->getCore()->clearStaticCaches();
+  public function cacheClearStatic(): void {
+    $this->getCore()->cacheClearStatic();
   }
 
   /**
@@ -368,36 +368,36 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function startCollectingMail(): void {
-    $this->getCore()->startCollectingMail();
+  public function mailStartCollecting(): void {
+    $this->getCore()->mailStartCollecting();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stopCollectingMail(): void {
-    $this->getCore()->stopCollectingMail();
+  public function mailStopCollecting(): void {
+    $this->getCore()->mailStopCollecting();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMail(): array {
-    return $this->getCore()->getMail();
+  public function mailGet(): array {
+    return $this->getCore()->mailGet();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearMail(): void {
-    $this->getCore()->clearMail();
+  public function mailClear(): void {
+    $this->getCore()->mailClear();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendMail(string $body, string $subject, string $to, string $langcode): bool {
-    return $this->getCore()->sendMail($body, $subject, $to, $langcode);
+  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
+    return $this->getCore()->mailSend($body, $subject, $to, $langcode);
   }
 
   /**

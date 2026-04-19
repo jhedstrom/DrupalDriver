@@ -18,7 +18,7 @@ DrupalExtension integrations) may need updating.
 | Driver | Composite contract | Capability set |
 |---|---|---|
 | `DrupalDriver` | `DrupalDriverInterface` | All capabilities + `SubDriverFinderInterface` |
-| `DrushDriver` | `DrushDriverInterface` | Cache, Config, Content, Field, Module, Role, User, Watchdog |
+| `DrushDriver` | `DrushDriverInterface` | Cache, Config, Content, Cron, Field, Module, Role, User, Watchdog |
 | `BlackboxDriver` | `BlackboxDriverInterface` | None |
 
 ### Removed classes and interfaces
@@ -43,14 +43,29 @@ type hint.
 
 ### Renamed driver methods
 
-These methods on `DrupalDriver` and `DrushDriver` were renamed for consistency
-with the corresponding `Core` methods:
+Every method now starts with its capability name for consistency. Renames
+on `DrupalDriver`, `DrushDriver`, and `Core`:
 
-| v2 | v3 |
-|---|---|
-| `createNode($node)` | `nodeCreate(\stdClass $node)` |
-| `createTerm($term)` | `termCreate(\stdClass $term)` |
-| `createEntity($type, $entity)` | `entityCreate(string $type, \stdClass $entity)` |
+| v2 | v3 | Capability |
+|---|---|---|
+| `createNode` | `nodeCreate` | Content |
+| `createTerm` | `termCreate` | Content |
+| `createEntity` | `entityCreate` | Content |
+| `isField` | `fieldExists` | Field |
+| `isBaseField` | `fieldIsBase` | Field |
+| `clearCache` | `cacheClear` | Cache |
+| `clearStaticCaches` | `cacheClearStatic` | Cache |
+| `runCron` | `cronRun` | Cron |
+| `fetchWatchdog` | `watchdogFetch` | Watchdog |
+| `startCollectingMail` | `mailStartCollecting` | Mail |
+| `stopCollectingMail` | `mailStopCollecting` | Mail |
+| `getMail` | `mailGet` | Mail |
+| `clearMail` | `mailClear` | Mail |
+| `sendMail` | `mailSend` | Mail |
+
+`login` and `logout` keep their verb-only names - they don't take a subject
+prefix naturally. All other capability methods (`user*`, `role*`, `module*`,
+`config*`, `language*`) already followed the pattern.
 
 ### Tightened signatures
 
@@ -63,8 +78,8 @@ otherwise.
 ### New methods
 
 - `DrupalDriver::configGetOriginal()` - previously only available on `Core`.
-- `DrupalDriver::fetchWatchdog()` now delegates to `Core::fetchWatchdog()`
-  instead of throwing. `Core::fetchWatchdog()` is a new implementation built
+- `DrupalDriver::watchdogFetch()` now delegates to `Core::watchdogFetch()`
+  instead of throwing. `Core::watchdogFetch()` is a new implementation built
   against the `dblog` module.
 
 ### Consumer migration

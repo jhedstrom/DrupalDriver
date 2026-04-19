@@ -258,7 +258,7 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
     $options = [
       'count' => $count,
       'type' => $type,
@@ -270,7 +270,7 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCache(?string $type = 'all'): void {
+  public function cacheClear(?string $type = 'all'): void {
     if (self::$isLegacyDrush) {
       $this->drush('cache-clear', [$type], []);
       return;
@@ -293,9 +293,9 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches(): void {
+  public function cacheClearStatic(): void {
     // The drush driver does each operation as a separate request;
-    // therefore, 'clearStaticCaches' can be a no-op.
+    // therefore, 'cacheClearStatic' can be a no-op.
   }
 
   /**
@@ -399,7 +399,7 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function isField(string $entity_type, string $field_name): bool {
+  public function fieldExists(string $entity_type, string $field_name): bool {
     // If the Behat Drush Endpoint is not installed on the site-under-test,
     // then the drush() method will throw an exception. In this instance, we
     // want to treat all potential fields as non-fields.  This allows the
@@ -419,7 +419,7 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function isBaseField(string $entity_type, string $field_name): bool {
+  public function fieldIsBase(string $entity_type, string $field_name): bool {
     // Drush does not expose base-field introspection without extra modules;
     // return FALSE as a safe default so consumers treat the field as
     // non-base.
@@ -576,7 +576,7 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function runCron(): bool {
+  public function cronRun(): bool {
     $this->drush('cron');
     return TRUE;
   }

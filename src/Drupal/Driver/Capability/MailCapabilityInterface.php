@@ -12,12 +12,12 @@ interface MailCapabilityInterface {
   /**
    * Starts collecting outgoing mail for later inspection.
    */
-  public function startCollectingMail(): void;
+  public function mailStartCollecting(): void;
 
   /**
    * Stops collecting mail and restores normal delivery.
    */
-  public function stopCollectingMail(): void;
+  public function mailStopCollecting(): void;
 
   /**
    * Returns the mail that has been collected.
@@ -25,12 +25,12 @@ interface MailCapabilityInterface {
    * @return array<int, array<string, mixed>>
    *   Collected mail messages, each formatted as a Drupal mail array.
    */
-  public function getMail(): array;
+  public function mailGet(): array;
 
   /**
    * Empties the collected-mail store.
    */
-  public function clearMail(): void;
+  public function mailClear(): void;
 
   /**
    * Sends a mail message.
@@ -47,6 +47,6 @@ interface MailCapabilityInterface {
    * @return bool
    *   TRUE if the message was accepted for delivery.
    */
-  public function sendMail(string $body, string $subject, string $to, string $langcode): bool;
+  public function mailSend(string $body, string $subject, string $to, string $langcode): bool;
 
 }

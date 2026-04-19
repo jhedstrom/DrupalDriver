@@ -22,6 +22,6 @@ interface WatchdogCapabilityInterface {
    * @return string
    *   The formatted watchdog output.
    */
-  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string;
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string;
 
 }

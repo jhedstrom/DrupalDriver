@@ -40,7 +40,7 @@ class CoreTest extends TestCase {
   }
 
   /**
-   * Tests that `runCron()` refreshes `REQUEST_TIME` before running cron.
+   * Tests that `cronRun()` refreshes `REQUEST_TIME` before running cron.
    */
   public function testRunCronRefreshesRequestTime(): void {
     $before = time();
@@ -64,9 +64,9 @@ class CoreTest extends TestCase {
     $container->set('cron', $cron);
     \Drupal::setContainer($container);
 
-    // Use __DIR__ as a dummy drupal root (runCron does not use it).
+    // Use __DIR__ as a dummy drupal root (cronRun does not use it).
     $core = new Core(__DIR__, 'default');
-    $result = $core->runCron();
+    $result = $core->cronRun();
 
     $this->assertTrue($result);
     $this->assertGreaterThanOrEqual($before, $_SERVER['REQUEST_TIME'], '$_SERVER[REQUEST_TIME] was not refreshed.');

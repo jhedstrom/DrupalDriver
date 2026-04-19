@@ -182,7 +182,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCache(?string $type = NULL): void {
+  public function cacheClear(?string $type = NULL): void {
     // Need to change into the Drupal root directory or the registry explodes.
     drupal_flush_all_caches();
   }
@@ -233,7 +233,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function runCron(): bool {
+  public function cronRun(): bool {
     $_SERVER['REQUEST_TIME'] = time();
     \Drupal::request()->server->set('REQUEST_TIME', $_SERVER['REQUEST_TIME']);
     return \Drupal::service('cron')->run();
@@ -242,7 +242,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchWatchdog(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
     if (!\Drupal::moduleHandler()->moduleExists('dblog')) {
       throw new \RuntimeException('The dblog module is not installed; cannot fetch watchdog entries.');
     }
@@ -607,8 +607,8 @@ class Core implements CoreInterface {
       $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
     }
     foreach ($fields as $field_name => $field) {
-      if ($this->isField($entity_type, $field_name)
-        || (in_array($field_name, $base_fields) && $this->isBaseField($entity_type, $field_name))) {
+      if ($this->fieldExists($entity_type, $field_name)
+        || (in_array($field_name, $base_fields) && $this->fieldIsBase($entity_type, $field_name))) {
         $return[$field_name] = $field->getType();
       }
     }
@@ -618,7 +618,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function isField(string $entity_type, string $field_name): bool {
+  public function fieldExists(string $entity_type, string $field_name): bool {
     $fields = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
@@ -626,7 +626,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function isBaseField(string $entity_type, string $field_name): bool {
+  public function fieldIsBase(string $entity_type, string $field_name): bool {
     $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
     return isset($base_fields[$field_name]);
   }
@@ -671,7 +671,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches(): void {
+  public function cacheClearStatic(): void {
     drupal_static_reset();
     \Drupal::service('cache_tags.invalidator')->resetChecksums();
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
@@ -762,7 +762,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function startCollectingMail(): void {
+  public function mailStartCollecting(): void {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $mail_config = $config->getRawData();
 
@@ -772,23 +772,23 @@ class Core implements CoreInterface {
     $mail_config['interface'] = ['default' => 'test_mail_collector'];
     $config->setData($mail_config)->save();
     // Disable the mail system module's mail if enabled.
-    $this->startCollectingMailSystemMail();
+    $this->mailStartCollectingSystemMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stopCollectingMail(): void {
+  public function mailStopCollecting(): void {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $config->setData($this->originalConfiguration['system.mail'])->save();
     // Re-enable the mailsystem module's mail if enabled.
-    $this->stopCollectingMailSystemMail();
+    $this->mailStopCollectingSystemMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMail(): array {
+  public function mailGet(): array {
     \Drupal::state()->resetCache();
     $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
     // Discard cancelled mail.
@@ -799,14 +799,14 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearMail(): void {
+  public function mailClear(): void {
     \Drupal::state()->set('system.test_mail_collector', []);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendMail(string $body, string $subject, string $to, string $langcode): bool {
+  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
     // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
@@ -820,7 +820,7 @@ class Core implements CoreInterface {
    *
    * @see MailsystemManager::getPluginInstance()
    */
-  protected function startCollectingMailSystemMail(): void {
+  protected function mailStartCollectingSystemMail(): void {
     if (!\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       return;
     }
@@ -863,7 +863,7 @@ class Core implements CoreInterface {
   /**
    * If the Mail System module is enabled, stop collecting those mails.
    */
-  protected function stopCollectingMailSystemMail(): void {
+  protected function mailStopCollectingSystemMail(): void {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
     }

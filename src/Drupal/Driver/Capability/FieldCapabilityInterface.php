@@ -20,7 +20,7 @@ interface FieldCapabilityInterface {
    * @return bool
    *   TRUE when the field exists on the entity type.
    */
-  public function isField(string $entity_type, string $field_name): bool;
+  public function fieldExists(string $entity_type, string $field_name): bool;
 
   /**
    * Checks whether the named field is a base field on an entity type.
@@ -33,6 +33,6 @@ interface FieldCapabilityInterface {
    * @return bool
    *   TRUE when the field is a base field.
    */
-  public function isBaseField(string $entity_type, string $field_name): bool;
+  public function fieldIsBase(string $entity_type, string $field_name): bool;
 
 }

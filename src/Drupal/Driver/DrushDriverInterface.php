@@ -7,6 +7,7 @@ namespace Drupal\Driver;
 use Drupal\Driver\Capability\CacheCapabilityInterface;
 use Drupal\Driver\Capability\ConfigCapabilityInterface;
 use Drupal\Driver\Capability\ContentCapabilityInterface;
+use Drupal\Driver\Capability\CronCapabilityInterface;
 use Drupal\Driver\Capability\FieldCapabilityInterface;
 use Drupal\Driver\Capability\ModuleCapabilityInterface;
 use Drupal\Driver\Capability\RoleCapabilityInterface;
@@ -24,6 +25,7 @@ interface DrushDriverInterface extends
   CacheCapabilityInterface,
   ConfigCapabilityInterface,
   ContentCapabilityInterface,
+  CronCapabilityInterface,
   FieldCapabilityInterface,
   ModuleCapabilityInterface,
   RoleCapabilityInterface,

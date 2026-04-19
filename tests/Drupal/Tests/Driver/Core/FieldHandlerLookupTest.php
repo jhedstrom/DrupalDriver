@@ -164,7 +164,7 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function clearCache(?string $type = NULL): void {}
+  public function cacheClear(?string $type = NULL): void {}
 
   /**
    * {@inheritdoc}
@@ -181,7 +181,7 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function runCron(): bool {
+  public function cronRun(): bool {
     return TRUE;
   }
 
@@ -253,14 +253,14 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function isField(string $entity_type, string $field_name): bool {
+  public function fieldExists(string $entity_type, string $field_name): bool {
     return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isBaseField(string $entity_type, string $field_name): bool {
+  public function fieldIsBase(string $entity_type, string $field_name): bool {
     return FALSE;
   }
 
@@ -310,29 +310,29 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function startCollectingMail(): void {}
+  public function mailStartCollecting(): void {}
 
   /**
    * {@inheritdoc}
    */
-  public function stopCollectingMail(): void {}
+  public function mailStopCollecting(): void {}
 
   /**
    * {@inheritdoc}
    */
-  public function getMail(): array {
+  public function mailGet(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearMail(): void {}
+  public function mailClear(): void {}
 
   /**
    * {@inheritdoc}
    */
-  public function sendMail(string $body, string $subject, string $to, string $langcode): bool {
+  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
     return FALSE;
   }
 
