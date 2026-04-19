@@ -101,6 +101,16 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
   }
 
   /**
+   * Tests 'entityDelete()' rejects a stub missing the resolved id key.
+   */
+  public function testEntityDeleteRejectsStubMissingIdKey(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/stub without the id key "uid" set/');
+
+    $this->core->entityDelete('user', (object) ['name' => 'missing-uid']);
+  }
+
+  /**
    * Tests base entity-reference fields round-trip through entityCreate().
    *
    * 'user.roles' is a base entity_reference field targeting the user_role

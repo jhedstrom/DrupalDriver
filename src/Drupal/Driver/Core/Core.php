@@ -823,6 +823,18 @@ class Core implements CoreInterface {
   public function entityDelete(string $entity_type, object $entity): void {
     if (!$entity instanceof EntityInterface) {
       $id_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('id');
+
+      // Fail loudly if the stub does not carry the resolved id key. Without
+      // this guard a missing property would silently call storage->load(NULL)
+      // - the delete would appear to succeed while doing nothing.
+      if (!is_string($id_key) || !isset($entity->$id_key)) {
+        throw new \InvalidArgumentException(sprintf(
+          'Cannot delete an entity of type "%s" from a stub without the id key "%s" set.',
+          $entity_type,
+          (string) $id_key,
+        ));
+      }
+
       $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->$id_key);
     }
 
