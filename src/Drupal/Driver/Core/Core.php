@@ -146,6 +146,13 @@ class Core implements CoreInterface {
    *   defined fields.
    */
   protected function expandEntityFields(string $entity_type, \stdClass $entity, array $base_fields = []): void {
+    // Include any base fields present as properties on the entity object so
+    // their values travel through the field-handler pipeline alongside
+    // configured fields. Without this, base entity-reference fields such as
+    // 'commerce_product.variations' or 'user.roles' would never reach
+    // EntityReferenceHandler and could not be populated from a stub.
+    $base_fields = array_values(array_unique(array_merge($base_fields, $this->detectBaseFieldsOnEntity($entity_type, $entity))));
+
     $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
 
     foreach (array_keys($field_types) as $field_name) {
@@ -154,6 +161,42 @@ class Core implements CoreInterface {
           ->expand($entity->$field_name);
       }
     }
+  }
+
+  /**
+   * Returns the names of base fields set as properties on the entity.
+   *
+   * The entity type's id key and bundle key are excluded: they identify the
+   * record itself and must not pass through the field-handler pipeline, where
+   * they would be treated as look-up values (e.g. expanding node's 'type'
+   * through EntityReferenceHandler would try to resolve the bundle string as
+   * a NodeType config entity reference and discard the plain string form).
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param \stdClass $entity
+   *   Entity stub whose properties are inspected.
+   *
+   * @return array<string>
+   *   Base field names whose corresponding property is set on the stub.
+   */
+  protected function detectBaseFieldsOnEntity(string $entity_type, \stdClass $entity): array {
+    $definition = \Drupal::entityTypeManager()->getDefinition($entity_type);
+    $skip = array_filter([$definition->getKey('id'), $definition->getKey('bundle')]);
+
+    $detected = [];
+
+    foreach (array_keys($this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type)) as $field_name) {
+      if (in_array($field_name, $skip, TRUE)) {
+        continue;
+      }
+
+      if (property_exists($entity, $field_name)) {
+        $detected[] = $field_name;
+      }
+    }
+
+    return $detected;
   }
 
   /**
@@ -742,9 +785,11 @@ class Core implements CoreInterface {
       throw new \InvalidArgumentException('You must specify an entity type to create an entity.');
     }
 
-    // If the bundle field is empty, put the inferred bundle value in it.
-    $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
+    $definition = \Drupal::entityTypeManager()->getDefinition($entity_type);
+    $bundle_key = $definition->getKey('bundle');
+    $id_key = $definition->getKey('id');
 
+    // If the bundle field is empty, put the inferred bundle value in it.
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
       $entity->$bundle_key = $entity->step_bundle;
     }
@@ -764,8 +809,10 @@ class Core implements CoreInterface {
     $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $created_entity->save();
 
-    // Mutate the stub so callers holding the reference can still read ->id.
-    $entity->id = $created_entity->id();
+    // Mutate the stub under the entity type's own id key ('uid' for user,
+    // 'nid' for node, 'tid' for term, 'id' for entity_test and others), so
+    // callers can round-trip it back through entityDelete().
+    $entity->$id_key = $created_entity->id();
 
     return $created_entity;
   }
@@ -774,7 +821,22 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function entityDelete(string $entity_type, object $entity): void {
-    $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
+    if (!$entity instanceof EntityInterface) {
+      $id_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('id');
+
+      // Fail loudly if the stub does not carry the resolved id key. Without
+      // this guard a missing property would silently call storage->load(NULL)
+      // - the delete would appear to succeed while doing nothing.
+      if (!is_string($id_key) || !isset($entity->$id_key)) {
+        throw new \InvalidArgumentException(sprintf(
+          'Cannot delete an entity of type "%s" from a stub without the id key "%s" set.',
+          $entity_type,
+          (string) $id_key,
+        ));
+      }
+
+      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->$id_key);
+    }
 
     if ($entity instanceof EntityInterface) {
       $entity->delete();

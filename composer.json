@@ -31,6 +31,7 @@
         "drevops/phpcs-standard": "^0.7.0",
         "drupal/address": "^2.0.4",
         "drupal/coder": "~8.3.0",
+        "drupal/commerce": "^3.0",
         "drupal/core-composer-scaffold": "^10.5 || ^11.2",
         "drupal/core-dev": "^10.5 || ^11.2",
         "drupal/core-recommended": "^10.5 || ^11.2",
