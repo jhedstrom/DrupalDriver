@@ -30,4 +30,6 @@ parameters:
       # EntityTestHelper::createBundle(); kept as a fallback for Drupal 10 and
       # earlier 11.x where the helper class does not yet exist.
       message: '#Call to deprecated function entity_test_create_bundle\(\).*#'
-      path: tests/Drupal/Tests/Driver/Kernel/FieldHandlerKernelTestBase.php
+      paths:
+        - tests/Drupal/Tests/Driver/Kernel/Core/Field/FieldHandlerKernelTestBase.php
+        - tests/Drupal/Tests/Driver/Kernel/Core/CoreEntityMethodsKernelTest.php

@@ -114,7 +114,7 @@ does not break the public API.
 When a Drupal version diverges, add overrides under a
 `Core{N}/` directory (e.g., `Core12/`) - only the files that
 differ. The lookup chain in `DrupalDriver::setCoreFromVersion()`
-and `AbstractCore::getFieldHandler()` walks `Core{N}` -> ... ->
+and `Core::getFieldHandler()` walks `Core{N}` -> ... ->
 `Core`, short-circuiting on the first match.
 
 ```

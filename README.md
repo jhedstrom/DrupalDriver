@@ -61,7 +61,7 @@ $node = (object) [
   'uid' => 1,
   'title' => $driver->getRandom()->name(),
 ];
-$driver->createNode($node);
+$driver->nodeCreate($node);
 ```
 
 ## Credits

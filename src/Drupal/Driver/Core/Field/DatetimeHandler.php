@@ -51,7 +51,6 @@ class DatetimeHandler extends AbstractHandler {
     if (str_contains($value, 'relative:')) {
       $value = trim(str_replace('relative:', '', $value));
     }
-
     $is_date_only = $this->fieldInfo->getSetting('datetime_type') === DateTimeItem::DATETIME_TYPE_DATE;
 
     $date = new DrupalDateTime($value, $site_timezone);

@@ -43,9 +43,11 @@ class EntityReferenceHandler extends AbstractHandler {
         $query->condition($id_key, $value);
       }
       $query->accessCheck(FALSE);
+
       if ($target_bundles && $target_bundle_key) {
         $query->condition($target_bundle_key, $target_bundles, 'IN');
       }
+
       if ($entities = $query->execute()) {
         $return[] = array_shift($entities);
       }

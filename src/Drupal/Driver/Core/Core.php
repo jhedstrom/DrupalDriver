@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Core;
 
+use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -17,13 +20,29 @@ use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
 /**
  * Default Drupal core implementation.
  */
-class Core extends AbstractCore implements CoreAuthenticationInterface {
+class Core implements CoreInterface {
+
+  /**
+   * System path to the Drupal installation.
+   */
+  protected string $drupalRoot;
+
+  /**
+   * URI of the Drupal site.
+   */
+  protected string $uri;
+
+  /**
+   * Random value generator.
+   */
+  protected Random $random;
 
   /**
    * Tracks original configuration values.
@@ -37,7 +56,106 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   protected array $originalConfiguration = [];
 
   /**
+   * Set up the Core implementation.
+   *
+   * @param string $drupal_root
+   *   The absolute path to the Drupal root directory.
+   * @param string $uri
+   *   URI that is accessing Drupal. Defaults to 'default'.
+   * @param \Drupal\Component\Utility\Random|null $random
+   *   Optional random-value generator.
+   */
+  public function __construct(string $drupal_root, string $uri = 'default', ?Random $random = NULL) {
+    $resolved = realpath($drupal_root);
+    if ($resolved === FALSE) {
+      throw new BootstrapException(sprintf('Could not resolve Drupal root "%s".', $drupal_root));
+    }
+    $this->drupalRoot = $resolved;
+    $this->uri = $uri;
+    $this->random = $random ?? new Random();
+  }
+
+  /**
    * {@inheritdoc}
+   */
+  public function getRandom(): Random {
+    return $this->random;
+  }
+
+  /**
+   * Returns the Drupal major version this Core targets.
+   *
+   * The default Core returns 0 - the lookup chain iterates only when version
+   * is >= 10, so 0 skips the versioned directories and falls through to the
+   * default handlers in 'Core\Field\'.
+   *
+   * @return int
+   *   The Drupal major version, or 0 for the default (no version-specific dir).
+   */
+  protected function getVersion(): int {
+    return 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface {
+    $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
+    if (!isset($field_types[$field_name])) {
+      throw new \RuntimeException(sprintf('Field "%s" not found on entity type "%s".', $field_name, $entity_type));
+    }
+    $camelized_type = Container::camelize($field_types[$field_name]);
+    $version = $this->getVersion();
+
+    $candidates = [];
+    for ($n = $version; $n >= 10; $n--) {
+      $candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\%sHandler', $n, $camelized_type);
+    }
+    $candidates[] = sprintf('\\Drupal\\Driver\\Core\\Field\\%sHandler', $camelized_type);
+
+    $default_candidates = [];
+    for ($n = $version; $n >= 10; $n--) {
+      $default_candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\DefaultHandler', $n);
+    }
+
+    foreach (array_merge($candidates, $default_candidates) as $class) {
+      if (class_exists($class)) {
+        return new $class($entity, $entity_type, $field_name);
+      }
+    }
+
+    return new DefaultHandler($entity, $entity_type, $field_name);
+  }
+
+  /**
+   * Expands properties on the given entity object to the expected structure.
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param \stdClass $entity
+   *   Entity object.
+   * @param array<string> $base_fields
+   *   Optional. Define base fields that will be expanded in addition to user
+   *   defined fields.
+   */
+  protected function expandEntityFields(string $entity_type, \stdClass $entity, array $base_fields = []): void {
+    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
+    foreach (array_keys($field_types) as $field_name) {
+      if (isset($entity->$field_name)) {
+        $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
+          ->expand($entity->$field_name);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Executed only in consumer code that boots Drupal from outside a test,
+   * so coverage is not measurable: kernel tests already have Drupal booted
+   * and re-entering this path would tear the kernel down.
+   *
+   * @codeCoverageIgnore
    */
   public function bootstrap(): void {
     // Validate, and prepare environment for Drupal bootstrap.
@@ -70,7 +188,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCache(): void {
+  public function cacheClear(?string $type = NULL): void {
     // Need to change into the Drupal root directory or the registry explodes.
     drupal_flush_all_caches();
   }
@@ -78,7 +196,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeCreate($node): object {
+  public function nodeCreate(\stdClass $node): object {
     // Throw an exception if the node type is missing or does not exist.
     /** @var \stdClass $node */
     if (!isset($node->type) || !$node->type) {
@@ -111,7 +229,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete($node): void {
+  public function nodeDelete(object $node): void {
     $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
     if ($node instanceof NodeInterface) {
       $node->delete();
@@ -121,10 +239,90 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function runCron(): bool {
+  public function cronRun(): bool {
     $_SERVER['REQUEST_TIME'] = time();
     \Drupal::request()->server->set('REQUEST_TIME', $_SERVER['REQUEST_TIME']);
     return \Drupal::service('cron')->run();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function watchdogFetch(int $count = 10, ?string $type = NULL, ?string $severity = NULL): string {
+    if (!\Drupal::moduleHandler()->moduleExists('dblog')) {
+      throw new \RuntimeException('The dblog module is not installed; cannot fetch watchdog entries.');
+    }
+
+    $query = \Drupal::database()->select('watchdog', 'w')
+      ->fields('w', ['type', 'severity', 'message', 'variables'])
+      ->orderBy('wid', 'DESC')
+      ->range(0, $count);
+
+    if ($type !== NULL) {
+      $query->condition('type', $type);
+    }
+
+    if ($severity !== NULL) {
+      $query->condition('severity', $this->resolveSeverityLevel($severity));
+    }
+
+    $lines = [];
+    foreach ($query->execute() as $row) {
+      $variables = $row->variables ? @unserialize($row->variables, ['allowed_classes' => FALSE]) : [];
+      $replacements = [];
+      if (is_array($variables)) {
+        foreach ($variables as $placeholder => $value) {
+          $replacements[$placeholder] = is_scalar($value) ? (string) $value : '';
+        }
+      }
+      $message = strtr((string) $row->message, $replacements);
+      $lines[] = sprintf('[%s/%s] %s', $row->type, $this->resolveSeverityLabel((int) $row->severity), $message);
+    }
+
+    return implode("\n", $lines);
+  }
+
+  /**
+   * Maps a severity name or numeric string to an RFC 5424 log level integer.
+   */
+  protected function resolveSeverityLevel(string $severity): int {
+    $key = strtolower($severity);
+    $levels = array_flip($this->severityLabels());
+    if (isset($levels[$key])) {
+      return $levels[$key];
+    }
+
+    if (ctype_digit($severity)) {
+      return (int) $severity;
+    }
+
+    throw new \InvalidArgumentException(sprintf('Unknown severity level: %s', $severity));
+  }
+
+  /**
+   * Returns the symbolic name for an RFC 5424 log level integer.
+   */
+  protected function resolveSeverityLabel(int $level): string {
+    return $this->severityLabels()[$level] ?? (string) $level;
+  }
+
+  /**
+   * Returns the RFC 5424 severity level-to-label map.
+   *
+   * @return array<int, string>
+   *   Integer level keyed to symbolic name.
+   */
+  private function severityLabels(): array {
+    return [
+      0 => 'emergency',
+      1 => 'alert',
+      2 => 'critical',
+      3 => 'error',
+      4 => 'warning',
+      5 => 'notice',
+      6 => 'info',
+      7 => 'debug',
+    ];
   }
 
   /**
@@ -147,7 +345,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): int|string {
+  public function roleCreate(array $permissions): string {
     // Generate a random, lowercase machine name.
     $rid = strtolower($this->random->name(8, TRUE));
 
@@ -165,23 +363,19 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
       'id' => $rid,
       'label' => $name,
     ]);
-    $result = $role->save();
+    $role->save();
 
-    if ($result === SAVED_NEW) {
-      // Grant the specified permissions to the role, if any.
-      if (!empty($permissions)) {
-        user_role_grant_permissions($role->id(), $permissions);
-      }
-      return $role->id();
+    if (!empty($permissions)) {
+      user_role_grant_permissions($role->id(), $permissions);
     }
 
-    throw new \RuntimeException(sprintf('Failed to create a role with "%s" permission(s).', implode(', ', $permissions)));
+    return $role->id();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function roleDelete($role_name): void {
+  public function roleDelete(string $role_name): void {
     $role = Role::load($role_name);
 
     if ($role) {
@@ -264,17 +458,17 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, $role_name): void {
+  public function userAddRole(\stdClass $user, string $role): void {
     // Allow both machine and human role names.
     $query = \Drupal::entityQuery('user_role');
     $conditions = $query->orConditionGroup()
-      ->condition('id', $role_name)
-      ->condition('label', $role_name);
+      ->condition('id', $role)
+      ->condition('label', $role);
     $rids = $query
       ->condition($conditions)
       ->execute();
     if (!$rids) {
-      throw new \RuntimeException(sprintf('No role "%s" exists.', $role_name));
+      throw new \RuntimeException(sprintf('No role "%s" exists.', $role));
     }
 
     $account = User::load($user->uid);
@@ -284,6 +478,12 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Called exclusively from 'bootstrap()' during an in-process Drupal boot,
+   * which the kernel test framework cannot exercise end-to-end. Excluded
+   * from coverage to avoid a false negative on a genuinely untestable path.
+   *
+   * @codeCoverageIgnore
    */
   public function validateDrupalSite(): void {
     if ('default' !== $this->uri) {
@@ -360,7 +560,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function termDelete(\stdClass $term): bool {
+  public function termDelete(object $term): bool {
     $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
     if ($term instanceof TermInterface) {
       $term->delete();
@@ -407,7 +607,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes($entity_type, array $base_fields = []): array {
+  public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array {
     $return = [];
     $entity_field_manager = $this->getEntityFieldManager();
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
@@ -415,8 +615,8 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
       $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
     }
     foreach ($fields as $field_name => $field) {
-      if ($this->isField($entity_type, $field_name)
-        || (in_array($field_name, $base_fields) && $this->isBaseField($entity_type, $field_name))) {
+      if ($this->fieldExists($entity_type, $field_name)
+        || (in_array($field_name, $base_fields) && $this->fieldIsBase($entity_type, $field_name))) {
         $return[$field_name] = $field->getType();
       }
     }
@@ -426,7 +626,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isField($entity_type, $field_name): bool {
+  public function fieldExists(string $entity_type, string $field_name): bool {
     $fields = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type);
     return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
   }
@@ -434,7 +634,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isBaseField($entity_type, $field_name): bool {
+  public function fieldIsBase(string $entity_type, string $field_name): bool {
     $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
     return isset($base_fields[$field_name]);
   }
@@ -458,9 +658,6 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
     // Enable a language only if it has not been enabled already.
     if (!ConfigurableLanguage::load($langcode)) {
       $created_language = ConfigurableLanguage::createFromLangcode($language->langcode);
-      if (!$created_language) {
-        throw new \InvalidArgumentException(sprintf("There is no predefined language with langcode '%s'.", $langcode));
-      }
       $created_language->save();
       return $language;
     }
@@ -479,7 +676,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearStaticCaches(): void {
+  public function cacheClearStatic(): void {
     drupal_static_reset();
     \Drupal::service('cache_tags.invalidator')->resetChecksums();
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $definition) {
@@ -490,21 +687,21 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function configGet($name, $key = ''): mixed {
+  public function configGet(string $name, string $key = ''): mixed {
     return \Drupal::config($name)->get($key);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configGetOriginal($name, $key = ''): mixed {
+  public function configGetOriginal(string $name, string $key = ''): mixed {
     return \Drupal::config($name)->getOriginal($key, FALSE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function configSet($name, $key, $value): void {
+  public function configSet(string $name, string $key, mixed $value): void {
     \Drupal::configFactory()->getEditable($name)
       ->set($key, $value)
       ->save();
@@ -513,7 +710,11 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityCreate($entity_type, $entity): EntityInterface {
+  public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface {
+    if ($entity_type === '') {
+      throw new \InvalidArgumentException('You must specify an entity type to create an entity.');
+    }
+
     // If the bundle field is empty, put the inferred bundle value in it.
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
     if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
@@ -529,10 +730,6 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
         throw new \Exception(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
       }
     }
-    if (empty($entity_type)) {
-      throw new \Exception("You must specify an entity type to create an entity.");
-    }
-
     $this->expandEntityFields($entity_type, $entity);
     $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
     $created_entity->save();
@@ -546,7 +743,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityDelete($entity_type, $entity): void {
+  public function entityDelete(string $entity_type, object $entity): void {
     $entity = $entity instanceof EntityInterface ? $entity : \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->id);
     if ($entity instanceof EntityInterface) {
       $entity->delete();
@@ -556,21 +753,21 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function moduleInstall($module_name): void {
+  public function moduleInstall(string $module_name): void {
     \Drupal::service('module_installer')->install([$module_name]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function moduleUninstall($module_name): void {
+  public function moduleUninstall(string $module_name): void {
     \Drupal::service('module_installer')->uninstall([$module_name]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function startCollectingMail(): void {
+  public function mailStartCollecting(): void {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $mail_config = $config->getRawData();
 
@@ -580,23 +777,23 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
     $mail_config['interface'] = ['default' => 'test_mail_collector'];
     $config->setData($mail_config)->save();
     // Disable the mail system module's mail if enabled.
-    $this->startCollectingMailSystemMail();
+    $this->mailStartCollectingSystemMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function stopCollectingMail(): void {
+  public function mailStopCollecting(): void {
     $config = \Drupal::configFactory()->getEditable('system.mail');
     $config->setData($this->originalConfiguration['system.mail'])->save();
     // Re-enable the mailsystem module's mail if enabled.
-    $this->stopCollectingMailSystemMail();
+    $this->mailStopCollectingSystemMail();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMail(): array {
+  public function mailGet(): array {
     \Drupal::state()->resetCache();
     $mail = \Drupal::state()->get('system.test_mail_collector') ?: [];
     // Discard cancelled mail.
@@ -607,14 +804,14 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearMail(): void {
+  public function mailClear(): void {
     \Drupal::state()->set('system.test_mail_collector', []);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendMail($body = '', $subject = '', $to = '', $langcode = ''): bool {
+  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
     // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
@@ -628,7 +825,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
    *
    * @see MailsystemManager::getPluginInstance()
    */
-  protected function startCollectingMailSystemMail(): void {
+  protected function mailStartCollectingSystemMail(): void {
     if (!\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       return;
     }
@@ -671,7 +868,7 @@ class Core extends AbstractCore implements CoreAuthenticationInterface {
   /**
    * If the Mail System module is enabled, stop collecting those mails.
    */
-  protected function stopCollectingMailSystemMail(): void {
+  protected function mailStopCollectingSystemMail(): void {
     if (\Drupal::moduleHandler()->moduleExists('mailsystem')) {
       \Drupal::configFactory()->getEditable('mailsystem.settings')->setData($this->originalConfiguration['mailsystem.settings'])->save();
     }
