@@ -298,7 +298,7 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function entityCreate(string $entity_type, object $entity): EntityInterface {
+  public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface {
     throw new \RuntimeException('Not implemented in test stub.');
   }
 

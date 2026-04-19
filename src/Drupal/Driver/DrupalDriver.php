@@ -52,12 +52,13 @@ class DrupalDriver implements DrupalDriverInterface {
    *   Thrown when the Drupal installation is not found in the given root path.
    */
   public function __construct(string $drupal_root, string $uri) {
-    $this->drupalRoot = realpath($drupal_root);
-    $this->uri = $uri;
-    if ($this->drupalRoot === '' || $this->drupalRoot === '0') {
+    $resolved = realpath($drupal_root);
+    if ($resolved === FALSE || $resolved === '') {
       throw new BootstrapException(sprintf('No Drupal installation found at %s', $drupal_root));
     }
-    $this->version = $this->getDrupalVersion();
+    $this->drupalRoot = $resolved;
+    $this->uri = $uri;
+    $this->version = $this->detectMajorVersion();
   }
 
   /**
@@ -148,12 +149,6 @@ class DrupalDriver implements DrupalDriverInterface {
    * @see drush_drupal_version()
    */
   public function getDrupalVersion(): int {
-    if ($this->version !== NULL) {
-      return $this->version;
-    }
-
-    $this->version = $this->detectMajorVersion();
-
     return $this->version;
   }
 
