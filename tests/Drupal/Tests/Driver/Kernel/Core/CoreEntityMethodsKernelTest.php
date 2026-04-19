@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Driver\Core\Core;
 use Drupal\entity_test\EntityTestHelper;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -97,6 +98,35 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     $this->core->entityCreate('user', $stub);
 
     $this->assertSame(['uma'], $stub->name, 'base field "name" was routed through the handler pipeline.');
+  }
+
+  /**
+   * Tests base entity-reference fields round-trip through entityCreate().
+   *
+   * 'user.roles' is a base entity_reference field targeting the user_role
+   * config entity type - structurally the same scenario that motivated the
+   * fix (a stub sets a base entity-reference field by label/id and expects
+   * the driver to resolve and attach it). Before the fix, base entity-ref
+   * fields set on a stub were filtered out of the handler pipeline and
+   * never reached EntityReferenceHandler, so the reference was silently
+   * dropped. This test pins the end-to-end round-trip: stub -> driver ->
+   * storage -> reload -> assertion.
+   */
+  public function testEntityCreateExpandsBaseEntityReferenceFieldOnStub(): void {
+    Role::create(['id' => 'editor', 'label' => 'Editor'])->save();
+
+    $stub = (object) [
+      'name' => 'vic',
+      'mail' => 'vic@example.com',
+      'status' => 1,
+      'roles' => ['editor'],
+    ];
+
+    $this->core->entityCreate('user', $stub);
+
+    $account = User::load((int) $stub->uid);
+    $this->assertInstanceOf(User::class, $account);
+    $this->assertContains('editor', $account->getRoles(), 'entityCreate routed user.roles through EntityReferenceHandler for base-field expansion.');
   }
 
   /**
