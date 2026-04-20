@@ -32,7 +32,7 @@ class CoreBlockMethodsKernelTest extends KernelTestBase {
    *
    * @var array<string>
    */
-  protected static $modules = ['system', 'user', 'block', 'block_content', 'filter', 'text'];
+  protected static $modules = ['system', 'user', 'block', 'block_content'];
 
   /**
    * The Core driver under test.
@@ -46,7 +46,12 @@ class CoreBlockMethodsKernelTest extends KernelTestBase {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->installEntitySchema('block_content');
-    $this->installConfig(['system', 'filter', 'block_content']);
+    // Only 'system' config is installed. Installing 'block_content' config
+    // on Drupal 10 / Drupal 11-lowest pulls in
+    // 'field.storage.block_content.body', whose schema references the 'text'
+    // module - unnecessary surface for this test, which creates its own
+    // body-less 'block_content_type' inline.
+    $this->installConfig(['system']);
     \Drupal::service('theme_installer')->install(['stark']);
     $this->core = new Core($this->root);
   }
