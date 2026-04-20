@@ -50,7 +50,7 @@
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5.19 || ^11.5.3",
         "rector/rector": "^1 || ^2",
-        "symfony/phpunit-bridge": "^7",
+        "symfony/phpunit-bridge": "^7.3",
         "webmozart/assert": "^2.3"
     },
     "repositories": {
