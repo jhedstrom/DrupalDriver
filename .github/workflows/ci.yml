@@ -15,7 +15,7 @@ env:
   # downstream consumer still works against this DrupalDriver HEAD. Override
   # DRUPALEXTENSION_REF to target a branch with pending API compatibility changes.
   DRUPALEXTENSION_REPO: jhedstrom/drupalextension
-  DRUPALEXTENSION_REF: main
+  DRUPALEXTENSION_REF: feature/drupal-driver-3x
 
 jobs:
   lint:
@@ -204,9 +204,6 @@ jobs:
   extension:
     name: DrupalExtension smoke
     runs-on: ubuntu-latest
-    # Informational until DrupalExtension ships support for the new API.
-    # Remove 'continue-on-error' to make this a required check.
-    continue-on-error: true
     permissions:
       contents: read
 
