@@ -108,17 +108,19 @@ class DrupalDriver implements DrupalDriverInterface {
   }
 
   /**
-   * Instantiate and set Drupal core class.
+   * Injects the active Core implementation.
    *
-   * @param array<int, \Drupal\Driver\Core\CoreInterface> $available_cores
-   *   A major-version-keyed array of available core controllers.
+   * Consumers override the driver's default Core lookup by passing any
+   * class that implements 'CoreInterface' - the class name and namespace
+   * do not matter. Typically called in a test bootstrap when the project
+   * ships its own Core subclass (e.g. one that registers additional field
+   * handlers in its 'registerDefaultFieldHandlers()' override).
+   *
+   * @param \Drupal\Driver\Core\CoreInterface $core
+   *   The Core instance the driver should delegate to.
    */
-  public function setCore(array $available_cores): void {
-    if (!isset($available_cores[$this->version])) {
-      throw new BootstrapException(sprintf('There is no available Drupal core controller for Drupal version %s.', $this->version));
-    }
-
-    $this->core = $available_cores[$this->version];
+  public function setCore(CoreInterface $core): void {
+    $this->core = $core;
   }
 
   /**

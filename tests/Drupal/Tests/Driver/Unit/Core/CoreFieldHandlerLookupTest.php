@@ -6,20 +6,25 @@ namespace Drupal\Tests\Driver\Unit\Core;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\AddressHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
-use Drupal\Driver\Core99\Field\FileHandler as Core99FileHandler;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Tests Core::getFieldHandler() lookup chain.
+ * Tests field handler resolution against the registry.
+ *
+ * The registry replaced the class-name lookup chain: Core's constructor
+ * calls 'registerDefaultFieldHandlers()' to populate built-in handlers, and
+ * consumers override via 'registerFieldHandler()'. These tests cover the
+ * three tiers: default (constructor-registered), consumer override, and
+ * fallback to 'DefaultHandler' for unknown field types.
  *
  * @group core
  * @group fields
@@ -45,47 +50,35 @@ class CoreFieldHandlerLookupTest extends TestCase {
   }
 
   /**
-   * Tests that a version-specific handler is preferred when it exists.
-   *
-   * Core99\Field\FileHandler should be found first in the lookup chain
-   * because 'file' => Core99\Field\FileHandler exists as a fixture.
+   * Tests that the constructor pre-registers the project's built-in handlers.
    */
-  public function testHandlerLookupPicksVersionOverride(): void {
-    $core = new Core99TestCore(__DIR__, 'default');
-    $entity = new \stdClass();
+  public function testConstructorRegistersBuiltInHandlers(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', ['field_address' => 'address']);
 
-    $handler = $core->getFieldHandler($entity, 'node', 'field_file');
-
-    $this->assertInstanceOf(Core99FileHandler::class, $handler);
-    $this->assertSame('Core99\\Field\\FileHandler', $handler::MARKER);
-  }
-
-  /**
-   * Tests that the default handler namespace is used when no override exists.
-   *
-   * 'address' has no Core99 fixture, so the chain falls back to
-   * Core\Field\AddressHandler.
-   */
-  public function testHandlerLookupFallsBackToDefault(): void {
-    $core = new Core99TestCore(__DIR__, 'default');
-    $entity = new \stdClass();
-
-    $handler = $core->getFieldHandler($entity, 'node', 'field_address');
+    $handler = $core->getFieldHandler(new \stdClass(), 'node', 'field_address');
 
     $this->assertInstanceOf(AddressHandler::class, $handler);
   }
 
   /**
-   * Tests that unknown field types resolve to DefaultHandler.
-   *
-   * 'nonexistent_type' maps to no specific handler anywhere in the chain,
-   * so Core\Field\DefaultHandler is used as the final fallback.
+   * Tests that a consumer registration wins over the built-in handler.
    */
-  public function testHandlerLookupFallsBackToDefaultHandlerForUnknownType(): void {
-    $core = new Core99TestCore(__DIR__, 'default');
-    $entity = new \stdClass();
+  public function testConsumerRegistrationOverridesBuiltIn(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', ['field_address' => 'address']);
+    $core->registerFieldHandler('address', CustomFieldHandler::class);
 
-    $handler = $core->getFieldHandler($entity, 'node', 'field_unknown');
+    $handler = $core->getFieldHandler(new \stdClass(), 'node', 'field_address');
+
+    $this->assertInstanceOf(CustomFieldHandler::class, $handler);
+  }
+
+  /**
+   * Tests that unknown field types fall back to 'DefaultHandler'.
+   */
+  public function testUnknownFieldTypeFallsBackToDefaultHandler(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', ['field_x' => 'nonexistent_type']);
+
+    $handler = $core->getFieldHandler(new \stdClass(), 'node', 'field_x');
 
     $this->assertInstanceOf(DefaultHandler::class, $handler);
   }
@@ -93,29 +86,60 @@ class CoreFieldHandlerLookupTest extends TestCase {
   /**
    * Tests that 'getFieldHandler()' throws when the field is not resolvable.
    */
-  public function testHandlerLookupThrowsWhenFieldIsMissing(): void {
-    $core = new Core99TestCore(__DIR__, 'default');
-    $entity = new \stdClass();
+  public function testThrowsWhenFieldIsMissing(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', []);
 
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/Field "field_missing" not found/');
 
-    $core->getFieldHandler($entity, 'node', 'field_missing');
+    $core->getFieldHandler(new \stdClass(), 'node', 'field_missing');
   }
 
   /**
-   * Sets up a minimal Drupal container satisfying AbstractHandler::__construct.
+   * Tests that registering a non-handler class throws at registration time.
    *
-   * Provides 'entity_field.manager' and 'entity_type.manager' services with
-   * enough stubbing to satisfy the field handler constructor without a full
-   * Drupal bootstrap.
+   * Failing at registration - rather than at 'getFieldHandler()' resolution -
+   * surfaces consumer typos immediately in test bootstrap rather than the
+   * first time the affected field runs through expansion.
+   */
+  public function testRegisterRejectsNonHandlerClass(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', []);
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/must implement/');
+
+    $core->registerFieldHandler('phone', \stdClass::class);
+  }
+
+  /**
+   * Tests that registering an abstract handler class throws at registration.
+   *
+   * 'AbstractHandler' satisfies 'is_subclass_of(... FieldHandlerInterface)'
+   * but cannot be instantiated, so 'getFieldHandler()' would fatal with a
+   * cryptic 'Cannot instantiate abstract class' error at the first call. The
+   * registry-contract docblock on 'CoreInterface::registerFieldHandler()'
+   * promises rejection at registration time - this test holds it to that.
+   */
+  public function testRegisterRejectsAbstractHandlerClass(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', []);
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/must be instantiable/');
+
+    $core->registerFieldHandler('phone', AbstractHandler::class);
+  }
+
+  /**
+   * Sets up a minimal Drupal container satisfying AbstractHandler construction.
+   *
+   * AbstractHandler's constructor pulls the entity field manager and the
+   * entity type manager off '\Drupal'; tests instantiate handlers via the
+   * registry, so both services must resolve. Storage and field definitions
+   * are stubbed generously because the tests don't care about their shape.
    */
   protected function setUpDrupalContainer(): void {
     $field_definition = $this->createMock(FieldDefinitionInterface::class);
-    $field_definition->method('getSettings')->willReturn([
-      'field_overrides' => [],
-      'available_countries' => ['AU' => 'Australia'],
-    ]);
+    $field_definition->method('getSettings')->willReturn([]);
 
     $storage_definition = $this->createMock(FieldStorageDefinitionInterface::class);
     $storage_definition->method('getType')->willReturn('string');
@@ -123,15 +147,13 @@ class CoreFieldHandlerLookupTest extends TestCase {
     $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
     $entity_field_manager->method('getFieldStorageDefinitions')
       ->willReturn([
-        'field_file' => $storage_definition,
         'field_address' => $storage_definition,
-        'field_unknown' => $storage_definition,
+        'field_x' => $storage_definition,
       ]);
     $entity_field_manager->method('getFieldDefinitions')
       ->willReturn([
-        'field_file' => $field_definition,
         'field_address' => $field_definition,
-        'field_unknown' => $field_definition,
+        'field_x' => $field_definition,
       ]);
 
     $entity_type = $this->createMock(EntityTypeInterface::class);
@@ -149,220 +171,48 @@ class CoreFieldHandlerLookupTest extends TestCase {
 }
 
 /**
- * Testable Core subclass targeting Drupal version 99.
+ * Test Core subclass returning a caller-supplied field-type map.
  *
- * Overrides 'getVersion()' to drive the lookup chain starting at 99, and
- * 'getEntityFieldTypes()' to return a static map of field name to type so
- * no Drupal bootstrap is required.
+ * Stubs only 'getEntityFieldTypes()' so the tests drive
+ * 'getFieldHandler()' without a real Drupal bootstrap. Everything else
+ * comes from 'Core', including the default field-handler registration
+ * the constructor performs.
  */
-class Core99TestCore extends Core {
+class FieldTypeMapCore extends Core {
 
   /**
-   * {@inheritdoc}
+   * Constructs a Core instance that returns a supplied field-type map.
+   *
+   * @param string $drupal_root
+   *   Drupal root directory.
+   * @param string $uri
+   *   Site URI.
+   * @param array<string, string> $field_type_map
+   *   Map of field name to field type id.
    */
-  protected function getVersion(): int {
-    return 99;
+  public function __construct(string $drupal_root, string $uri, protected array $field_type_map) {
+    parent::__construct($drupal_root, $uri);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array {
-    return [
-      'field_file' => 'file',
-      'field_address' => 'address',
-      'field_unknown' => 'nonexistent_type',
-    ];
+    return $this->field_type_map;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function bootstrap(): void {}
+}
+
+/**
+ * Test handler used to verify consumer registrations win over defaults.
+ */
+class CustomFieldHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function cacheClear(?string $type = NULL): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function nodeCreate(\stdClass $node): object {
-    return new \stdClass();
+  public function expand($values): array {
+    return (array) $values;
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function nodeDelete(object $node): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function cronRun(): bool {
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userCreate(\stdClass $user): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userDelete(\stdClass $user): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function userAddRole(\stdClass $user, string $role_name): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function processBatch(): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateDrupalSite(): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function roleCreate(array $permissions, ?string $id = NULL, ?string $label = NULL): string {
-    return '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function roleDelete(string $role_name): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function termCreate(\stdClass $term): \stdClass {
-    return new \stdClass();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function termDelete(object $term): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getModuleList(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getExtensionPathList(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldExists(string $entity_type, string $field_name): bool {
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldIsBase(string $entity_type, string $field_name): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function languageCreate(\stdClass $language): \stdClass|false {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function languageDelete(\stdClass $language): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function configGet(string $name, string $key = ''): mixed {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function configGetOriginal(string $name, string $key = ''): mixed {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function configSet(string $name, string $key, mixed $value): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface {
-    throw new \RuntimeException('Not implemented in test stub.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function entityDelete(string $entity_type, object $entity): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mailStartCollecting(): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mailStopCollecting(): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mailGet(): array {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mailClear(): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function moduleInstall(string $module_name): void {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function moduleUninstall(string $module_name): void {}
 
 }

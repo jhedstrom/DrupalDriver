@@ -64,6 +64,72 @@ $node = (object) [
 $driver->nodeCreate($node);
 ```
 
+## Extending
+
+The driver lets consumer projects override two things without forking:
+individual field handlers and the top-level Core implementation.
+
+### Custom field handler
+
+Implement `Drupal\Driver\Core\Field\FieldHandlerInterface` (extending
+`AbstractHandler` is the usual path):
+
+```php
+namespace MyProject\Driver\Field;
+
+use Drupal\Driver\Core\Field\AbstractHandler;
+
+class PhoneHandler extends AbstractHandler {
+  public function expand(mixed $values): array {
+    // Convert each scenario-facing phone string into the storage shape
+    // Drupal's field system expects (a list of deltas keyed by column).
+    return array_map(static fn (string $number): array => ['value' => $number], (array) $values);
+  }
+}
+```
+
+Register it on the active Core instance, typically in a test bootstrap:
+
+```php
+$driver = new DrupalDriver($root, $uri);
+$driver->setCoreFromVersion();
+$driver->getCore()->registerFieldHandler('phone', \MyProject\Driver\Field\PhoneHandler::class);
+```
+
+Consumer registrations win over the handlers this project ships for the
+same field type. Registration order at runtime is: driver default
+handlers (populated by `Core::registerDefaultFieldHandlers()` at
+construction) → consumer registrations → registry lookup at `expand()`
+time, with a fall-through to `DefaultHandler` for field types no handler
+claims.
+
+### Custom Core
+
+Implement `Drupal\Driver\Core\CoreInterface`. The class name and
+namespace do not matter. The easiest path is to extend
+`Drupal\Driver\Core\Core` and add version-specific field handlers by
+re-scanning your own `Field/` directory:
+
+```php
+namespace MyProject\Driver;
+
+use Drupal\Driver\Core\Core as BaseCore;
+
+class Core extends BaseCore {
+  protected function registerDefaultFieldHandlers(): void {
+    parent::registerDefaultFieldHandlers();
+    $this->registerHandlersFromDirectory(__DIR__ . '/Field', __NAMESPACE__ . '\\Field');
+  }
+}
+```
+
+Inject it with `$driver->setCore($core)`:
+
+```php
+$driver = new DrupalDriver($root, $uri);
+$driver->setCore(new \MyProject\Driver\Core($root, $uri));
+```
+
 ## Credits
 
  * Originally developed by [Jonathan Hedstrom](https://github.com/jhedstrom)

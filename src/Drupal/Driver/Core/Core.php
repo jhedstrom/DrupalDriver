@@ -23,7 +23,6 @@ use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
@@ -59,6 +58,18 @@ class Core implements CoreInterface {
   protected array $originalConfiguration = [];
 
   /**
+   * Registered field handler classes, keyed by field type id.
+   *
+   * Populated at construction with the project's built-in handlers and
+   * extended at runtime via 'registerFieldHandler()'. Lookup in
+   * 'getFieldHandler()' consults this map first, falling back to
+   * 'DefaultHandler' when a field type has no registered class.
+   *
+   * @var array<string, class-string<FieldHandlerInterface>>
+   */
+  protected array $fieldHandlers = [];
+
+  /**
    * Set up the Core implementation.
    *
    * @param string $drupal_root
@@ -78,6 +89,8 @@ class Core implements CoreInterface {
     $this->drupalRoot = $resolved;
     $this->uri = $uri;
     $this->random = $random ?? new Random();
+
+    $this->registerDefaultFieldHandlers();
   }
 
   /**
@@ -88,17 +101,81 @@ class Core implements CoreInterface {
   }
 
   /**
-   * Returns the Drupal major version this Core targets.
-   *
-   * The default Core returns 0 - the lookup chain iterates only when version
-   * is >= 10, so 0 skips the versioned directories and falls through to the
-   * default handlers in 'Core\Field\'.
-   *
-   * @return int
-   *   The Drupal major version, or 0 for the default (no version-specific dir).
+   * {@inheritdoc}
    */
-  protected function getVersion(): int {
-    return 0;
+  public function registerFieldHandler(string $field_type, string $class): void {
+    if (!is_subclass_of($class, FieldHandlerInterface::class)) {
+      throw new \InvalidArgumentException(sprintf('Handler class "%s" must implement "%s".', $class, FieldHandlerInterface::class));
+    }
+
+    if ((new \ReflectionClass($class))->isAbstract()) {
+      throw new \InvalidArgumentException(sprintf('Handler class "%s" must be instantiable.', $class));
+    }
+
+    $this->fieldHandlers[$field_type] = $class;
+  }
+
+  /**
+   * Populates the field-handler registry with handlers this class ships.
+   *
+   * A 'Core' subclass that wants to add version-specific overrides should
+   * override this method, call 'parent::registerDefaultFieldHandlers()'
+   * first, and then call 'registerHandlersFromDirectory()' against its
+   * own 'Field/' sibling directory. Each directory scan is independent,
+   * so a subclass only re-registers the types it actually changes; types
+   * it does not touch are inherited from the parent scan.
+   */
+  protected function registerDefaultFieldHandlers(): void {
+    $this->registerHandlersFromDirectory(__DIR__ . '/Field', __NAMESPACE__ . '\\Field');
+  }
+
+  /**
+   * Scans a directory for handler classes and registers each one.
+   *
+   * A class is registered when it (a) lives in '$namespace', (b) is named
+   * '*Handler' but is not 'DefaultHandler' (the registry's fallback), (c)
+   * is concrete, and (d) implements 'FieldHandlerInterface'. The field
+   * type id it gets registered under is derived from the short class name:
+   * 'EntityReferenceHandler' → 'entity_reference'.
+   *
+   * @param string $dir
+   *   Absolute filesystem path to the directory containing '*Handler.php'
+   *   files.
+   * @param string $namespace
+   *   Namespace the classes in '$dir' live under, without a trailing slash.
+   */
+  protected function registerHandlersFromDirectory(string $dir, string $namespace): void {
+    foreach (glob($dir . '/*Handler.php') ?: [] as $file) {
+      $short = basename($file, '.php');
+
+      if ($short === 'DefaultHandler') {
+        continue;
+      }
+
+      $class = $namespace . '\\' . $short;
+
+      if (!is_subclass_of($class, FieldHandlerInterface::class)) {
+        continue;
+      }
+
+      if ((new \ReflectionClass($class))->isAbstract()) {
+        continue;
+      }
+
+      $this->registerFieldHandler($this->deriveFieldType($short), $class);
+    }
+  }
+
+  /**
+   * Converts a handler's short class name to its Drupal field type id.
+   *
+   * Strips the 'Handler' suffix and snake-cases the remainder:
+   * 'EntityReferenceHandler' → 'entity_reference'.
+   */
+  protected function deriveFieldType(string $short_class_name): string {
+    $bare = substr($short_class_name, 0, -strlen('Handler'));
+
+    return strtolower((string) preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $bare));
   }
 
   /**
@@ -111,30 +188,9 @@ class Core implements CoreInterface {
       throw new \RuntimeException(sprintf('Field "%s" not found on entity type "%s".', $field_name, $entity_type));
     }
 
-    $camelized_type = Container::camelize($field_types[$field_name]);
-    $version = $this->getVersion();
+    $class = $this->fieldHandlers[$field_types[$field_name]] ?? DefaultHandler::class;
 
-    $candidates = [];
-
-    for ($n = $version; $n >= 10; $n--) {
-      $candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\%sHandler', $n, $camelized_type);
-    }
-
-    $candidates[] = sprintf('\\Drupal\\Driver\\Core\\Field\\%sHandler', $camelized_type);
-
-    for ($n = $version; $n >= 10; $n--) {
-      $candidates[] = sprintf('\\Drupal\\Driver\\Core%d\\Field\\DefaultHandler', $n);
-    }
-
-    foreach ($candidates as $class) {
-      if (!class_exists($class)) {
-        continue;
-      }
-
-      return new $class($entity, $entity_type, $field_name);
-    }
-
-    return new DefaultHandler($entity, $entity_type, $field_name);
+    return new $class($entity, $entity_type, $field_name);
   }
 
   /**
