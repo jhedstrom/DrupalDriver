@@ -76,21 +76,11 @@ class CustomCoreKernelTest extends FieldHandlerKernelTestBase {
 
     $this->core->entityCreate(self::ENTITY_TYPE, $stub);
 
-    $this->assertSame(
-      ConsumerTextLongHandler::MARKER,
-      $stub->field_body[0]['value'],
-      'Consumer handler did not transform the field value during expand().',
-    );
+    $this->assertSame(ConsumerTextLongHandler::MARKER, $stub->field_body[0]['value'], 'Consumer handler did not transform the field value during expand().');
 
-    $reloaded = \Drupal::entityTypeManager()
-      ->getStorage(self::ENTITY_TYPE)
-      ->loadUnchanged($stub->id);
+    $reloaded = \Drupal::entityTypeManager()->getStorage(self::ENTITY_TYPE)->loadUnchanged($stub->id);
     $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
-    $this->assertSame(
-      ConsumerTextLongHandler::MARKER,
-      $reloaded->get('field_body')->getValue()[0]['value'],
-      'Storage did not receive the consumer handler output.',
-    );
+    $this->assertSame(ConsumerTextLongHandler::MARKER, $reloaded->get('field_body')->getValue()[0]['value'], 'Storage did not receive the consumer handler output.');
   }
 
   /**
@@ -113,21 +103,11 @@ class CustomCoreKernelTest extends FieldHandlerKernelTestBase {
 
     $this->core->entityCreate(self::ENTITY_TYPE, $stub);
 
-    $this->assertSame(
-      ConsumerStringLongHandler::MARKER,
-      $stub->field_summary[0]['value'],
-      'Consumer handler did not transform the field value during expand().',
-    );
+    $this->assertSame(ConsumerStringLongHandler::MARKER, $stub->field_summary[0]['value'], 'Consumer handler did not transform the field value during expand().');
 
-    $reloaded = \Drupal::entityTypeManager()
-      ->getStorage(self::ENTITY_TYPE)
-      ->loadUnchanged($stub->id);
+    $reloaded = \Drupal::entityTypeManager()->getStorage(self::ENTITY_TYPE)->loadUnchanged($stub->id);
     $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
-    $this->assertSame(
-      ConsumerStringLongHandler::MARKER,
-      $reloaded->get('field_summary')->getValue()[0]['value'],
-      'Storage did not receive the consumer handler output.',
-    );
+    $this->assertSame(ConsumerStringLongHandler::MARKER, $reloaded->get('field_summary')->getValue()[0]['value'], 'Storage did not receive the consumer handler output.');
   }
 
 }

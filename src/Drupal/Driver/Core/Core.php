@@ -105,18 +105,11 @@ class Core implements CoreInterface {
    */
   public function registerFieldHandler(string $field_type, string $class): void {
     if (!is_subclass_of($class, FieldHandlerInterface::class)) {
-      throw new \InvalidArgumentException(sprintf(
-        'Handler class "%s" must implement "%s".',
-        $class,
-        FieldHandlerInterface::class,
-      ));
+      throw new \InvalidArgumentException(sprintf('Handler class "%s" must implement "%s".', $class, FieldHandlerInterface::class));
     }
 
     if ((new \ReflectionClass($class))->isAbstract()) {
-      throw new \InvalidArgumentException(sprintf(
-        'Handler class "%s" must be instantiable.',
-        $class,
-      ));
+      throw new \InvalidArgumentException(sprintf('Handler class "%s" must be instantiable.', $class));
     }
 
     $this->fieldHandlers[$field_type] = $class;

@@ -83,10 +83,7 @@ class PhoneHandler extends AbstractHandler {
   public function expand(mixed $values): array {
     // Convert each scenario-facing phone string into the storage shape
     // Drupal's field system expects (a list of deltas keyed by column).
-    return array_map(
-      static fn (string $number): array => ['value' => $number],
-      (array) $values,
-    );
+    return array_map(static fn (string $number): array => ['value' => $number], (array) $values);
   }
 }
 ```
@@ -121,10 +118,7 @@ use Drupal\Driver\Core\Core as BaseCore;
 class Core extends BaseCore {
   protected function registerDefaultFieldHandlers(): void {
     parent::registerDefaultFieldHandlers();
-    $this->registerHandlersFromDirectory(
-      __DIR__ . '/Field',
-      __NAMESPACE__ . '\\Field',
-    );
+    $this->registerHandlersFromDirectory(__DIR__ . '/Field', __NAMESPACE__ . '\\Field');
   }
 }
 ```

@@ -64,21 +64,11 @@ class FieldHandlerRegistryKernelTest extends FieldHandlerKernelTestBase {
 
     $this->core->entityCreate(self::ENTITY_TYPE, $stub);
 
-    $this->assertSame(
-      MarkerTextWithSummaryHandler::MARKER,
-      $stub->field_body[0]['value'],
-      'Consumer handler did not transform the field value during expand().',
-    );
+    $this->assertSame(MarkerTextWithSummaryHandler::MARKER, $stub->field_body[0]['value'], 'Consumer handler did not transform the field value during expand().');
 
-    $reloaded = \Drupal::entityTypeManager()
-      ->getStorage(self::ENTITY_TYPE)
-      ->loadUnchanged($stub->id);
+    $reloaded = \Drupal::entityTypeManager()->getStorage(self::ENTITY_TYPE)->loadUnchanged($stub->id);
     $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
-    $this->assertSame(
-      MarkerTextWithSummaryHandler::MARKER,
-      $reloaded->get('field_body')->getValue()[0]['value'],
-      'Storage did not receive the consumer handler output.',
-    );
+    $this->assertSame(MarkerTextWithSummaryHandler::MARKER, $reloaded->get('field_body')->getValue()[0]['value'], 'Storage did not receive the consumer handler output.');
   }
 
 }
