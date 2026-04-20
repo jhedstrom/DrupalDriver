@@ -172,6 +172,10 @@ class DrupalDriverDelegationTest extends TestCase {
     yield 'configSet' => ['configSet', ['system.site', 'name', 'v'], 'configSet'];
     yield 'entityCreate' => ['entityCreate', ['node', $entity], 'entityCreate'];
     yield 'entityDelete' => ['entityDelete', ['node', $entity], 'entityDelete'];
+    yield 'blockPlace' => ['blockPlace', [new \stdClass()], 'blockPlace'];
+    yield 'blockDelete' => ['blockDelete', [new \stdClass()], 'blockDelete'];
+    yield 'blockContentCreate' => ['blockContentCreate', [new \stdClass()], 'blockContentCreate'];
+    yield 'blockContentDelete' => ['blockContentDelete', [new \stdClass()], 'blockContentDelete'];
     yield 'mailStartCollecting' => ['mailStartCollecting', [], 'mailStartCollecting'];
     yield 'mailStopCollecting' => ['mailStopCollecting', [], 'mailStopCollecting'];
     yield 'mailGet' => ['mailGet', [], 'mailGet'];
