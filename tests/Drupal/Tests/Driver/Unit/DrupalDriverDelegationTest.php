@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit;
 
-use Drupal\Driver\Exception\BootstrapException;
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Core\CoreInterface;
 use Drupal\Driver\DrupalDriver;
@@ -80,26 +79,18 @@ class DrupalDriverDelegationTest extends TestCase {
   }
 
   /**
-   * Tests that 'setCore()' picks the core matching the detected version.
+   * Tests that 'setCore()' assigns the injected instance verbatim.
+   *
+   * The class name and namespace of the injected core are not inspected -
+   * any implementation of 'CoreInterface' is accepted.
    */
-  public function testSetCorePicksVersionMatchedCore(): void {
-    $driver = $this->createDriverWithCore($this->createMock(CoreInterface::class), 11);
-    $match = $this->createMock(CoreInterface::class);
-    $driver->setCore([10 => $this->createMock(CoreInterface::class), 11 => $match]);
+  public function testSetCoreAssignsInjectedInstance(): void {
+    $driver = $this->createDriverWithCore($this->createMock(CoreInterface::class));
+    $custom = $this->createMock(CoreInterface::class);
 
-    $this->assertSame($match, $driver->getCore());
-  }
+    $driver->setCore($custom);
 
-  /**
-   * Tests that 'setCore()' throws when no core matches the detected version.
-   */
-  public function testSetCoreThrowsWhenNoCoreMatches(): void {
-    $driver = $this->createDriverWithCore($this->createMock(CoreInterface::class), 11);
-
-    $this->expectException(BootstrapException::class);
-    $this->expectExceptionMessageMatches('/available Drupal core controller for Drupal version 11/');
-
-    $driver->setCore([10 => $this->createMock(CoreInterface::class)]);
+    $this->assertSame($custom, $driver->getCore());
   }
 
   /**

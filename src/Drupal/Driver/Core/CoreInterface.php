@@ -97,6 +97,29 @@ interface CoreInterface extends
   public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface;
 
   /**
+   * Registers a field handler class for a field type.
+   *
+   * Consumer projects call this to override one of the driver's built-in
+   * handlers or to teach the driver about a field type it does not ship a
+   * handler for. The registration wins over the defaults registered by
+   * 'Core::registerDefaultFieldHandlers()' in the constructor. Handlers must
+   * implement 'FieldHandlerInterface'; a class that does not triggers an
+   * 'InvalidArgumentException' at registration time rather than at field
+   * resolution time.
+   *
+   * @param string $field_type
+   *   The Drupal field type id, e.g. 'boolean', 'entity_reference', or a
+   *   project-specific id registered by a contrib module.
+   * @param class-string<FieldHandlerInterface> $class
+   *   The handler class to instantiate when a field of this type is
+   *   expanded. The class must implement 'FieldHandlerInterface'.
+   *
+   * @throws \InvalidArgumentException
+   *   When '$class' does not implement 'FieldHandlerInterface'.
+   */
+  public function registerFieldHandler(string $field_type, string $class): void;
+
+  /**
    * Returns the field types for the given entity type.
    *
    * @param string $entity_type
