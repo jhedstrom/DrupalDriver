@@ -213,12 +213,12 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): string {
+  public function roleCreate(array $permissions, ?string $id = NULL, ?string $label = NULL): string {
     $random = $this->getRandom();
-    $rid = strtolower($random->name(8, TRUE));
-    $label = trim($random->name(8, TRUE));
+    $rid = $id ?? strtolower($random->name(8, TRUE));
+    $role_label = $label ?? ($id ?? trim($random->name(8, TRUE)));
 
-    $this->drush('role:create', [$rid, sprintf('"%s"', $label)], []);
+    $this->drush('role:create', [$rid, sprintf('"%s"', $role_label)], []);
 
     foreach ($permissions as $permission) {
       $this->drush('role:perm:add', [$rid, sprintf('"%s"', $permission)], []);

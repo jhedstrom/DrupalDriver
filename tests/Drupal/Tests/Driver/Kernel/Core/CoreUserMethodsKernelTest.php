@@ -132,4 +132,33 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
     $this->core->roleCreate(['definitely not a real permission']);
   }
 
+  /**
+   * Tests 'roleCreate()' honours explicit id and label arguments.
+   *
+   * Without this path, scenarios that need to assert against a role by name
+   * (e.g. verifying it appears in a permissions admin form) have to scrape the
+   * random id out of the return value - which makes the assertion opaque.
+   */
+  public function testRoleCreateAcceptsExplicitIdAndLabel(): void {
+    $role_id = $this->core->roleCreate(['access user profiles'], 'editor', 'Editor');
+
+    $this->assertSame('editor', $role_id);
+    $role = Role::load('editor');
+    $this->assertInstanceOf(Role::class, $role);
+    $this->assertSame('Editor', $role->label());
+    $this->assertTrue($role->hasPermission('access user profiles'));
+  }
+
+  /**
+   * Tests 'roleCreate()' falls back to the id as label when only id is given.
+   */
+  public function testRoleCreateFallsBackToIdAsLabel(): void {
+    $role_id = $this->core->roleCreate([], 'content_editor');
+
+    $this->assertSame('content_editor', $role_id);
+    $role = Role::load('content_editor');
+    $this->assertInstanceOf(Role::class, $role);
+    $this->assertSame('content_editor', $role->label());
+  }
+
 }

@@ -404,16 +404,16 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): string {
-    $rid = strtolower($this->random->name(8, TRUE));
-    $label = trim($this->random->name(8, TRUE));
+  public function roleCreate(array $permissions, ?string $id = NULL, ?string $label = NULL): string {
+    $rid = $id ?? strtolower($this->random->name(8, TRUE));
+    $role_label = $label ?? ($id ?? trim($this->random->name(8, TRUE)));
 
     $this->convertPermissions($permissions);
     $this->checkPermissions($permissions);
 
     $role = \Drupal::entityTypeManager()->getStorage('user_role')->create([
       'id' => $rid,
-      'label' => $label,
+      'label' => $role_label,
     ]);
     $role->save();
 
