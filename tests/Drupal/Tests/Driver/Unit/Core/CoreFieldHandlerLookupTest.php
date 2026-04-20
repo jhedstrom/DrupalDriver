@@ -232,7 +232,7 @@ class Core99TestCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function roleCreate(array $permissions): string {
+  public function roleCreate(array $permissions, ?string $id = NULL, ?string $label = NULL): string {
     return '';
   }
 

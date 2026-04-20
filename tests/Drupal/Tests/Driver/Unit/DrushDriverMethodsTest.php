@@ -382,6 +382,8 @@ class DrushDriverMethodsTest extends TestCase {
     yield 'configSet' => ['configSet', ['system.site', 'name', 'v'], 'config:set'];
     yield 'roleCreate no permissions' => ['roleCreate', [[]], 'role:create'];
     yield 'roleCreate with permissions' => ['roleCreate', [['access content']], 'role:create'];
+    yield 'roleCreate with explicit id' => ['roleCreate', [[], 'editor'], 'role:create'];
+    yield 'roleCreate with id and label' => ['roleCreate', [['access content'], 'editor', 'Editor'], 'role:create'];
     yield 'roleDelete' => ['roleDelete', ['editor'], 'role:delete'];
   }
 
