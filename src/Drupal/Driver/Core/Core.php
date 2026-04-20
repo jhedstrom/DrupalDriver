@@ -732,6 +732,54 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
+  public function blockPlace(\stdClass $block): object {
+    // Generate a placement id when the caller did not supply one, matching
+    // the 'nodeCreate'/'roleCreate' convention of tolerating ID-less stubs.
+    // Block config entities require an id, so we must fill it before save.
+    if (!isset($block->id) || $block->id === '') {
+      $block->id = strtolower($this->random->name(8, TRUE));
+    }
+
+    $placement = \Drupal::entityTypeManager()->getStorage('block')->create((array) $block);
+    $placement->save();
+
+    return $placement;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockDelete(object $block): void {
+    if (!$block instanceof EntityInterface) {
+      if (!isset($block->id) || !is_string($block->id)) {
+        throw new \InvalidArgumentException('Cannot delete a block placement from a stub without a string "id" property.');
+      }
+
+      $block = \Drupal::entityTypeManager()->getStorage('block')->load($block->id);
+    }
+
+    if ($block instanceof EntityInterface) {
+      $block->delete();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockContentCreate(\stdClass $block_content): object {
+    return $this->entityCreate('block_content', $block_content);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockContentDelete(object $block_content): void {
+    $this->entityDelete('block_content', $block_content);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getModuleList(): array {
     return array_keys(\Drupal::moduleHandler()->getModuleList());
   }

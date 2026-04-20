@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
+use Drupal\Driver\Capability\BlockCapabilityInterface;
 use Drupal\Driver\Capability\CacheCapabilityInterface;
 use Drupal\Driver\Capability\ConfigCapabilityInterface;
 use Drupal\Driver\Capability\ContentCapabilityInterface;
@@ -26,6 +27,7 @@ interface DrupalDriverInterface extends
   DriverInterface,
   SubDriverFinderInterface,
   AuthenticationCapabilityInterface,
+  BlockCapabilityInterface,
   CacheCapabilityInterface,
   ConfigCapabilityInterface,
   ContentCapabilityInterface,

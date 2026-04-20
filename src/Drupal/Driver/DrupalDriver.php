@@ -275,6 +275,34 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
+  public function blockPlace(\stdClass $block): object {
+    return $this->getCore()->blockPlace($block);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockDelete(object $block): void {
+    $this->getCore()->blockDelete($block);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockContentCreate(\stdClass $block_content): object {
+    return $this->getCore()->blockContentCreate($block_content);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function blockContentDelete(object $block_content): void {
+    $this->getCore()->blockContentDelete($block_content);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function cronRun(): bool {
     return $this->getCore()->cronRun();
   }

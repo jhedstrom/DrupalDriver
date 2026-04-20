@@ -6,6 +6,7 @@ namespace Drupal\Driver\Core;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
+use Drupal\Driver\Capability\BlockCapabilityInterface;
 use Drupal\Driver\Capability\CacheCapabilityInterface;
 use Drupal\Driver\Capability\ConfigCapabilityInterface;
 use Drupal\Driver\Capability\ContentCapabilityInterface;
@@ -28,6 +29,7 @@ use Drupal\Driver\Core\Field\FieldHandlerInterface;
  */
 interface CoreInterface extends
   AuthenticationCapabilityInterface,
+  BlockCapabilityInterface,
   CacheCapabilityInterface,
   ConfigCapabilityInterface,
   ContentCapabilityInterface,
