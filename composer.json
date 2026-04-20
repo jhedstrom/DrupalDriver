@@ -69,6 +69,7 @@
     },
     "autoload-dev": {
         "psr-0": {
+            "ConsumerProject": "tests/fixtures/",
             "Drupal\\Driver": "tests/fixtures/"
         }
     },

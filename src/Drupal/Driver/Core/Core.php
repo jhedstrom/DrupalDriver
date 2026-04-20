@@ -112,6 +112,13 @@ class Core implements CoreInterface {
       ));
     }
 
+    if ((new \ReflectionClass($class))->isAbstract()) {
+      throw new \InvalidArgumentException(sprintf(
+        'Handler class "%s" must be instantiable.',
+        $class,
+      ));
+    }
+
     $this->fieldHandlers[$field_type] = $class;
   }
 

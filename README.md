@@ -81,7 +81,12 @@ use Drupal\Driver\Core\Field\AbstractHandler;
 
 class PhoneHandler extends AbstractHandler {
   public function expand(mixed $values): array {
-    // Convert scenario-facing phone strings to the storage shape.
+    // Convert each scenario-facing phone string into the storage shape
+    // Drupal's field system expects (a list of deltas keyed by column).
+    return array_map(
+      static fn (string $number): array => ['value' => $number],
+      (array) $values,
+    );
   }
 }
 ```

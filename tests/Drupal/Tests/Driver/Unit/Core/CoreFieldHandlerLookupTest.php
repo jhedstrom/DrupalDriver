@@ -112,6 +112,24 @@ class CoreFieldHandlerLookupTest extends TestCase {
   }
 
   /**
+   * Tests that registering an abstract handler class throws at registration.
+   *
+   * 'AbstractHandler' satisfies 'is_subclass_of(... FieldHandlerInterface)'
+   * but cannot be instantiated, so 'getFieldHandler()' would fatal with a
+   * cryptic 'Cannot instantiate abstract class' error at the first call. The
+   * registry-contract docblock on 'CoreInterface::registerFieldHandler()'
+   * promises rejection at registration time - this test holds it to that.
+   */
+  public function testRegisterRejectsAbstractHandlerClass(): void {
+    $core = new FieldTypeMapCore(__DIR__, 'default', []);
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/must be instantiable/');
+
+    $core->registerFieldHandler('phone', AbstractHandler::class);
+  }
+
+  /**
    * Sets up a minimal Drupal container satisfying AbstractHandler construction.
    *
    * AbstractHandler's constructor pulls the entity field manager and the

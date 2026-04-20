@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -43,18 +44,41 @@ class FieldHandlerRegistryKernelTest extends FieldHandlerKernelTestBase {
 
   /**
    * Tests that a consumer-registered handler replaces the built-in.
+   *
+   * The input value is deliberately distinct from the handler's marker so
+   * the assertion can only pass when the consumer handler actually ran. A
+   * pass-through or built-in handler would leave the raw input in storage
+   * and the comparison against 'MARKER' would fail.
    */
   public function testConsumerRegisteredHandlerWinsOverBuiltIn(): void {
-    // Register an override for 'text_with_summary' that emits a known marker,
-    // then drive a field of that type through entityCreate and verify the
-    // marker lands in storage instead of what TextWithSummaryHandler would
-    // produce.
     $this->core->registerFieldHandler('text_with_summary', MarkerTextWithSummaryHandler::class);
     $this->attachField('field_body', 'text_with_summary');
 
-    $this->assertFieldRoundTripViaDriver('field_body', [
-      ['value' => MarkerTextWithSummaryHandler::MARKER, 'format' => 'plain_text'],
-    ]);
+    $stub = (object) [
+      'type' => self::BUNDLE,
+      'name' => 'test entity',
+      'field_body' => [
+        ['value' => 'raw input', 'format' => 'plain_text'],
+      ],
+    ];
+
+    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+
+    $this->assertSame(
+      MarkerTextWithSummaryHandler::MARKER,
+      $stub->field_body[0]['value'],
+      'Consumer handler did not transform the field value during expand().',
+    );
+
+    $reloaded = \Drupal::entityTypeManager()
+      ->getStorage(self::ENTITY_TYPE)
+      ->loadUnchanged($stub->id);
+    $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
+    $this->assertSame(
+      MarkerTextWithSummaryHandler::MARKER,
+      $reloaded->get('field_body')->getValue()[0]['value'],
+      'Storage did not receive the consumer handler output.',
+    );
   }
 
 }
