@@ -68,7 +68,7 @@ class FieldHandlerRegistryKernelTest extends FieldHandlerKernelTestBase {
  */
 class MarkerTextWithSummaryHandler extends AbstractHandler {
 
-  public const string MARKER = 'consumer handler took precedence';
+  public const MARKER = 'consumer handler took precedence';
 
   /**
    * {@inheritdoc}
