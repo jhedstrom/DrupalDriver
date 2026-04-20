@@ -231,7 +231,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: gd, pdo_sqlite
-          coverage: none
+          coverage: pcov
 
       - name: Add path repository for DrupalDriver
         working-directory: drupalextension
