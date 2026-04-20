@@ -126,10 +126,12 @@ class EntityReferenceHandlerKernelTest extends FieldHandlerKernelTestBase {
   /**
    * Tests round-trip for an entity_reference field targeting taxonomy terms.
    *
-   * Modern Drupal uses entity_reference for taxonomy links, so the driver
-   * resolves EntityReferenceHandler rather than the legacy
-   * TaxonomyTermReferenceHandler. Kept here rather than a separate test
-   * because it's the same handler exercising a different target_type.
+   * Drupal 8 beta10 removed the legacy 'taxonomy_term_reference' field type;
+   * modern sites use 'entity_reference' with 'target_type = taxonomy_term',
+   * so the driver routes through EntityReferenceHandler. Covered here
+   * alongside the other EntityReferenceHandler targets rather than in its
+   * own suite because it is the same handler exercising a different
+   * 'target_type'.
    */
   public function testTaxonomyTermReferenceByNameRoundTrip(): void {
     Vocabulary::create(['vid' => 'tags', 'name' => 'Tags'])->save();
