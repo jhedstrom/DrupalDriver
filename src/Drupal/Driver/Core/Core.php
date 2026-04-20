@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Core;
 
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Exception\BootstrapException;
@@ -15,8 +18,8 @@ use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
@@ -181,7 +184,7 @@ class Core implements CoreInterface {
    *   Base field names whose corresponding property is set on the stub.
    */
   protected function detectBaseFieldsOnEntity(string $entity_type, \stdClass $entity): array {
-    $definition = \Drupal::entityTypeManager()->getDefinition($entity_type);
+    $definition = $this->loadEntityTypeDefinition($entity_type);
     $skip = array_filter([$definition->getKey('id'), $definition->getKey('bundle')]);
 
     $detected = [];
@@ -197,6 +200,33 @@ class Core implements CoreInterface {
     }
 
     return $detected;
+  }
+
+  /**
+   * Resolves an entity type definition, rethrowing with an actionable message.
+   *
+   * Drupal's EntityTypeManager throws 'PluginNotFoundException' with text like
+   * "The 'xyz' plugin does not exist." That is technically correct but leaks
+   * plugin-system vocabulary into what a scenario author experiences as a
+   * driver-level error. Wrapping it lets us produce a message that names
+   * what actually went wrong: the entity type argument they passed.
+   *
+   * @param string $entity_type
+   *   Entity type id to load.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeInterface
+   *   The resolved definition.
+   *
+   * @throws \InvalidArgumentException
+   *   If the entity type id is not registered.
+   */
+  protected function loadEntityTypeDefinition(string $entity_type): EntityTypeInterface {
+    try {
+      return \Drupal::entityTypeManager()->getDefinition($entity_type);
+    }
+    catch (PluginNotFoundException $e) {
+      throw new \InvalidArgumentException(sprintf('Unknown entity type "%s".', $entity_type), 0, $e);
+    }
   }
 
   /**
@@ -594,18 +624,29 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function termCreate(\stdClass $term): \stdClass {
+    if (empty($term->vocabulary_machine_name)) {
+      throw new \InvalidArgumentException("Cannot create term because it is missing the required property 'vocabulary_machine_name'.");
+    }
+
+    if (Vocabulary::load($term->vocabulary_machine_name) === NULL) {
+      throw new \InvalidArgumentException(sprintf("Cannot create term because vocabulary '%s' does not exist.", $term->vocabulary_machine_name));
+    }
+
     $term->vid = $term->vocabulary_machine_name;
 
     if (!empty($term->parent)) {
+      $parent_name = $term->parent;
       $parent_terms = \Drupal::entityQuery('taxonomy_term')
         ->accessCheck(FALSE)
-        ->condition('name', $term->parent)
+        ->condition('name', $parent_name)
         ->condition('vid', $term->vocabulary_machine_name)
         ->execute();
 
-      if (!empty($parent_terms)) {
-        $term->parent = reset($parent_terms);
+      if (empty($parent_terms)) {
+        throw new \InvalidArgumentException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $term->vocabulary_machine_name));
       }
+
+      $term->parent = reset($parent_terms);
     }
 
     $this->expandEntityFields('taxonomy_term', $term);
@@ -785,7 +826,7 @@ class Core implements CoreInterface {
       throw new \InvalidArgumentException('You must specify an entity type to create an entity.');
     }
 
-    $definition = \Drupal::entityTypeManager()->getDefinition($entity_type);
+    $definition = $this->loadEntityTypeDefinition($entity_type);
     $bundle_key = $definition->getKey('bundle');
     $id_key = $definition->getKey('id');
 
@@ -801,7 +842,7 @@ class Core implements CoreInterface {
       $bundles = $bundle_info->getBundleInfo($entity_type);
 
       if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \Exception(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
+        throw new \InvalidArgumentException(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
       }
     }
 
@@ -822,7 +863,7 @@ class Core implements CoreInterface {
    */
   public function entityDelete(string $entity_type, object $entity): void {
     if (!$entity instanceof EntityInterface) {
-      $id_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('id');
+      $id_key = $this->loadEntityTypeDefinition($entity_type)->getKey('id');
 
       // Fail loudly if the stub does not carry the resolved id key. Without
       // this guard a missing property would silently call storage->load(NULL)
