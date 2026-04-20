@@ -107,11 +107,11 @@ jobs:
           coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
 
       - name: Add Drupal core dependency
-        run: composer require --no-interaction --dev --no-update drupal/core-recommended:^${DRUPAL_VERSION} drupal/core-dev:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
+        run: composer require --no-interaction --dev --no-update drupal/core-recommended:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
 
       - name: Pin Drupal 10 tooling
         if: ${{ matrix.drupal_version == '10' }}
-        run: composer require --no-interaction --dev --no-update mglaman/phpstan-drupal:^1.1.25 phpstan/phpstan:^1.10 phpunit/phpunit:^9.6 rector/rector:^1
+        run: composer require --no-interaction --dev --no-update mglaman/phpstan-drupal:^1.1.25 phpstan/phpstan:^1.10 phpunit/phpunit:^9.6 symfony/phpunit-bridge:^6.4
 
       - name: Install Composer dependencies
         run: |
