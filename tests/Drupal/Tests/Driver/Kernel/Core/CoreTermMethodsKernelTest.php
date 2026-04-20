@@ -87,4 +87,45 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
     $this->assertFalse($this->core->termDelete($missing));
   }
 
+  /**
+   * Tests that termCreate rejects a stub missing 'vocabulary_machine_name'.
+   */
+  public function testTermCreateRejectsMissingVocabularyProperty(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches("/missing the required property 'vocabulary_machine_name'/");
+
+    $this->core->termCreate((object) ['name' => 'Orphan']);
+  }
+
+  /**
+   * Tests that termCreate rejects an unknown vocabulary.
+   */
+  public function testTermCreateRejectsUnknownVocabulary(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches("/vocabulary 'ghosts' does not exist/");
+
+    $this->core->termCreate((object) [
+      'vocabulary_machine_name' => 'ghosts',
+      'name' => 'Casper',
+    ]);
+  }
+
+  /**
+   * Tests that termCreate rejects a parent term that does not exist.
+   *
+   * Previously a non-matching parent was silently left as the raw name string,
+   * which produced an opaque downstream error from Term::create. Now it fails
+   * loudly with a message that names the missing parent.
+   */
+  public function testTermCreateRejectsUnknownParent(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches("/parent term 'Missing' does not exist in vocabulary 'tags'/");
+
+    $this->core->termCreate((object) [
+      'vocabulary_machine_name' => 'tags',
+      'name' => 'Orphaned',
+      'parent' => 'Missing',
+    ]);
+  }
+
 }

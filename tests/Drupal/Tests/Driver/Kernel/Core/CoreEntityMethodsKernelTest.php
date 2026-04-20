@@ -196,6 +196,31 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
   }
 
   /**
+   * Tests 'entityCreate()' rejects an unknown entity type with a clear message.
+   *
+   * Drupal's 'EntityTypeManager::getDefinition()' raises a
+   * 'PluginNotFoundException' with plugin-system vocabulary that does not
+   * describe what a scenario author actually did wrong. The driver wraps it
+   * as an 'InvalidArgumentException' that names the offending entity type.
+   */
+  public function testEntityCreateRejectsUnknownEntityType(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/Unknown entity type "nonexistent_type"/');
+
+    $this->core->entityCreate('nonexistent_type', (object) ['name' => 'foo']);
+  }
+
+  /**
+   * Tests 'entityDelete()' rejects an unknown entity type with a clear message.
+   */
+  public function testEntityDeleteRejectsUnknownEntityType(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessageMatches('/Unknown entity type "nonexistent_type"/');
+
+    $this->core->entityDelete('nonexistent_type', (object) ['id' => 1]);
+  }
+
+  /**
    * Tests that 'entityCreate()' rejects an unknown bundle for a bundled type.
    *
    * 'entity_test' has a 'type' bundle key but no bundles registered unless
