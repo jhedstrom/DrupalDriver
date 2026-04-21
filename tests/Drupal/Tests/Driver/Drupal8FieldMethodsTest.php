@@ -18,10 +18,13 @@ namespace Drupal\field\Entity {
 namespace Drupal\Tests\Driver {
 
   use Drupal\Core\Entity\EntityFieldManagerInterface;
+  use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
   use Drupal\Core\Field\BaseFieldDefinition;
+  use Drupal\Core\Field\FieldDefinitionInterface;
   use Drupal\Driver\Cores\Drupal8;
   use Drupal\field\Entity\FieldStorageConfig;
   use PHPUnit\Framework\TestCase;
+  use Symfony\Component\DependencyInjection\ContainerInterface;
 
   /**
    * Tests for Drupal8 field methods: isBaseField(), isField(), getEntityFieldTypes().
@@ -46,12 +49,14 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testIsBaseField().
      */
-    public function dataProviderIsBaseField() {
+    public static function dataProviderIsBaseField() {
       return [
         'non-computed base field' => ['title', TRUE],
         'computed base field' => ['moderation_state', TRUE],
         'configurable field' => ['field_tags', FALSE],
         'unknown field' => ['nonexistent', FALSE],
+        'bundle computed field' => ['uri', TRUE],
+        'unknown bundle field' => ['nonexistent_bundle_field', FALSE],
       ];
     }
 
@@ -73,7 +78,7 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testIsField().
      */
-    public function dataProviderIsField() {
+    public static function dataProviderIsField() {
       return [
         'configurable field' => ['field_tags', TRUE],
         'non-computed base field' => ['title', FALSE],
@@ -109,7 +114,7 @@ namespace Drupal\Tests\Driver {
     /**
      * Data provider for testGetEntityFieldTypes().
      */
-    public function dataProviderGetEntityFieldTypes() {
+    public static function dataProviderGetEntityFieldTypes() {
       return [
         'no base fields requested' => [
         [],
@@ -135,7 +140,15 @@ namespace Drupal\Tests\Driver {
     }
 
     /**
-     * Creates a TestDrupal8Core with mocked entity field manager.
+     * Resets the Drupal container after each test.
+     */
+    protected function tearDown(): void {
+      parent::tearDown();
+      \Drupal::unsetContainer();
+    }
+
+    /**
+     * Creates a TestDrupal8Core with mocked entity field manager and container.
      *
      * @return \Drupal\Tests\Driver\TestDrupal8Core
      *   The test core instance.
@@ -152,9 +165,14 @@ namespace Drupal\Tests\Driver {
       // Configurable field — use stub that passes instanceof FieldStorageConfig.
       $field_tags = new FieldStorageConfig('entity_reference');
 
+      // Bundle computed field: present in a specific bundle, not in base fields
+      // or field storage definitions (no FieldStorageConfig).
+      $uri_field = $this->createMock(FieldDefinitionInterface::class);
+      $uri_field->method('getType')->willReturn('uri');
+
       $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
 
-      // getFieldStorageDefinitions: returns non-computed base fields + configurable fields.
+      // getFieldStorageDefinitions: non-computed base fields + configurable fields.
       $entity_field_manager->method('getFieldStorageDefinitions')
         ->with('node')
         ->willReturn([
@@ -162,13 +180,36 @@ namespace Drupal\Tests\Driver {
           'field_tags' => $field_tags,
         ]);
 
-      // getBaseFieldDefinitions: returns ALL base fields (computed + non-computed).
+      // getBaseFieldDefinitions: ALL base fields (computed + non-computed).
       $entity_field_manager->method('getBaseFieldDefinitions')
         ->with('node')
         ->willReturn([
           'title' => $title_field,
           'moderation_state' => $moderation_state_field,
         ]);
+
+      // getFieldDefinitions: bundle-specific fields per bundle. 'uri' exists only
+      // on 'solution'; 'field_tags' appears on 'article' as a configurable field.
+      $entity_field_manager->method('getFieldDefinitions')
+        ->willReturnMap([
+          ['node', 'article', ['title' => $title_field, 'field_tags' => $field_tags]],
+          ['node', 'solution', ['title' => $title_field, 'uri' => $uri_field]],
+        ]);
+
+      // Set up the Drupal container so isBaseField() can resolve entity_type.bundle.info.
+      $bundle_info_service = $this->createMock(EntityTypeBundleInfoInterface::class);
+      $bundle_info_service->method('getBundleInfo')
+        ->with('node')
+        ->willReturn([
+          'article' => ['label' => 'Article'],
+          'solution' => ['label' => 'Solution'],
+        ]);
+
+      $container = $this->createMock(ContainerInterface::class);
+      $container->method('get')
+        ->with('entity_type.bundle.info')
+        ->willReturn($bundle_info_service);
+      \Drupal::setContainer($container);
 
       $core = new TestDrupal8Core(__DIR__, 'default');
       $core->setEntityFieldManager($entity_field_manager);

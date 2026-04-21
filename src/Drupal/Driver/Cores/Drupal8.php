@@ -434,8 +434,14 @@ class Drupal8 extends AbstractCore implements CoreAuthenticationInterface {
     if (isset($base_fields[$field_name])) {
       return TRUE;
     }
-    // Also check bundle-specific fields (hook_entity_bundle_field_info).
-    // These are computed/custom-storage fields not in FieldStorageConfig.
+    // Configurable fields are handled by isField(); exclude them here.
+    if ($this->isField($entity_type, $field_name)) {
+      return FALSE;
+    }
+    // Also check bundle-specific computed/custom-storage fields defined via
+    // hook_entity_bundle_field_info(). These don't appear in getBaseFieldDefinitions()
+    // and are not FieldStorageConfig instances, so they fall through both isField()
+    // and the base-field check above.
     $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type);
     foreach (array_keys($bundle_info) as $bundle) {
       $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($entity_type, $bundle);
