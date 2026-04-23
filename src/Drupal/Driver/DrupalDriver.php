@@ -38,7 +38,7 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * Drupal core version.
    */
-  public int $version;
+  protected int $version;
 
   /**
    * Set Drupal root and URI.
@@ -93,15 +93,7 @@ class DrupalDriver implements DrupalDriverInterface {
   }
 
   /**
-   * Determine major Drupal version.
-   *
-   * @return int
-   *   The major Drupal version.
-   *
-   * @throws \Drupal\Driver\Exception\BootstrapException
-   *   Thrown when the Drupal version could not be determined.
-   *
-   * @see drush_drupal_version()
+   * {@inheritdoc}
    */
   public function getDrupalVersion(): int {
     return $this->version;
