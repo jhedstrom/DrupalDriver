@@ -108,22 +108,6 @@ class DrupalDriver implements DrupalDriverInterface {
   }
 
   /**
-   * Injects the active Core implementation.
-   *
-   * Consumers override the driver's default Core lookup by passing any
-   * class that implements 'CoreInterface' - the class name and namespace
-   * do not matter. Typically called in a test bootstrap when the project
-   * ships its own Core subclass (e.g. one that registers additional field
-   * handlers in its 'registerDefaultFieldHandlers()' override).
-   *
-   * @param \Drupal\Driver\Core\CoreInterface $core
-   *   The Core instance the driver should delegate to.
-   */
-  public function setCore(CoreInterface $core): void {
-    $this->core = $core;
-  }
-
-  /**
    * Automatically set the core from the current version.
    *
    * Walks from the detected Drupal version down to the default Core class,
@@ -155,10 +139,17 @@ class DrupalDriver implements DrupalDriverInterface {
   }
 
   /**
-   * Return current core.
+   * {@inheritdoc}
    */
   public function getCore(): CoreInterface {
     return $this->core;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCore(CoreInterface $core): void {
+    $this->core = $core;
   }
 
   /**
