@@ -163,8 +163,6 @@ class DrupalDriverDelegationTest extends TestCase {
     yield 'roleCreate' => ['roleCreate', [['admin']], 'roleCreate'];
     yield 'roleCreate named' => ['roleCreate', [['admin'], 'editor', 'Editor'], 'roleCreate'];
     yield 'roleDelete' => ['roleDelete', ['editor'], 'roleDelete'];
-    yield 'fieldExists' => ['fieldExists', ['node', 'title'], 'fieldExists'];
-    yield 'fieldIsBase' => ['fieldIsBase', ['node', 'title'], 'fieldIsBase'];
     yield 'languageCreate' => ['languageCreate', [$language], 'languageCreate'];
     yield 'languageDelete' => ['languageDelete', [$language], 'languageDelete'];
     yield 'configGet' => ['configGet', ['system.site', 'name'], 'configGet'];

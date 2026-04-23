@@ -11,7 +11,6 @@ use Drupal\Driver\Capability\CacheCapabilityInterface;
 use Drupal\Driver\Capability\ConfigCapabilityInterface;
 use Drupal\Driver\Capability\ContentCapabilityInterface;
 use Drupal\Driver\Capability\CronCapabilityInterface;
-use Drupal\Driver\Capability\FieldCapabilityInterface;
 use Drupal\Driver\Capability\LanguageCapabilityInterface;
 use Drupal\Driver\Capability\MailCapabilityInterface;
 use Drupal\Driver\Capability\ModuleCapabilityInterface;
@@ -34,7 +33,6 @@ interface CoreInterface extends
   ConfigCapabilityInterface,
   ContentCapabilityInterface,
   CronCapabilityInterface,
-  FieldCapabilityInterface,
   LanguageCapabilityInterface,
   MailCapabilityInterface,
   ModuleCapabilityInterface,
@@ -124,14 +122,19 @@ interface CoreInterface extends
   /**
    * Returns the field types for the given entity type.
    *
+   * Returns the map of every F1, F5, and F9 field that should be routed
+   * through the handler pipeline for this entity type. See
+   * 'src/Drupal/Driver/Core/Field/README.md' for the classification rules.
+   *
    * @param string $entity_type
    *   The entity type ID.
-   * @param array<string> $base_fields
-   *   Optional. Base fields to include alongside user-defined fields.
+   * @param string|null $bundle
+   *   Optional. Bundle to consult for F9 (storage-backed bundle-attached)
+   *   fields. Without a bundle only F1 and F5 fields surface.
    *
    * @return array<string, string>
    *   Map of field name to field type.
    */
-  public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array;
+  public function getEntityFieldTypes(string $entity_type, ?string $bundle = NULL): array;
 
 }

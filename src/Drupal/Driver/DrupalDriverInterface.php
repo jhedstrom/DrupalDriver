@@ -10,7 +10,6 @@ use Drupal\Driver\Capability\CacheCapabilityInterface;
 use Drupal\Driver\Capability\ConfigCapabilityInterface;
 use Drupal\Driver\Capability\ContentCapabilityInterface;
 use Drupal\Driver\Capability\CronCapabilityInterface;
-use Drupal\Driver\Capability\FieldCapabilityInterface;
 use Drupal\Driver\Capability\LanguageCapabilityInterface;
 use Drupal\Driver\Capability\MailCapabilityInterface;
 use Drupal\Driver\Capability\ModuleCapabilityInterface;
@@ -32,7 +31,6 @@ interface DrupalDriverInterface extends
   ConfigCapabilityInterface,
   ContentCapabilityInterface,
   CronCapabilityInterface,
-  FieldCapabilityInterface,
   LanguageCapabilityInterface,
   MailCapabilityInterface,
   ModuleCapabilityInterface,
