@@ -90,6 +90,7 @@ class FieldClassifierTest extends TestCase {
     $this->assertTrue($classifier->fieldIsBundleComputedReadOnly('node', 'bundle_computed_ro', 'article'));
     $this->assertFalse($classifier->fieldIsBundleComputedReadOnly('node', 'bundle_computed_rw', 'article'));
     $this->assertFalse($classifier->fieldIsBundleComputedReadOnly('node', 'title', 'article'));
+    $this->assertFalse($classifier->fieldIsBundleComputedReadOnly('node', 'nonexistent', 'article'));
   }
 
   /**
@@ -101,6 +102,7 @@ class FieldClassifierTest extends TestCase {
     $this->assertTrue($classifier->fieldIsBundleComputedWritable('node', 'bundle_computed_rw', 'article'));
     $this->assertFalse($classifier->fieldIsBundleComputedWritable('node', 'bundle_computed_ro', 'article'));
     $this->assertFalse($classifier->fieldIsBundleComputedWritable('node', 'title', 'article'));
+    $this->assertFalse($classifier->fieldIsBundleComputedWritable('node', 'nonexistent', 'article'));
   }
 
   /**
@@ -112,6 +114,7 @@ class FieldClassifierTest extends TestCase {
     $this->assertTrue($classifier->fieldIsBundleCustomStorage('node', 'bundle_custom', 'article'));
     $this->assertFalse($classifier->fieldIsBundleCustomStorage('node', 'bundle_computed_rw', 'article'));
     $this->assertFalse($classifier->fieldIsBundleCustomStorage('node', 'title', 'article'));
+    $this->assertFalse($classifier->fieldIsBundleCustomStorage('node', 'nonexistent', 'article'));
   }
 
   /**
@@ -123,6 +126,8 @@ class FieldClassifierTest extends TestCase {
     $this->assertTrue($classifier->fieldIsBundleStorageBacked('node', 'bundle_storage_backed', 'article'));
     $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'title', 'article'));
     $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'field_tags', 'article'));
+    $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'nonexistent', 'article'));
+    $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'bundle_computed_rw', 'article'));
   }
 
   /**
