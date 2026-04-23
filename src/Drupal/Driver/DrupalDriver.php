@@ -23,7 +23,7 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * Drupal core object.
    */
-  public CoreInterface $core;
+  protected CoreInterface $core;
 
   /**
    * System path to the Drupal installation.
