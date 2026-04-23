@@ -17,6 +17,7 @@ use Drupal\Driver\Capability\ModuleCapabilityInterface;
 use Drupal\Driver\Capability\RoleCapabilityInterface;
 use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Capability\WatchdogCapabilityInterface;
+use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
 
 /**
@@ -136,5 +137,16 @@ interface CoreInterface extends
    *   Map of field name to field type.
    */
   public function getEntityFieldTypes(string $entity_type, ?string $bundle = NULL): array;
+
+  /**
+   * Returns the field classifier, lazily instantiating on first access.
+   *
+   * Consumers call into the classifier to ask which F-row a field belongs to
+   * (F1, F2, ..., F9). See 'src/Drupal/Driver/Core/Field/README.md'.
+   *
+   * @return \Drupal\Driver\Core\Field\FieldClassifierInterface
+   *   The classifier instance.
+   */
+  public function classifier(): FieldClassifierInterface;
 
 }

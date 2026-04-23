@@ -196,9 +196,9 @@ class Core implements CoreInterface {
   }
 
   /**
-   * Returns the field classifier, creating it lazily on first use.
+   * {@inheritdoc}
    */
-  protected function classifier(): FieldClassifierInterface {
+  public function classifier(): FieldClassifierInterface {
     if (!$this->fieldClassifier instanceof FieldClassifierInterface) {
       $this->fieldClassifier = $this->createFieldClassifier();
     }
@@ -831,11 +831,13 @@ class Core implements CoreInterface {
    */
   public function getEntityFieldTypes(string $entity_type, ?string $bundle = NULL): array {
     $entity_field_manager = $this->getEntityFieldManager();
+    $bundle_fields = [];
     $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type)
       + $entity_field_manager->getBaseFieldDefinitions($entity_type);
 
     if ($bundle !== NULL) {
-      $fields += $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
+      $bundle_fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
+      $fields += $bundle_fields;
     }
 
     $types = [];
@@ -843,8 +845,12 @@ class Core implements CoreInterface {
     foreach ($fields as $field_name => $field) {
       // See src/Drupal/Driver/Core/Field/README.md. Only F1, F5, F9 enter the
       // expansion pipeline; the OR below names those rows explicitly.
+      // F5 is additionally scoped to the bundle when known - otherwise a
+      // configurable field storage attached only to other bundles would slip
+      // into the type map and blow up in AbstractHandler::__construct().
       $is_base_standard = $this->classifier()->fieldIsBaseStandard($entity_type, $field_name);
-      $is_configurable = $this->classifier()->fieldIsConfigurable($entity_type, $field_name);
+      $is_configurable = $this->classifier()->fieldIsConfigurable($entity_type, $field_name)
+        && ($bundle === NULL || isset($bundle_fields[$field_name]));
       $is_bundle_storage_backed = $bundle !== NULL
         && $this->classifier()->fieldIsBundleStorageBacked($entity_type, $field_name, $bundle);
 

@@ -25,7 +25,7 @@ class DefaultHandler extends AbstractHandler {
         $this->fieldInfo->getName(),
         $this->fieldInfo->getType(),
         $this->fieldInfo->getTargetEntityTypeId(),
-        $this->fieldConfig->getTargetBundle() ?? $this->fieldInfo->getTargetEntityTypeId(),
+        $this->fieldConfig->getTargetBundle() ?? '(none)',
         count($columns),
         implode(', ', array_keys($columns)),
       ));
