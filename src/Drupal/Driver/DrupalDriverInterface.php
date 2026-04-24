@@ -59,13 +59,13 @@ interface DrupalDriverInterface extends
   public function setCore(CoreInterface $core): void;
 
   /**
-   * Determine major Drupal version.
+   * Returns the major Drupal version detected at construction time.
+   *
+   * The version is captured once when the driver is instantiated; the
+   * detection itself may throw BootstrapException, but this getter does not.
    *
    * @return int
    *   The major Drupal version.
-   *
-   * @throws \Drupal\Driver\Exception\BootstrapException
-   *   Thrown when the Drupal version could not be determined.
    *
    * @see drush_drupal_version()
    */
