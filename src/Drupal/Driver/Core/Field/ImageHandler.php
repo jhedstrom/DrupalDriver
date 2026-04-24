@@ -6,24 +6,20 @@ namespace Drupal\Driver\Core\Field;
 
 /**
  * Image field handler for Drupal 8.
+ *
+ * Extends FileHandler to inherit the resolve-existing-managed-file lookup
+ * (by URI or bare basename) and the upload-and-save fallback. Overrides
+ * expand() to return the image-specific shape ('target_id', 'alt', 'title').
  */
-class ImageHandler extends AbstractHandler {
+class ImageHandler extends FileHandler {
 
   /**
    * {@inheritdoc}
    */
   public function expand($values): array {
     $file_path = $values[0];
-    $file_contents = file_get_contents($file_path);
 
-    if ($file_contents === FALSE) {
-      throw new \Exception(sprintf('Error reading file %s.', $file_path));
-    }
-
-    /** @var \Drupal\file\FileInterface $file */
-    $file = \Drupal::service('file.repository')
-      ->writeData($file_contents, 'public://' . uniqid() . '.jpg');
-    $file->save();
+    $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
 
     return [
       'target_id' => $file->id(),
