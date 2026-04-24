@@ -38,9 +38,9 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 | ID  | Field-type shape                   | Representative types                                                                                               | Handler                                                                                                | Rationale                                                                                                                  |
 |-----|------------------------------------|--------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | H1  | Single-column scalar               | `string`, `integer`, `boolean`, `float`, `decimal`, `email`, `telephone`, `uri`, `timestamp`, `created`, `changed` | `DefaultHandler`                                                                                       | `(array) $value` produces the correct `['value' => ...]` shape for all single-column scalars.                              |
-| H2  | Multi-column compound              | `text_with_summary`, `link`, `address`, `daterange`                                                                | Typed handler required (`TextWithSummaryHandler`, `LinkHandler`, `AddressHandler`, `DaterangeHandler`) | `DefaultHandler` must throw if it is invoked on a field type outside H1. See "DefaultHandler loud-failure policy" below.   |
+| H2  | Multi-column compound              | `text`, `text_long`, `text_with_summary`, `link`, `address`, `daterange`                                           | Typed handler required (`TextHandler`, `TextLongHandler`, `TextWithSummaryHandler`, `LinkHandler`, `AddressHandler`, `DaterangeHandler`) | `DefaultHandler` must throw if it is invoked on a field type outside H1. See "DefaultHandler loud-failure policy" below.   |
 | H3  | Simple datetime                    | `datetime`                                                                                                         | `DatetimeHandler`                                                                                      | Parses human date strings to ISO 8601 storage shape.                                                                       |
-| H4  | Entity reference (single target)   | `entity_reference`, `file`, `image`                                                                                | `EntityReferenceHandler`, `FileHandler`, `ImageHandler`                                                | Resolve human-readable label/path/filename to `target_id`. Specialized subclasses for file/image handle alt/title columns. |
+| H4  | Entity reference (single target)   | `entity_reference`, `file`, `image`                                                                                | `EntityReferenceHandler`, `FileHandler`, `ImageHandler`                                                | Resolve human-readable label/path/filename to `target_id`. `FileHandler`/`ImageHandler` first try to reuse an existing managed file at the given URI or bare basename (searching `public://` and `private://`) before falling back to uploading a new file under `public://<uniqid>.<ext>`. |
 | H5  | Entity reference with revision     | `entity_reference_revisions` (paragraphs)                                                                          | `EntityReferenceRevisionsHandler`                                                                      | Composite `target_id` + `target_revision_id`. Resolves target and auto-populates the current revision id.                  |
 | H6  | Typed list (allowed values)        | `list_string`, `list_integer`, `list_float`                                                                        | `ListStringHandler`, `ListIntegerHandler`, `ListFloatHandler`                                          | Allow matching on label or key; store the key.                                                                             |
 | H7  | Typed list (boolean as list)       | `boolean` on list widget                                                                                           | `BooleanHandler`                                                                                       | Accept truthy aliases ("yes", "on", "true", field label).                                                                  |
@@ -77,6 +77,17 @@ In typical scenarios (node title, boolean status, integer counters, etc.)
 nothing changes - `DefaultHandler` works as today. In edge cases where a user
 stubs a compound field that has no registered handler, they get an immediate,
 actionable error instead of silently corrupted data downstream.
+
+## Handler-coverage safety net
+
+`FieldTypeCoverageKernelTest` enumerates every field-type plugin the loaded
+Drupal install exposes and asserts that each one is either (a) backed by a
+registered handler, (b) schema-compatible with `DefaultHandler` (single
+`value` column), or (c) listed in the test's `SKIP` map with a documented
+reason (computed, write-only, composite-lifecycle, etc.). Adding a new core
+field type without a handler or a SKIP entry fails that test, preventing
+the type from silently falling through to `DefaultHandler` and blowing up
+the first time a scenario references it.
 
 ## What each resolution actually means in code
 
