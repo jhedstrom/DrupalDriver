@@ -32,6 +32,26 @@ DrupalExtension integrations) may need updating.
 - `Drupal\Driver\Core\AbstractCore` - merged into `Core`. Custom cores should
   extend `Core` directly and override the methods they need.
 
+### Field classification moved to `FieldClassifier`
+
+The predicates `fieldExists()` and `fieldIsBase()` are gone from `DrupalDriver`
+and `Core`. The empty `FieldCapabilityInterface` is removed entirely. Field
+classification into the nine F-row categories (F1-F9) now lives on
+`Drupal\Driver\Core\Field\FieldClassifierInterface`, implemented by
+`Drupal\Driver\Core\Field\FieldClassifier`. See
+`src/Drupal/Driver/Core/Field/README.md` for the full truth table.
+
+If consumer code called `$driver->fieldExists(...)` or `$driver->fieldIsBase(...)`,
+replace with:
+
+- `fieldExists($type, $name)` → `$core->classifier()->fieldIsConfigurable($type, $name)` (if you were checking for a configurable field)
+- `fieldIsBase($type, $name)` → `$core->classifier()->fieldIsBaseStandard($type, $name)` (or one of the more specific F-row predicates, depending on intent)
+
+The classifier is the single source of truth for field classification; the
+old two-predicate API was insufficient to distinguish F1-F9 correctly and
+caused downstream bugs (notably with computed writable base fields like
+`moderation_state`).
+
 ### DrushDriver no longer supports Content or Field capabilities
 
 `DrushDriver` used to rely on a companion module installed on the
@@ -39,19 +59,17 @@ site-under-test to provide entity CRUD and field introspection over Drush.
 That indirection has been removed: `DrushDriver` now exposes only operations
 that Drush services natively.
 
-`DrushDriverInterface` no longer extends `ContentCapabilityInterface` or
-`FieldCapabilityInterface`. The following methods are gone from `DrushDriver`:
+`DrushDriverInterface` no longer extends `ContentCapabilityInterface`. The
+following methods are gone from `DrushDriver`:
 
 - `nodeCreate`, `nodeDelete`
 - `termCreate`, `termDelete`
 - `entityCreate`, `entityDelete`
-- `fieldExists`, `fieldIsBase`
 
-Consumers that need entity CRUD or field introspection should use
-`DrupalDriver` (which bootstraps Drupal and delegates to `Core`) or
-implement the missing behaviour themselves. Test the capability with
-`instanceof ContentCapabilityInterface` / `instanceof FieldCapabilityInterface`
-before calling.
+Consumers that need entity CRUD should use `DrupalDriver` (which bootstraps
+Drupal and delegates to `Core`) or implement the missing behaviour themselves.
+Test the capability with `instanceof ContentCapabilityInterface` before
+calling.
 
 ### CoreInterface expanded
 
@@ -73,8 +91,6 @@ that capability):
 | `createNode` | `nodeCreate` | Content |
 | `createTerm` | `termCreate` | Content |
 | `createEntity` | `entityCreate` | Content |
-| `isField` | `fieldExists` | Field |
-| `isBaseField` | `fieldIsBase` | Field |
 | `clearCache` | `cacheClear` | Cache |
 | `clearStaticCaches` | `cacheClearStatic` | Cache |
 | `runCron` | `cronRun` | Cron |

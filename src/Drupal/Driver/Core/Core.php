@@ -11,9 +11,10 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Core\Field\FieldClassifier;
+use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
@@ -68,6 +69,11 @@ class Core implements CoreInterface {
    * @var array<string, class-string<FieldHandlerInterface>>
    */
   protected array $fieldHandlers = [];
+
+  /**
+   * Lazily created field classifier instance.
+   */
+  protected ?FieldClassifierInterface $fieldClassifier = NULL;
 
   /**
    * Set up the Core implementation.
@@ -179,10 +185,33 @@ class Core implements CoreInterface {
   }
 
   /**
+   * Creates the field classifier instance for this Core.
+   *
+   * Subclasses override this method when they ship a version-specific
+   * classifier. The default returns the base 'FieldClassifier' which covers
+   * Drupal 10 and 11.
+   */
+  protected function createFieldClassifier(): FieldClassifierInterface {
+    return new FieldClassifier($this->getEntityFieldManager());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function classifier(): FieldClassifierInterface {
+    if (!$this->fieldClassifier instanceof FieldClassifierInterface) {
+      $this->fieldClassifier = $this->createFieldClassifier();
+    }
+
+    return $this->fieldClassifier;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface {
-    $field_types = $this->getEntityFieldTypes($entity_type, [$field_name]);
+    $bundle = $this->resolveBundleFromEntity($entity_type, $entity);
+    $field_types = $this->getEntityFieldTypes($entity_type, $bundle);
 
     if (!isset($field_types[$field_name])) {
       throw new \RuntimeException(sprintf('Field "%s" not found on entity type "%s".', $field_name, $entity_type));
@@ -200,21 +229,26 @@ class Core implements CoreInterface {
    *   The entity type ID.
    * @param \stdClass $entity
    *   Entity object.
-   * @param array<string> $base_fields
-   *   Optional. Define base fields that will be expanded in addition to user
-   *   defined fields.
    */
-  protected function expandEntityFields(string $entity_type, \stdClass $entity, array $base_fields = []): void {
-    // Include any base fields present as properties on the entity object so
-    // their values travel through the field-handler pipeline alongside
-    // configured fields. Without this, base entity-reference fields such as
-    // 'commerce_product.variations' or 'user.roles' would never reach
-    // EntityReferenceHandler and could not be populated from a stub.
-    $base_fields = array_values(array_unique(array_merge($base_fields, $this->detectBaseFieldsOnEntity($entity_type, $entity))));
+  protected function expandEntityFields(string $entity_type, \stdClass $entity): void {
+    $definition = $this->loadEntityTypeDefinition($entity_type);
 
-    $field_types = $this->getEntityFieldTypes($entity_type, $base_fields);
+    // The id key and bundle key identify the record itself and must not pass
+    // through the handler pipeline. For example, on 'commerce_product' the
+    // bundle key 'type' is also a base entity_reference field; expanding it
+    // would resolve the bundle machine name through EntityReferenceHandler
+    // and overwrite the scalar with ['target_id' => ...], corrupting every
+    // subsequent bundle lookup for the same stub.
+    $skip = array_filter([$definition->getKey('id'), $definition->getKey('bundle')]);
+
+    $bundle = $this->resolveBundleFromEntity($entity_type, $entity);
+    $field_types = $this->getEntityFieldTypes($entity_type, $bundle);
 
     foreach (array_keys($field_types) as $field_name) {
+      if (in_array($field_name, $skip, TRUE)) {
+        continue;
+      }
+
       if (isset($entity->$field_name)) {
         $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
           ->expand($entity->$field_name);
@@ -223,39 +257,33 @@ class Core implements CoreInterface {
   }
 
   /**
-   * Returns the names of base fields set as properties on the entity.
+   * Resolves the bundle for an entity stub.
    *
-   * The entity type's id key and bundle key are excluded: they identify the
-   * record itself and must not pass through the field-handler pipeline, where
-   * they would be treated as look-up values (e.g. expanding node's 'type'
-   * through EntityReferenceHandler would try to resolve the bundle string as
-   * a NodeType config entity reference and discard the plain string form).
+   * Consults the entity type's bundle key first, then 'step_bundle', then
+   * falls back to the entity type id (single-bundle entities like 'user'
+   * use the type id as their bundle).
    *
    * @param string $entity_type
    *   The entity type ID.
-   * @param \stdClass $entity
-   *   Entity stub whose properties are inspected.
+   * @param object $entity
+   *   Entity stub.
    *
-   * @return array<string>
-   *   Base field names whose corresponding property is set on the stub.
+   * @return string
+   *   Bundle name. Never empty.
    */
-  protected function detectBaseFieldsOnEntity(string $entity_type, \stdClass $entity): array {
+  protected function resolveBundleFromEntity(string $entity_type, object $entity): string {
     $definition = $this->loadEntityTypeDefinition($entity_type);
-    $skip = array_filter([$definition->getKey('id'), $definition->getKey('bundle')]);
+    $bundle_key = $definition->getKey('bundle');
 
-    $detected = [];
-
-    foreach (array_keys($this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type)) as $field_name) {
-      if (in_array($field_name, $skip, TRUE)) {
-        continue;
-      }
-
-      if (property_exists($entity, $field_name)) {
-        $detected[] = $field_name;
-      }
+    if ($bundle_key && !empty($entity->$bundle_key)) {
+      return (string) $entity->$bundle_key;
     }
 
-    return $detected;
+    if (isset($entity->step_bundle) && $entity->step_bundle !== '') {
+      return (string) $entity->step_bundle;
+    }
+
+    return $entity_type;
   }
 
   /**
@@ -799,37 +827,34 @@ class Core implements CoreInterface {
   }
 
   /**
-   * Expands specified base fields on the entity object.
-   *
-   * @param string $entity_type
-   *   The entity type for which to return the field types.
-   * @param \StdClass $entity
-   *   Entity object.
-   * @param array<string> $base_fields
-   *   Base fields to be expanded in addition to user defined fields.
-   */
-  public function expandEntityBaseFields(string $entity_type, \StdClass $entity, array $base_fields): void {
-    $this->expandEntityFields($entity_type, $entity, $base_fields);
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array {
+  public function getEntityFieldTypes(string $entity_type, ?string $bundle = NULL): array {
     $entity_field_manager = $this->getEntityFieldManager();
-    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type);
+    $bundle_fields = [];
+    $fields = $entity_field_manager->getFieldStorageDefinitions($entity_type)
+      + $entity_field_manager->getBaseFieldDefinitions($entity_type);
 
-    if ($base_fields !== []) {
-      $fields += $entity_field_manager->getBaseFieldDefinitions($entity_type);
+    if ($bundle !== NULL) {
+      $bundle_fields = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
+      $fields += $bundle_fields;
     }
 
     $types = [];
 
     foreach ($fields as $field_name => $field) {
-      $is_configured = $this->fieldExists($entity_type, $field_name);
-      $is_requested_base = in_array($field_name, $base_fields) && $this->fieldIsBase($entity_type, $field_name);
+      // See src/Drupal/Driver/Core/Field/README.md. Only F1, F5, F9 enter the
+      // expansion pipeline; the OR below names those rows explicitly.
+      // F5 is additionally scoped to the bundle when known - otherwise a
+      // configurable field storage attached only to other bundles would slip
+      // into the type map and blow up in AbstractHandler::__construct().
+      $is_base_standard = $this->classifier()->fieldIsBaseStandard($entity_type, $field_name);
+      $is_configurable = $this->classifier()->fieldIsConfigurable($entity_type, $field_name)
+        && ($bundle === NULL || isset($bundle_fields[$field_name]));
+      $is_bundle_storage_backed = $bundle !== NULL
+        && $this->classifier()->fieldIsBundleStorageBacked($entity_type, $field_name, $bundle);
 
-      if (!$is_configured && !$is_requested_base) {
+      if (!$is_base_standard && !$is_configurable && !$is_bundle_storage_backed) {
         continue;
       }
 
@@ -837,22 +862,6 @@ class Core implements CoreInterface {
     }
 
     return $types;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldExists(string $entity_type, string $field_name): bool {
-    $fields = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type);
-    return (isset($fields[$field_name]) && $fields[$field_name] instanceof FieldStorageConfig);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldIsBase(string $entity_type, string $field_name): bool {
-    $base_fields = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type);
-    return isset($base_fields[$field_name]);
   }
 
   /**

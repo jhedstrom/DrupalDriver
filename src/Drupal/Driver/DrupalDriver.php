@@ -23,7 +23,7 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * Drupal core object.
    */
-  public CoreInterface $core;
+  protected CoreInterface $core;
 
   /**
    * System path to the Drupal installation.
@@ -38,7 +38,7 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * Drupal core version.
    */
-  public int $version;
+  protected int $version;
 
   /**
    * Set Drupal root and URI.
@@ -93,34 +93,10 @@ class DrupalDriver implements DrupalDriverInterface {
   }
 
   /**
-   * Determine major Drupal version.
-   *
-   * @return int
-   *   The major Drupal version.
-   *
-   * @throws \Drupal\Driver\Exception\BootstrapException
-   *   Thrown when the Drupal version could not be determined.
-   *
-   * @see drush_drupal_version()
+   * {@inheritdoc}
    */
   public function getDrupalVersion(): int {
     return $this->version;
-  }
-
-  /**
-   * Injects the active Core implementation.
-   *
-   * Consumers override the driver's default Core lookup by passing any
-   * class that implements 'CoreInterface' - the class name and namespace
-   * do not matter. Typically called in a test bootstrap when the project
-   * ships its own Core subclass (e.g. one that registers additional field
-   * handlers in its 'registerDefaultFieldHandlers()' override).
-   *
-   * @param \Drupal\Driver\Core\CoreInterface $core
-   *   The Core instance the driver should delegate to.
-   */
-  public function setCore(CoreInterface $core): void {
-    $this->core = $core;
   }
 
   /**
@@ -155,10 +131,17 @@ class DrupalDriver implements DrupalDriverInterface {
   }
 
   /**
-   * Return current core.
+   * {@inheritdoc}
    */
   public function getCore(): CoreInterface {
     return $this->core;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCore(CoreInterface $core): void {
+    $this->core = $core;
   }
 
   /**
@@ -305,20 +288,6 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function cronRun(): bool {
     return $this->getCore()->cronRun();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldExists(string $entity_type, string $field_name): bool {
-    return $this->getCore()->fieldExists($entity_type, $field_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldIsBase(string $entity_type, string $field_name): bool {
-    return $this->getCore()->fieldIsBase($entity_type, $field_name);
   }
 
   /**

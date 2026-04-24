@@ -197,7 +197,7 @@ class FieldTypeMapCore extends Core {
   /**
    * {@inheritdoc}
    */
-  public function getEntityFieldTypes(string $entity_type, array $base_fields = []): array {
+  public function getEntityFieldTypes(string $entity_type, ?string $bundle = NULL): array {
     return $this->field_type_map;
   }
 

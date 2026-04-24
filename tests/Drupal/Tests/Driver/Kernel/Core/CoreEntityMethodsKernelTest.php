@@ -15,8 +15,9 @@ use PHPUnit\Framework\Attributes\Group;
 /**
  * Kernel test for generic entity methods on Core via the driver.
  *
- * Covers 'entityCreate()', 'entityDelete()' (both the stub-object branch and
- * the loaded-entity branch), and 'expandEntityBaseFields()'.
+ * Covers 'entityCreate()' and 'entityDelete()' (both the stub-object branch
+ * and the loaded-entity branch). Base-field expansion is exercised
+ * implicitly by any 'entityCreate()' call whose stub sets a base field.
  *
  * @group core
  */
@@ -180,19 +181,6 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
 
     $this->assertSame('custom_bundle', $stub->type, 'step_bundle was promoted to the bundle key.');
     $this->assertSame('custom_bundle', $created->bundle());
-  }
-
-  /**
-   * Tests 'expandEntityBaseFields()' invokes the field handler pipeline.
-   */
-  public function testExpandEntityBaseFieldsRewritesBaseField(): void {
-    $stub = (object) ['name' => 'bobbie'];
-
-    // 'name' is a base field on the user entity type; the driver's
-    // DefaultHandler wraps scalar values in a value-array.
-    $this->core->expandEntityBaseFields('user', $stub, ['name']);
-
-    $this->assertSame(['bobbie'], $stub->name);
   }
 
   /**
