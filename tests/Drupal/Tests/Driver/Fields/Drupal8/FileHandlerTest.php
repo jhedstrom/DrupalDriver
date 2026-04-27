@@ -201,7 +201,7 @@ class FileHandlerTest extends TestCase {
    * Creates a file storage stub backed by id and filename indexes.
    *
    * @param array $index
-   *   ['id' => [<id> => <file>], 'filename' => [<name> => <file>]].
+   *   Index keyed by lookup type, e.g. ['id' => [id => file], 'filename' => [name => file]].
    */
   protected function createFileStorage(array $index) {
     return new class($index) {
