@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+  * Fixed `FileHandler` regression introduced in 2.5.0 where referencing an existing managed file by filename failed with `Failed to open stream: No such file or directory`. The handler now reuses an existing managed file when the value matches a numeric file id or `filename` property, falling through to the v2.5.0 path-on-disk import only when the value resolves to a real file.
+
 ## [2.5.0]
 ### Added
   * [#306](https://github.com/jhedstrom/DrupalDriver/pull/306) Added `TimeHandler` for the `time_field` contrib module.
