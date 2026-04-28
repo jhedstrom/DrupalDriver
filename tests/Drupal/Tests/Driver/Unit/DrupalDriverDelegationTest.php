@@ -202,8 +202,10 @@ class DrupalDriverDelegationTest extends TestCase {
     $uri = $reflection->getProperty('uri');
     $uri->setValue($driver, 'default');
 
-    $driver->version = $version;
-    $driver->core = $core;
+    $version_property = $reflection->getProperty('version');
+    $version_property->setValue($driver, $version);
+
+    $driver->setCore($core);
 
     return $driver;
   }
