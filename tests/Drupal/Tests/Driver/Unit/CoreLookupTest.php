@@ -75,7 +75,8 @@ class CoreLookupTest extends TestCase {
     $uri_prop = $reflection->getProperty('uri');
     $uri_prop->setValue($driver, 'default');
 
-    $driver->version = $version;
+    $version_property = $reflection->getProperty('version');
+    $version_property->setValue($driver, $version);
 
     return $driver;
   }

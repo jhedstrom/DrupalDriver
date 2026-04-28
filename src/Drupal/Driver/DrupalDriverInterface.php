@@ -17,6 +17,7 @@ use Drupal\Driver\Capability\ModuleCapabilityInterface;
 use Drupal\Driver\Capability\RoleCapabilityInterface;
 use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Capability\WatchdogCapabilityInterface;
+use Drupal\Driver\Core\CoreInterface;
 
 /**
  * Contract for the full-featured Drupal driver.
@@ -39,5 +40,37 @@ interface DrupalDriverInterface extends
   RoleCapabilityInterface,
   UserCapabilityInterface,
   WatchdogCapabilityInterface {
+
+  /**
+   * Return current core.
+   */
+  public function getCore(): CoreInterface;
+
+  /**
+   * Injects the active Core implementation.
+   *
+   * Consumers override the driver's default Core lookup by passing any
+   * class that implements 'CoreInterface' - the class name and namespace
+   * do not matter. Typically called in a test bootstrap when the project
+   * ships its own Core subclass (e.g. one that registers additional field
+   * handlers in its 'registerDefaultFieldHandlers()' override).
+   *
+   * @param \Drupal\Driver\Core\CoreInterface $core
+   *   The Core instance the driver should delegate to.
+   */
+  public function setCore(CoreInterface $core): void;
+
+  /**
+   * Returns the major Drupal version detected at construction time.
+   *
+   * The version is captured once when the driver is instantiated; the
+   * detection itself may throw BootstrapException, but this getter does not.
+   *
+   * @return int
+   *   The major Drupal version.
+   *
+   * @see drush_drupal_version()
+   */
+  public function getDrupalVersion(): int;
 
 }
