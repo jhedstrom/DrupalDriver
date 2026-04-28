@@ -293,20 +293,6 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function fieldExists(string $entity_type, string $field_name): bool {
-    return $this->getCore()->fieldExists($entity_type, $field_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldIsBase(string $entity_type, string $field_name): bool {
-    return $this->getCore()->fieldIsBase($entity_type, $field_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function languageCreate(\stdClass $language): \stdClass|false {
     return $this->getCore()->languageCreate($language);
   }
