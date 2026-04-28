@@ -7,9 +7,15 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 env:
   CI_COVERAGE_THRESHOLD: '95'
+  # DrupalExtension repo/ref used by the 'extension' job to verify that the
+  # downstream consumer still works against this DrupalDriver HEAD. Override
+  # DRUPALEXTENSION_REF to target a branch with pending API compatibility changes.
+  DRUPALEXTENSION_REPO: jhedstrom/drupalextension
+  DRUPALEXTENSION_REF: feature/drupal-driver-3x
 
 jobs:
   lint:
@@ -194,3 +200,61 @@ jobs:
           path: .logs
           include-hidden-files: true
           if-no-files-found: ignore
+
+  extension:
+    name: DrupalExtension smoke
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout DrupalDriver
+        uses: actions/checkout@v6
+        with:
+          path: drupaldriver
+
+      - name: Checkout DrupalExtension
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ env.DRUPALEXTENSION_REPO }}
+          ref: ${{ env.DRUPALEXTENSION_REF }}
+          path: drupalextension
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: /tmp/composer-cache
+          key: extension-${{ runner.os }}-${{ hashFiles('drupalextension/composer.json') }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, pdo_sqlite
+          coverage: pcov
+
+      - name: Add path repository for DrupalDriver
+        working-directory: drupalextension
+        run: composer config repositories.drupaldriver path ../drupaldriver
+
+      - name: Require local DrupalDriver
+        working-directory: drupalextension
+        run: composer require --no-interaction --no-update 'drupal/drupal-driver:*'
+
+      - name: Install DrupalExtension dependencies
+        working-directory: drupalextension
+        run: composer update --no-interaction --no-progress --with-all-dependencies
+
+      - name: Verify DrupalDriver resolved to the local path copy
+        working-directory: drupalextension
+        run: composer show drupal/drupal-driver
+
+      # BrowserKitFactoryTest mocks getCwd() to '/var/www/html/build' and calls
+      # DrupalFinder on it. Symlink that path to the DrupalExtension checkout
+      # so DrupalFinder locates 'build/web/core' via composer.json scaffolding.
+      - name: Symlink expected Drupal root for BrowserKitFactoryTest
+        run: sudo ln -sfn "${GITHUB_WORKSPACE}/drupalextension" /var/www/html/build
+
+      - name: Run DrupalExtension PHPUnit
+        working-directory: drupalextension
+        run: vendor/bin/phpunit
