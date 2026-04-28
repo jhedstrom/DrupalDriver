@@ -30,6 +30,7 @@ class ImageHandlerTest extends TestCase {
    */
   public function testExpandThrowsWhenFileCannotBeRead(): void {
     $handler = $this->createHandler();
+    $this->setServicesWithNoMatchingFile();
 
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage('Error reading file /tmp/drupal-driver-nonexistent-image.jpg.');
@@ -43,7 +44,7 @@ class ImageHandlerTest extends TestCase {
   public function testExpandReturnsImageValueWithDefaultAltAndTitle(): void {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.jpg';
     file_put_contents($path, 'fixture');
-    $this->setFileRepositoryWithReturnId(7);
+    $this->setServicesWithUploadReturnId(7);
 
     $handler = $this->createHandler();
 
@@ -58,7 +59,7 @@ class ImageHandlerTest extends TestCase {
   public function testExpandPropagatesAltAndTitleExtras(): void {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.jpg';
     file_put_contents($path, 'fixture');
-    $this->setFileRepositoryWithReturnId(12);
+    $this->setServicesWithUploadReturnId(12);
 
     $handler = $this->createHandler();
 
@@ -66,6 +67,38 @@ class ImageHandlerTest extends TestCase {
     $result = $handler->expand($values);
 
     $this->assertSame(['target_id' => 12, 'alt' => 'Alt text', 'title' => 'Title text'], $result);
+  }
+
+  /**
+   * Tests that a full URI reuses an existing managed image file.
+   */
+  public function testExpandReusesExistingManagedImageByUri(): void {
+    $this->setServicesWithMatchingManagedFile(
+      uri: 'public://hero.jpg',
+      file_id: 55,
+    );
+
+    $handler = $this->createHandler();
+
+    $result = $handler->expand(['public://hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title']);
+
+    $this->assertSame(['target_id' => 55, 'alt' => 'Hero', 'title' => 'Hero title'], $result);
+  }
+
+  /**
+   * Tests that a bare basename reuses an existing managed image file.
+   */
+  public function testExpandReusesExistingManagedImageByBareBasename(): void {
+    $this->setServicesWithMatchingManagedFile(
+      uri: 'public://logo.png',
+      file_id: 66,
+    );
+
+    $handler = $this->createHandler();
+
+    $result = $handler->expand(['logo.png']);
+
+    $this->assertSame(['target_id' => 66, 'alt' => NULL, 'title' => NULL], $result);
   }
 
   /**
@@ -77,14 +110,41 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
-   * Registers a mocked file.repository service returning a file with an ID.
-   *
-   * Uses inline anonymous classes because FileInterface and
-   * FileRepositoryInterface ship with the file module rather than drupal/core
-   * and are therefore not guaranteed to be autoloadable in isolation.
+   * Sets up services such that no existing managed file matches any lookup.
    */
-  protected function setFileRepositoryWithReturnId(int $file_id): void {
-    $file = new class($file_id) {
+  protected function setServicesWithNoMatchingFile(): void {
+    $container = new ContainerBuilder();
+    $container->set('entity_type.manager', $this->createEntityTypeManagerReturningNoMatches());
+    \Drupal::setContainer($container);
+  }
+
+  /**
+   * Sets up services for the upload-path branch.
+   */
+  protected function setServicesWithUploadReturnId(int $file_id): void {
+    $container = new ContainerBuilder();
+    $container->set('entity_type.manager', $this->createEntityTypeManagerReturningNoMatches());
+    $container->set('file.repository', $this->createFileRepositoryReturning($this->createFakeFile($file_id)));
+    \Drupal::setContainer($container);
+  }
+
+  /**
+   * Sets up services for the resolve-path branch.
+   */
+  protected function setServicesWithMatchingManagedFile(string $uri, int $file_id): void {
+    $container = new ContainerBuilder();
+    $container->set(
+      'entity_type.manager',
+      $this->createEntityTypeManagerReturningFileAtUri($uri, $this->createFakeFile($file_id)),
+    );
+    \Drupal::setContainer($container);
+  }
+
+  /**
+   * Creates a stand-in File entity that exposes an id() method.
+   */
+  private function createFakeFile(int $file_id): object {
+    return new class($file_id) {
 
       public function __construct(private readonly int $file_id) {}
 
@@ -102,23 +162,103 @@ class ImageHandlerTest extends TestCase {
       }
 
     };
+  }
 
-    $repository = new class($file) {
+  /**
+   * Creates a stand-in file.repository service returning the given file.
+   */
+  private function createFileRepositoryReturning(object $file): object {
+    return new class($file) {
 
-      public function __construct(private readonly mixed $file) {}
+      public function __construct(private readonly object $file) {}
 
       /**
-       * Writes data to a destination and returns the stored file entity.
+       * Returns the pre-configured stored file.
        */
-      public function writeData(string $data, string $destination): mixed {
+      public function writeData(string $data, string $destination): object {
         return $this->file;
       }
 
     };
+  }
 
-    $container = new ContainerBuilder();
-    $container->set('file.repository', $repository);
-    \Drupal::setContainer($container);
+  /**
+   * Creates a stand-in entity_type.manager whose file storage never matches.
+   */
+  private function createEntityTypeManagerReturningNoMatches(): object {
+    $storage = new class {
+
+      /**
+       * Returns an empty match list for every lookup.
+       *
+       * @param array<string, string> $properties
+       *   The lookup properties (ignored in this stub).
+       *
+       * @return array<int, object>
+       *   Always an empty array.
+       */
+      public function loadByProperties(array $properties): array {
+        return [];
+      }
+
+    };
+
+    return new class($storage) {
+
+      public function __construct(private readonly object $storage) {}
+
+      /**
+       * Returns the stub file storage.
+       */
+      public function getStorage(string $entity_type_id): object {
+        return $this->storage;
+      }
+
+    };
+  }
+
+  /**
+   * Creates an entity_type.manager stub whose file storage matches one URI.
+   *
+   * The storage's loadByProperties() returns $file only when called with
+   * exactly ['uri' => $uri], and an empty array for every other lookup.
+   */
+  private function createEntityTypeManagerReturningFileAtUri(string $uri, object $file): object {
+    $storage = new class($uri, $file) {
+
+      public function __construct(private readonly string $uri, private readonly object $file) {}
+
+      /**
+       * Returns the configured file only for lookups matching the stored URI.
+       *
+       * @param array<string, string> $properties
+       *   The loadByProperties() input keyed by property name.
+       *
+       * @return array<int, object>
+       *   Either a single-element list with the configured file, or empty.
+       */
+      public function loadByProperties(array $properties): array {
+        if (($properties['uri'] ?? NULL) === $this->uri) {
+          return [$this->file];
+        }
+
+        return [];
+      }
+
+    };
+
+    return new class($storage) {
+
+      public function __construct(private readonly object $storage) {}
+
+      /**
+       * Returns the stub file storage.
+       */
+      public function getStorage(string $entity_type_id): object {
+        return $this->storage;
+      }
+
+    };
   }
 
 }
