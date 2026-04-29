@@ -238,10 +238,10 @@ class DrushDriver implements DrushDriverInterface {
    * {@inheritdoc}
    */
   public function userCreate(EntityStubInterface $stub): void {
-    $arguments = [sprintf('"%s"', $stub->getValue('name'))];
+    $arguments = [escapeshellarg((string) $stub->getValue('name'))];
     $options = [
-      'password' => $stub->getValue('pass'),
-      'mail' => $stub->getValue('mail'),
+      'password' => escapeshellarg((string) $stub->getValue('pass')),
+      'mail' => escapeshellarg((string) $stub->getValue('mail')),
     ];
 
     $result = $this->drush('user-create', $arguments, $options);
@@ -266,7 +266,7 @@ class DrushDriver implements DrushDriverInterface {
    * {@inheritdoc}
    */
   public function userDelete(EntityStubInterface $stub): void {
-    $arguments = [sprintf('"%s"', $stub->getValue('name'))];
+    $arguments = [escapeshellarg((string) $stub->getValue('name'))];
     $options = [
       'yes' => NULL,
       'delete-content' => NULL,
@@ -279,8 +279,8 @@ class DrushDriver implements DrushDriverInterface {
    */
   public function userAddRole(EntityStubInterface $stub, string $role): void {
     $arguments = [
-      sprintf('"%s"', $role),
-      sprintf('"%s"', $stub->getValue('name')),
+      escapeshellarg($role),
+      escapeshellarg((string) $stub->getValue('name')),
     ];
     $this->drush('user-add-role', $arguments);
   }

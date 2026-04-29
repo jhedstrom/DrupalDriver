@@ -76,7 +76,7 @@ final class EntityStub implements EntityStubInterface {
    * {@inheritdoc}
    */
   public function getValue(string $key, mixed $default = NULL): mixed {
-    return $this->values[$key] ?? $default;
+    return array_key_exists($key, $this->values) ? $this->values[$key] : $default;
   }
 
   /**

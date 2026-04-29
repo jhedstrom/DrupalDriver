@@ -72,13 +72,19 @@ class EntityStubTest extends TestCase {
 
   /**
    * Tests that 'hasValue()' is true even when the stored value is NULL.
+   *
+   * Pinned alongside the 'getValue()' assertion so a future regression that
+   * swaps 'array_key_exists()' back for the null-coalescing operator surfaces
+   * here rather than as a quiet null-vs-default ambiguity downstream.
    */
   public function testHasValueDistinguishesNullFromAbsent(): void {
     $stub = new EntityStub('node', 'article');
     $stub->setValue('title', NULL);
 
     $this->assertTrue($stub->hasValue('title'), 'NULL is a stored value.');
+    $this->assertNull($stub->getValue('title', 'fallback'), 'Stored NULL is preserved by getValue, not replaced by the default.');
     $this->assertFalse($stub->hasValue('promote'), 'unset key is not a stored value.');
+    $this->assertSame('fallback', $stub->getValue('promote', 'fallback'), 'Unset key falls back to the supplied default.');
   }
 
   /**

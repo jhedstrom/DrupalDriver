@@ -58,8 +58,9 @@ interface ContentCapabilityInterface {
    * Creates an entity of any type.
    *
    * @param \Drupal\Driver\Entity\EntityStubInterface $stub
-   *   The entity stub. The 'entity_type' property selects the storage and
-   *   the 'bundle' property selects the bundle.
+   *   The entity stub. Its typed entity type (via 'getEntityType()') selects
+   *   the storage, and its typed bundle (via 'getBundle()') selects the
+   *   bundle. The values bag carries base properties and field values.
    *
    * @return \Drupal\Driver\Entity\EntityStubInterface
    *   The same stub, now flagged as saved with the created entity attached.

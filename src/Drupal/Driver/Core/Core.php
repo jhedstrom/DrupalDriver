@@ -915,7 +915,7 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function languageCreate(EntityStubInterface $stub): EntityStubInterface|false {
-    $langcode = $stub->getValue('langcode');
+    $langcode = $this->resolveLangcode($stub);
 
     // Enable a language only if it has not been enabled already.
     if (ConfigurableLanguage::load($langcode)) {
@@ -933,8 +933,32 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function languageDelete(EntityStubInterface $stub): void {
-    $configurable_language = ConfigurableLanguage::load($stub->getValue('langcode'));
+    $langcode = $this->resolveLangcode($stub);
+    $configurable_language = ConfigurableLanguage::load($langcode);
+
+    if (!$configurable_language instanceof ConfigurableLanguage) {
+      throw new \InvalidArgumentException(sprintf('Cannot delete language "%s" because it does not exist.', $langcode));
+    }
+
     $configurable_language->delete();
+  }
+
+  /**
+   * Returns a non-empty langcode string from the stub or throws.
+   *
+   * Centralises the input validation so 'languageCreate()' and
+   * 'languageDelete()' fail loudly with the same message rather than
+   * passing 'NULL'/'""' through to Drupal's storage layer where they would
+   * surface as opaque storage errors.
+   */
+  protected function resolveLangcode(EntityStubInterface $stub): string {
+    $langcode = $stub->getValue('langcode');
+
+    if (!is_string($langcode) || $langcode === '') {
+      throw new \InvalidArgumentException('Cannot operate on a language without a non-empty "langcode" value.');
+    }
+
+    return $langcode;
   }
 
   /**
@@ -1028,7 +1052,9 @@ class Core implements CoreInterface {
 
       // Fail loudly if the stub does not carry the resolved id key. Without
       // this guard a missing property would silently call storage->load(NULL)
-      // - the delete would appear to succeed while doing nothing.
+      // - 'hasValue()' is intentionally not enough here because a stored NULL
+      // would still pass the "is set" check while triggering a Drupal
+      // assertion error inside 'EntityStorageBase::load()'.
       if (!is_string($id_key) || !$stub->hasValue($id_key)) {
         throw new \InvalidArgumentException(sprintf(
           'Cannot delete an entity of type "%s" from a stub without the id key "%s" set.',
@@ -1037,7 +1063,17 @@ class Core implements CoreInterface {
         ));
       }
 
-      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($stub->getValue($id_key));
+      $id = $stub->getValue($id_key);
+
+      if ((!is_int($id) && !is_string($id)) || $id === '') {
+        throw new \InvalidArgumentException(sprintf(
+          'Cannot delete an entity of type "%s" from a stub with an empty id key "%s".',
+          $entity_type,
+          $id_key,
+        ));
+      }
+
+      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($id);
     }
 
     if ($entity instanceof EntityInterface) {
