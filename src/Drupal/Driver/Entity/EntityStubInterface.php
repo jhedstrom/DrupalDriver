@@ -20,7 +20,7 @@ interface EntityStubInterface {
    * 'block_content', 'entity_test', and others), so it is the fallback when
    * the caller has not specified a bundle key.
    */
-  public const string DEFAULT_BUNDLE_KEY = 'type';
+  public const DEFAULT_BUNDLE_KEY = 'type';
 
   /**
    * Returns the entity type ID (e.g. 'node', 'taxonomy_term', 'user').

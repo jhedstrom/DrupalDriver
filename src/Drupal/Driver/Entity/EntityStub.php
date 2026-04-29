@@ -18,12 +18,12 @@ final class EntityStub implements EntityStubInterface {
   /**
    * The saved Drupal entity object. NULL until the driver populates it.
    */
-  private ?object $entity = NULL;
+  protected ?object $entity = NULL;
 
   /**
    * The bundle key for this entity type ('type', 'vid', 'bundle', etc.).
    */
-  private string $bundleKey = self::DEFAULT_BUNDLE_KEY;
+  protected string $bundleKey = self::DEFAULT_BUNDLE_KEY;
 
   /**
    * Set up the stub.
@@ -36,9 +36,9 @@ final class EntityStub implements EntityStubInterface {
    *   Flat map of base properties and field values, keyed by name.
    */
   public function __construct(
-    private readonly string $entityType,
-    private readonly ?string $bundle = NULL,
-    private array $values = [],
+    protected readonly string $entityType,
+    protected readonly ?string $bundle = NULL,
+    protected array $values = [],
   ) {
   }
 
