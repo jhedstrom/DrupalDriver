@@ -15,7 +15,7 @@ env:
   # downstream consumer still works against this DrupalDriver HEAD. Override
   # DRUPALEXTENSION_REF to target a branch with pending API compatibility changes.
   DRUPALEXTENSION_REPO: jhedstrom/drupalextension
-  DRUPALEXTENSION_REF: feature/drupal-driver-3x
+  DRUPALEXTENSION_REF: feature/337-entity-stub
 
 jobs:
   lint:
