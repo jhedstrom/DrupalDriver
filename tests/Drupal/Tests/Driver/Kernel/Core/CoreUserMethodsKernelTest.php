@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
@@ -69,15 +70,16 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
    */
   public function testUserLifecycle(): void {
     // 1. userCreate assigns a UID and persists the account.
-    $user_data = (object) [
+    $user_stub = new EntityStub('user', NULL, [
       'name' => 'alice',
       'mail' => 'alice@example.com',
       'pass' => 'correcthorsebatterystaple',
-    ];
-    $this->core->userCreate($user_data);
+    ]);
+    $this->core->userCreate($user_stub);
 
-    $this->assertNotEmpty($user_data->uid, 'userCreate populated uid.');
-    $account = User::load($user_data->uid);
+    $this->assertNotEmpty($user_stub->getValue('uid'), 'userCreate populated uid.');
+    $this->assertTrue($user_stub->isSaved(), 'userCreate marked the stub saved.');
+    $account = User::load($user_stub->getValue('uid'));
     $this->assertInstanceOf(User::class, $account);
     $this->assertSame('alice', $account->getAccountName());
     $this->assertSame(1, (int) $account->get('status')->value);
@@ -93,13 +95,13 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
     $this->assertTrue($role->hasPermission($permission));
 
     // 3. userAddRole attaches the role to the user.
-    $this->core->userAddRole($user_data, $role_id);
-    $account = User::load($user_data->uid);
+    $this->core->userAddRole($user_stub, $role_id);
+    $account = User::load($user_stub->getValue('uid'));
     $this->assertContains($role_id, $account->getRoles());
 
     // 4. userDelete removes the user (processes the batch synchronously).
-    $this->core->userDelete($user_data);
-    $this->assertNull(\Drupal::entityTypeManager()->getStorage('user')->loadUnchanged($user_data->uid));
+    $this->core->userDelete($user_stub);
+    $this->assertNull(\Drupal::entityTypeManager()->getStorage('user')->loadUnchanged($user_stub->getValue('uid')));
 
     // 5. roleDelete removes the role.
     $this->core->roleDelete($role_id);
@@ -110,13 +112,17 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
    * Tests that 'userAddRole()' throws when the role name is unknown.
    */
   public function testUserAddRoleThrowsOnUnknownRole(): void {
-    $user = (object) ['name' => 'ghost', 'mail' => 'ghost@example.com', 'pass' => 'pw'];
-    $this->core->userCreate($user);
+    $stub = new EntityStub('user', NULL, [
+      'name' => 'ghost',
+      'mail' => 'ghost@example.com',
+      'pass' => 'pw',
+    ]);
+    $this->core->userCreate($stub);
 
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/No role "nonexistent-role" exists/');
 
-    $this->core->userAddRole($user, 'nonexistent-role');
+    $this->core->userAddRole($stub, 'nonexistent-role');
   }
 
   /**

@@ -6,6 +6,7 @@ namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\entity_test\EntityTestHelper;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\Role;
@@ -59,23 +60,25 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
    * termDelete (tid).
    */
   public function testEntityCreateAndDeleteWithStub(): void {
-    $stub = (object) [
+    $stub = new EntityStub('user', NULL, [
       'name' => 'zoe',
       'mail' => 'zoe@example.com',
       'status' => 1,
-    ];
+    ]);
 
-    $created = $this->core->entityCreate('user', $stub);
+    $created = $this->core->entityCreate($stub);
 
-    $this->assertInstanceOf(EntityInterface::class, $created);
-    $this->assertNotEmpty($stub->uid, 'entityCreate populated the entity type id key (uid) on the stub.');
-    $this->assertFalse(property_exists($stub, 'id'), 'entityCreate did not populate a generic "id" property on the stub.');
+    $this->assertSame($stub, $created, 'entityCreate returns the same stub.');
+    $this->assertTrue($created->isSaved(), 'entityCreate marks the stub saved.');
+    $this->assertInstanceOf(EntityInterface::class, $created->getSavedEntity());
+    $this->assertNotEmpty($stub->getValue('uid'), 'entityCreate populated the entity type id key (uid) on the stub.');
+    $this->assertFalse($stub->hasValue('id'), 'entityCreate did not populate a generic "id" value on the stub.');
 
     // Delete via the stub, which triggers the load-by-id branch of
     // entityDelete() resolved against the entity type id key.
-    $this->core->entityDelete('user', $stub);
+    $this->core->entityDelete($stub);
 
-    $this->assertNull(User::load((int) $stub->uid));
+    $this->assertNull(User::load((int) $stub->getValue('uid')));
   }
 
   /**
@@ -90,15 +93,15 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
    * the field API - observable here by inspecting the stub after create.
    */
   public function testEntityCreateAutoExpandsBaseFieldsSetOnStub(): void {
-    $stub = (object) [
+    $stub = new EntityStub('user', NULL, [
       'name' => 'uma',
       'mail' => 'uma@example.com',
       'status' => 1,
-    ];
+    ]);
 
-    $this->core->entityCreate('user', $stub);
+    $this->core->entityCreate($stub);
 
-    $this->assertSame(['uma'], $stub->name, 'base field "name" was routed through the handler pipeline.');
+    $this->assertSame(['uma'], $stub->getValue('name'), 'base field "name" was routed through the handler pipeline.');
   }
 
   /**
@@ -108,7 +111,7 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches('/stub without the id key "uid" set/');
 
-    $this->core->entityDelete('user', (object) ['name' => 'missing-uid']);
+    $this->core->entityDelete(new EntityStub('user', NULL, ['name' => 'missing-uid']));
   }
 
   /**
@@ -126,24 +129,24 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
   public function testEntityCreateExpandsBaseEntityReferenceFieldOnStub(): void {
     Role::create(['id' => 'editor', 'label' => 'Editor'])->save();
 
-    $stub = (object) [
+    $stub = new EntityStub('user', NULL, [
       'name' => 'vic',
       'mail' => 'vic@example.com',
       'status' => 1,
       'roles' => ['editor'],
-    ];
+    ]);
 
-    $this->core->entityCreate('user', $stub);
+    $this->core->entityCreate($stub);
 
-    $account = User::load((int) $stub->uid);
+    $account = User::load((int) $stub->getValue('uid'));
     $this->assertInstanceOf(User::class, $account);
     $this->assertContains('editor', $account->getRoles(), 'entityCreate routed user.roles through EntityReferenceHandler for base-field expansion.');
   }
 
   /**
-   * Tests 'entityDelete()' when given an already-loaded entity.
+   * Tests 'entityDelete()' uses the saved-entity slot when present.
    */
-  public function testEntityDeleteWithLoadedEntity(): void {
+  public function testEntityDeleteUsesSavedEntity(): void {
     $entity = User::create([
       'name' => 'taylor',
       'mail' => 'taylor@example.com',
@@ -151,18 +154,19 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     ]);
     $entity->save();
 
-    $this->core->entityDelete('user', $entity);
+    $stub = (new EntityStub('user'))->markSaved($entity);
+    $this->core->entityDelete($stub);
 
     $this->assertNull(User::load((int) $entity->id()));
   }
 
   /**
-   * Tests 'entityCreate()' maps 'step_bundle' onto the real bundle key.
+   * Tests 'entityCreate()' promotes the typed bundle onto the bundle key.
    *
-   * 'entity_test' has a 'type' bundle key, so the stub's 'step_bundle'
-   * should be promoted to 'type' before the entity is saved.
+   * 'entity_test' has a 'type' bundle key, so the typed 'bundle' constructor
+   * argument should be promoted to 'type' before the entity is saved.
    */
-  public function testEntityCreateMapsStepBundle(): void {
+  public function testEntityCreatePromotesTypedBundle(): void {
     // Feature-detect the helper the same way the field-handler base does:
     // Drupal 11.2+ ships EntityTestHelper; older cores only expose the
     // procedural helper.
@@ -173,14 +177,11 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
       entity_test_create_bundle('custom_bundle');
     }
 
-    $stub = (object) [
-      'name' => 'sam',
-      'step_bundle' => 'custom_bundle',
-    ];
-    $created = $this->core->entityCreate('entity_test', $stub);
+    $stub = new EntityStub('entity_test', 'custom_bundle', ['name' => 'sam']);
+    $created = $this->core->entityCreate($stub);
 
-    $this->assertSame('custom_bundle', $stub->type, 'step_bundle was promoted to the bundle key.');
-    $this->assertSame('custom_bundle', $created->bundle());
+    $this->assertSame('custom_bundle', $stub->getValue('type'), 'typed bundle was promoted to the bundle key.');
+    $this->assertSame('custom_bundle', $created->getSavedEntity()->bundle());
   }
 
   /**
@@ -195,7 +196,7 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches('/Unknown entity type "nonexistent_type"/');
 
-    $this->core->entityCreate('nonexistent_type', (object) ['name' => 'foo']);
+    $this->core->entityCreate(new EntityStub('nonexistent_type', NULL, ['name' => 'foo']));
   }
 
   /**
@@ -205,7 +206,7 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches('/Unknown entity type "nonexistent_type"/');
 
-    $this->core->entityDelete('nonexistent_type', (object) ['id' => 1]);
+    $this->core->entityDelete(new EntityStub('nonexistent_type', NULL, ['id' => 1]));
   }
 
   /**
@@ -215,15 +216,12 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
    * explicitly created; any supplied bundle therefore triggers the guard.
    */
   public function testEntityCreateRejectsUnknownBundle(): void {
-    $stub = (object) [
-      'type' => 'not_a_real_bundle',
-      'name' => 'orphan',
-    ];
+    $stub = new EntityStub('entity_test', 'not_a_real_bundle', ['name' => 'orphan']);
 
     $this->expectException(\Exception::class);
     $this->expectExceptionMessageMatches("/Cannot create entity because provided bundle 'not_a_real_bundle' does not exist/");
 
-    $this->core->entityCreate('entity_test', $stub);
+    $this->core->entityCreate($stub);
   }
 
 }

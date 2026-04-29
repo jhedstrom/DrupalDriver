@@ -6,6 +6,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\entity_test\EntityTestHelper;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -21,7 +22,7 @@ use Drupal\KernelTests\KernelTestBase;
  *   1. Call attachField() to declare the field under test.
  *   2. Call assertFieldRoundTripViaDriver() with the input value.
  *
- * The round-trip assertion compares the driver-mutated stdClass stub (which
+ * The round-trip assertion compares the driver-mutated EntityStub (which
  * holds whatever the handler emitted from expand()) against the reloaded
  * entity. No assertions are made against expect-specific expand() values;
  * that coverage belongs in per-handler unit tests.
@@ -113,9 +114,9 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
   /**
    * Drives entity creation through the driver and asserts field round-trip.
    *
-   * Core::entityCreate mutates the passed stdClass so its field values reflect
-   * whatever the handler emitted. This method iterates those post-expansion
-   * values and asserts the reloaded entity holds the same data.
+   * Core::entityCreate mutates the passed stub so its values reflect whatever
+   * the handler emitted. This method iterates those post-expansion values and
+   * asserts the reloaded entity holds the same data.
    *
    * For single-property scalar values, the assertion compares against the
    * main field column. For multi-property arrays (e.g. link.uri / link.title),
@@ -129,25 +130,25 @@ abstract class FieldHandlerKernelTestBase extends KernelTestBase {
    *   or an associative array (for multi-property fields).
    */
   protected function assertFieldRoundTripViaDriver(string $field_name, array $values): void {
-    $stub = (object) [
-      'type' => self::BUNDLE,
+    $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'test entity',
       $field_name => $values,
-    ];
+    ]);
 
-    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+    $this->core->entityCreate($stub);
 
     $reloaded = \Drupal::entityTypeManager()
       ->getStorage(self::ENTITY_TYPE)
-      ->loadUnchanged($stub->id);
+      ->loadUnchanged($stub->getValue('id'));
     $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
 
     // Some handlers (e.g. ImageHandler) emit a flat associative array as
     // single-delta shorthand rather than a list of deltas. Normalise that
     // shape into a one-element list so the iteration below is uniform.
-    $deltas = is_array($stub->$field_name) && !array_is_list($stub->$field_name)
-      ? [$stub->$field_name]
-      : $stub->$field_name;
+    $expanded = $stub->getValue($field_name);
+    $deltas = is_array($expanded) && !array_is_list($expanded)
+      ? [$expanded]
+      : $expanded;
 
     // Assert the stored delta count matches the stub so a handler that
     // duplicates or appends deltas cannot slip through the per-delta loop.

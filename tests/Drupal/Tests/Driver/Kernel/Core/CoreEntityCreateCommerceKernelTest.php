@@ -7,6 +7,7 @@ namespace Drupal\Tests\Driver\Kernel\Core;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_store\Entity\Store;
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -96,36 +97,34 @@ class CoreEntityCreateCommerceKernelTest extends KernelTestBase {
    * Tests 'entityCreate()' resolves 'commerce_product.variations'.
    */
   public function testEntityCreateExpandsProductVariationsBaseField(): void {
-    $variation_stub = (object) [
-      'type' => 'default',
+    $variation_stub = new EntityStub('commerce_product_variation', 'default', [
       'sku' => 'SKU-001',
       'title' => 'Test variation',
-    ];
-    $this->core->entityCreate('commerce_product_variation', $variation_stub);
+    ]);
+    $this->core->entityCreate($variation_stub);
 
     $this->assertNotEmpty(
-      $variation_stub->variation_id,
+      $variation_stub->getValue('variation_id'),
       'entityCreate populated commerce_product_variation.variation_id on the stub.',
     );
 
-    $product_stub = (object) [
-      'type' => 'default',
+    $product_stub = new EntityStub('commerce_product', 'default', [
       'title' => 'Test product',
-      'variations' => [$variation_stub->variation_id],
-    ];
-    $this->core->entityCreate('commerce_product', $product_stub);
+      'variations' => [$variation_stub->getValue('variation_id')],
+    ]);
+    $this->core->entityCreate($product_stub);
 
     $this->assertNotEmpty(
-      $product_stub->product_id,
+      $product_stub->getValue('product_id'),
       'entityCreate populated commerce_product.product_id on the stub.',
     );
 
-    $product = Product::load((int) $product_stub->product_id);
+    $product = Product::load((int) $product_stub->getValue('product_id'));
     $this->assertInstanceOf(Product::class, $product);
 
     $variation_ids = array_map(intval(...), $product->getVariationIds());
     $this->assertContains(
-      (int) $variation_stub->variation_id,
+      (int) $variation_stub->getValue('variation_id'),
       $variation_ids,
       'product.variations base entity_reference resolved to the variation id.',
     );

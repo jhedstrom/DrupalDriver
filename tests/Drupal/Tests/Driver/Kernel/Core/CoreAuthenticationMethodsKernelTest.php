@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
@@ -58,7 +59,7 @@ class CoreAuthenticationMethodsKernelTest extends KernelTestBase {
     ]);
     $account->save();
 
-    $user_stub = (object) ['uid' => $account->id()];
+    $user_stub = new EntityStub('user', NULL, ['uid' => $account->id()]);
     $this->core->login($user_stub);
 
     $this->assertSame((int) $account->id(), (int) \Drupal::currentUser()->id());
@@ -77,7 +78,7 @@ class CoreAuthenticationMethodsKernelTest extends KernelTestBase {
     ]);
     $account->save();
 
-    $this->core->login((object) ['uid' => $account->id()]);
+    $this->core->login(new EntityStub('user', NULL, ['uid' => $account->id()]));
     $this->core->logout();
 
     $this->assertSame($original_uid, (int) \Drupal::currentUser()->id());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\entity_test\Entity\EntityTest;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -50,13 +51,12 @@ class ListStringHandlerKernelTest extends FieldHandlerKernelTestBase {
     // Pin the translation explicitly so a regression where the handler stops
     // converting labels to keys is caught even though the mutated-stub
     // round-trip would otherwise pass.
-    $stub = (object) [
-      'type' => 'entity_test',
+    $stub = new EntityStub('entity_test', 'entity_test', [
       'name' => 'pinned',
       'field_status' => ['Active'],
-    ];
-    $this->core->entityCreate('entity_test', $stub);
-    $reloaded = EntityTest::load($stub->id);
+    ]);
+    $this->core->entityCreate($stub);
+    $reloaded = EntityTest::load($stub->getValue('id'));
     $this->assertSame('active', $reloaded->get('field_status')->value);
   }
 

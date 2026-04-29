@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -35,7 +36,7 @@ class AbstractHandlerFieldNotFoundKernelTest extends FieldHandlerKernelTestBase 
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/does not exist on entity type "entity_test"/');
 
-    new DefaultHandler((object) [], self::ENTITY_TYPE, 'field_does_not_exist');
+    new DefaultHandler(new EntityStub(self::ENTITY_TYPE), self::ENTITY_TYPE, 'field_does_not_exist');
   }
 
 }

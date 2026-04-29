@@ -6,6 +6,7 @@ namespace Drupal\Tests\Driver\Unit;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\DrushDriver;
+use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -138,12 +139,12 @@ class DrushDriverMethodsTest extends TestCase {
     $driver = $this->createDriver();
     $driver->drushResponse = "User ID   :   7\nUser name :   bob\n";
 
-    $user = (object) [
+    $user = new EntityStub('user', NULL, [
       'name' => 'bob',
       'pass' => 'pw',
       'mail' => 'bob@ex.co',
       'roles' => ['editor', 'reviewer'],
-    ];
+    ]);
     $driver->userCreate($user);
 
     $commands = array_column($driver->invocations, 'command');
@@ -367,7 +368,7 @@ class DrushDriverMethodsTest extends TestCase {
    * Data provider: method -> args -> first-expected-drush-command.
    */
   public static function dataProviderInvokesDrush(): \Iterator {
-    $user = (object) ['name' => 'alice', 'pass' => 'pw', 'mail' => 'alice@ex.co'];
+    $user = new EntityStub('user', NULL, ['name' => 'alice', 'pass' => 'pw', 'mail' => 'alice@ex.co']);
 
     yield 'userCreate' => ['userCreate', [$user], 'user-create'];
     yield 'userDelete' => ['userDelete', [$user], 'user-cancel'];

@@ -19,6 +19,7 @@ use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
+use Drupal\Driver\Entity\EntityStubInterface;
 
 /**
  * Contract for a Drupal-backed core implementation.
@@ -83,10 +84,10 @@ interface CoreInterface extends
   public function processBatch(): void;
 
   /**
-   * Returns a field handler for the given entity/field.
+   * Returns a field handler for the given stub/field.
    *
-   * @param object $entity
-   *   The entity being processed.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The entity stub providing the bundle context.
    * @param string $entity_type
    *   The entity type ID.
    * @param string $field_name
@@ -95,7 +96,7 @@ interface CoreInterface extends
    * @return \Drupal\Driver\Core\Field\FieldHandlerInterface
    *   The matching field handler.
    */
-  public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface;
+  public function getFieldHandler(EntityStubInterface $stub, string $entity_type, string $field_name): FieldHandlerInterface;
 
   /**
    * Registers a field handler class for a field type.

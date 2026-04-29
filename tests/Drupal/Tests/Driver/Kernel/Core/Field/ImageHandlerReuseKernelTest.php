@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\file\Entity\File;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -55,15 +56,14 @@ class ImageHandlerReuseKernelTest extends FieldHandlerKernelTestBase {
 
     $existing = $this->createManagedFileAt('public://existing-hero.jpg', 'fixture');
 
-    $stub = (object) [
-      'type' => self::BUNDLE,
+    $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'reuse by uri',
       'field_photo' => ['public://existing-hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title'],
-    ];
+    ]);
 
-    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+    $this->core->entityCreate($stub);
 
-    $stored = $this->loadFirstItem($stub->id, 'field_photo');
+    $stored = $this->loadFirstItem($stub->getValue('id'), 'field_photo');
     $this->assertEquals($existing->id(), $stored->get('target_id')->getValue());
     $this->assertSame('Hero', $stored->get('alt')->getValue());
     $this->assertSame('Hero title', $stored->get('title')->getValue());
@@ -78,15 +78,14 @@ class ImageHandlerReuseKernelTest extends FieldHandlerKernelTestBase {
 
     $existing = $this->createManagedFileAt('public://existing-logo.png', 'fixture');
 
-    $stub = (object) [
-      'type' => self::BUNDLE,
+    $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'reuse by basename',
       'field_photo' => ['existing-logo.png'],
-    ];
+    ]);
 
-    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+    $this->core->entityCreate($stub);
 
-    $stored = $this->loadFirstItem($stub->id, 'field_photo');
+    $stored = $this->loadFirstItem($stub->getValue('id'), 'field_photo');
     $this->assertEquals($existing->id(), $stored->get('target_id')->getValue());
     $this->assertSame(1, $this->fileEntityCount());
   }

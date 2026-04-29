@@ -14,6 +14,7 @@ use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldClassifier;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
+use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
@@ -209,8 +210,8 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFieldHandler(object $entity, string $entity_type, string $field_name): FieldHandlerInterface {
-    $bundle = $this->resolveBundleFromEntity($entity_type, $entity);
+  public function getFieldHandler(EntityStubInterface $stub, string $entity_type, string $field_name): FieldHandlerInterface {
+    $bundle = $this->resolveBundle($stub);
     $field_types = $this->getEntityFieldTypes($entity_type, $bundle);
 
     if (!isset($field_types[$field_name])) {
@@ -219,18 +220,17 @@ class Core implements CoreInterface {
 
     $class = $this->fieldHandlers[$field_types[$field_name]] ?? DefaultHandler::class;
 
-    return new $class($entity, $entity_type, $field_name);
+    return new $class($stub, $entity_type, $field_name);
   }
 
   /**
-   * Expands properties on the given entity object to the expected structure.
+   * Expands values on the given stub through the field-handler pipeline.
    *
-   * @param string $entity_type
-   *   The entity type ID.
-   * @param \stdClass $entity
-   *   Entity object.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   Stub whose values bag will be mutated in place.
    */
-  protected function expandEntityFields(string $entity_type, \stdClass $entity): void {
+  protected function expandEntityFields(EntityStubInterface $stub): void {
+    $entity_type = $stub->getEntityType();
     $definition = $this->loadEntityTypeDefinition($entity_type);
 
     // The id key and bundle key identify the record itself and must not pass
@@ -241,7 +241,7 @@ class Core implements CoreInterface {
     // subsequent bundle lookup for the same stub.
     $skip = array_filter([$definition->getKey('id'), $definition->getKey('bundle')]);
 
-    $bundle = $this->resolveBundleFromEntity($entity_type, $entity);
+    $bundle = $this->resolveBundle($stub);
     $field_types = $this->getEntityFieldTypes($entity_type, $bundle);
 
     foreach (array_keys($field_types) as $field_name) {
@@ -249,41 +249,41 @@ class Core implements CoreInterface {
         continue;
       }
 
-      if (isset($entity->$field_name)) {
-        $entity->$field_name = $this->getFieldHandler($entity, $entity_type, $field_name)
-          ->expand($entity->$field_name);
+      if (!$stub->hasValue($field_name)) {
+        continue;
       }
+
+      $expanded = $this->getFieldHandler($stub, $entity_type, $field_name)
+        ->expand($stub->getValue($field_name));
+      $stub->setValue($field_name, $expanded);
     }
   }
 
   /**
    * Resolves the bundle for an entity stub.
    *
-   * Consults the entity type's bundle key first, then 'step_bundle', then
-   * falls back to the entity type id (single-bundle entities like 'user'
-   * use the type id as their bundle).
+   * Consults the entity type's bundle key in the values bag first, then the
+   * typed 'bundle' constructor argument, then falls back to the entity type
+   * id (single-bundle entities like 'user' use the type id as their bundle).
    *
-   * @param string $entity_type
-   *   The entity type ID.
-   * @param object $entity
-   *   Entity stub.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The stub.
    *
    * @return string
    *   Bundle name. Never empty.
    */
-  protected function resolveBundleFromEntity(string $entity_type, object $entity): string {
-    $definition = $this->loadEntityTypeDefinition($entity_type);
-    $bundle_key = $definition->getKey('bundle');
+  protected function resolveBundle(EntityStubInterface $stub): string {
+    $bundle_key = $this->loadEntityTypeDefinition($stub->getEntityType())->getKey('bundle');
 
-    if ($bundle_key && !empty($entity->$bundle_key)) {
-      return (string) $entity->$bundle_key;
+    if ($bundle_key && $stub->hasValue($bundle_key) && !empty($stub->getValue($bundle_key))) {
+      return (string) $stub->getValue($bundle_key);
     }
 
-    if (isset($entity->step_bundle) && $entity->step_bundle !== '') {
-      return (string) $entity->step_bundle;
+    if ($stub->getBundle() !== NULL && $stub->getBundle() !== '') {
+      return $stub->getBundle();
     }
 
-    return $entity_type;
+    return $stub->getEntityType();
   }
 
   /**
@@ -361,10 +361,10 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeCreate(\stdClass $node): object {
-    // Throw an exception if the node type is missing or does not exist.
-    /** @var \stdClass $node */
-    if (!isset($node->type) || !$node->type) {
+  public function nodeCreate(EntityStubInterface $stub): EntityStubInterface {
+    $type = $stub->getBundle() ?? $stub->getValue('type');
+
+    if (empty($type)) {
       throw new \Exception("Cannot create content because it is missing the required property 'type'.");
     }
 
@@ -372,34 +372,47 @@ class Core implements CoreInterface {
     $bundle_info = \Drupal::service('entity_type.bundle.info');
     $bundles = $bundle_info->getBundleInfo('node');
 
-    if (!in_array($node->type, array_keys($bundles))) {
-      throw new \Exception(sprintf('Cannot create content because provided content type %s does not exist.', $node->type));
+    if (!in_array($type, array_keys($bundles))) {
+      throw new \Exception(sprintf('Cannot create content because provided content type %s does not exist.', $type));
+    }
+
+    // 'Node::create()' reads the bundle from the 'type' values key, so make
+    // sure it carries the resolved bundle even when the caller only set it
+    // through the typed 'bundle' constructor argument.
+    if (!$stub->hasValue('type')) {
+      $stub->setValue('type', $type);
     }
 
     // If 'author' is set, remap it to 'uid'.
-    if (isset($node->author)) {
+    if ($stub->hasValue('author')) {
       /** @var \Drupal\user\Entity\User|null $user */
-      $user = user_load_by_name($node->author);
+      $user = user_load_by_name($stub->getValue('author'));
 
       if ($user) {
-        $node->uid = $user->id();
+        $stub->setValue('uid', $user->id());
       }
     }
 
-    $this->expandEntityFields('node', $node);
-    $entity = Node::create((array) $node);
+    $this->expandEntityFields($stub);
+    $entity = Node::create($stub->getValues());
     $entity->save();
 
-    $node->nid = $entity->id();
+    $stub->setValue('nid', $entity->id());
+    $stub->markSaved($entity);
 
-    return $node;
+    return $stub;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete(object $node): void {
-    $node = $node instanceof NodeInterface ? $node : Node::load($node->nid);
+  public function nodeDelete(EntityStubInterface $stub): void {
+    $node = $stub->isSaved() ? $stub->getSavedEntity() : NULL;
+
+    if (!$node instanceof NodeInterface) {
+      $node = Node::load($stub->getValue('nid'));
+    }
+
     if ($node instanceof NodeInterface) {
       $node->delete();
     }
@@ -501,18 +514,19 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user): void {
+  public function userCreate(EntityStubInterface $stub): void {
     // Default status to TRUE if not explicitly creating a blocked user.
-    if (!isset($user->status)) {
-      $user->status = 1;
+    if (!$stub->hasValue('status')) {
+      $stub->setValue('status', 1);
     }
 
-    $this->expandEntityFields('user', $user);
-    $account = \Drupal::entityTypeManager()->getStorage('user')->create((array) $user);
+    $this->expandEntityFields($stub);
+    $account = \Drupal::entityTypeManager()->getStorage('user')->create($stub->getValues());
     $account->save();
 
-    // Store UID.
-    $user->uid = $account->id();
+    // Store UID and the saved account.
+    $stub->setValue('uid', $account->id());
+    $stub->markSaved($account);
   }
 
   /**
@@ -621,8 +635,8 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function userDelete(\stdClass $user): void {
-    user_cancel([], $user->uid, 'user_cancel_delete');
+  public function userDelete(EntityStubInterface $stub): void {
+    user_cancel([], $this->resolveUid($stub), 'user_cancel_delete');
     // user_cancel() schedules the deletion via batch; drive the batch to
     // completion so callers see synchronous deletion.
     $this->processBatch();
@@ -631,7 +645,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, string $role): void {
+  public function userAddRole(EntityStubInterface $stub, string $role): void {
     // Allow both machine and human role names.
     $query = \Drupal::entityQuery('user_role');
     $conditions = $query->orConditionGroup()
@@ -643,9 +657,20 @@ class Core implements CoreInterface {
       throw new \RuntimeException(sprintf('No role "%s" exists.', $role));
     }
 
-    $account = User::load($user->uid);
+    $account = User::load($this->resolveUid($stub));
     $account->addRole(reset($rids));
     $account->save();
+  }
+
+  /**
+   * Resolves the user id from a stub.
+   *
+   * Prefers the saved-entity slot - that is the only authoritative source
+   * after 'userCreate()' - then falls back to a 'uid' value the caller may
+   * have populated manually.
+   */
+  protected function resolveUid(EntityStubInterface $stub): int|string|null {
+    return $stub->getId() ?? $stub->getValue('uid');
   }
 
   /**
@@ -707,46 +732,53 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function termCreate(\stdClass $term): \stdClass {
-    if (empty($term->vocabulary_machine_name)) {
+  public function termCreate(EntityStubInterface $stub): EntityStubInterface {
+    $vocabulary = $stub->getBundle() ?? $stub->getValue('vocabulary_machine_name');
+
+    if (empty($vocabulary)) {
       throw new \InvalidArgumentException("Cannot create term because it is missing the required property 'vocabulary_machine_name'.");
     }
 
-    if (Vocabulary::load($term->vocabulary_machine_name) === NULL) {
-      throw new \InvalidArgumentException(sprintf("Cannot create term because vocabulary '%s' does not exist.", $term->vocabulary_machine_name));
+    if (Vocabulary::load($vocabulary) === NULL) {
+      throw new \InvalidArgumentException(sprintf("Cannot create term because vocabulary '%s' does not exist.", $vocabulary));
     }
 
-    $term->vid = $term->vocabulary_machine_name;
+    $stub->setValue('vid', $vocabulary);
 
-    if (!empty($term->parent)) {
-      $parent_name = $term->parent;
+    if ($stub->hasValue('parent') && !empty($stub->getValue('parent'))) {
+      $parent_name = $stub->getValue('parent');
       $parent_terms = \Drupal::entityQuery('taxonomy_term')
         ->accessCheck(FALSE)
         ->condition('name', $parent_name)
-        ->condition('vid', $term->vocabulary_machine_name)
+        ->condition('vid', $vocabulary)
         ->execute();
 
       if (empty($parent_terms)) {
-        throw new \InvalidArgumentException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $term->vocabulary_machine_name));
+        throw new \InvalidArgumentException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vocabulary));
       }
 
-      $term->parent = reset($parent_terms);
+      $stub->setValue('parent', reset($parent_terms));
     }
 
-    $this->expandEntityFields('taxonomy_term', $term);
-    $entity = Term::create((array) $term);
+    $this->expandEntityFields($stub);
+    $entity = Term::create($stub->getValues());
     $entity->save();
 
-    $term->tid = $entity->id();
+    $stub->setValue('tid', $entity->id());
+    $stub->markSaved($entity);
 
-    return $term;
+    return $stub;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function termDelete(object $term): bool {
-    $term = $term instanceof TermInterface ? $term : Term::load($term->tid);
+  public function termDelete(EntityStubInterface $stub): bool {
+    $term = $stub->isSaved() ? $stub->getSavedEntity() : NULL;
+
+    if (!$term instanceof TermInterface) {
+      $term = Term::load($stub->getValue('tid'));
+    }
 
     if (!$term instanceof TermInterface) {
       return FALSE;
@@ -760,49 +792,54 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function blockPlace(\stdClass $block): object {
+  public function blockPlace(EntityStubInterface $stub): EntityStubInterface {
     // Generate a placement id when the caller did not supply one, matching
     // the 'nodeCreate'/'roleCreate' convention of tolerating ID-less stubs.
     // Block config entities require an id, so we must fill it before save.
-    if (!isset($block->id) || $block->id === '') {
-      $block->id = strtolower($this->random->name(8, TRUE));
+    if (!$stub->hasValue('id') || $stub->getValue('id') === '') {
+      $stub->setValue('id', strtolower($this->random->name(8, TRUE)));
     }
 
-    $placement = \Drupal::entityTypeManager()->getStorage('block')->create((array) $block);
+    $placement = \Drupal::entityTypeManager()->getStorage('block')->create($stub->getValues());
     $placement->save();
+    $stub->markSaved($placement);
 
-    return $placement;
+    return $stub;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockDelete(object $block): void {
-    if (!$block instanceof EntityInterface) {
-      if (!isset($block->id) || !is_string($block->id)) {
+  public function blockDelete(EntityStubInterface $stub): void {
+    $entity = $stub->isSaved() ? $stub->getSavedEntity() : NULL;
+
+    if (!$entity instanceof EntityInterface) {
+      $id = $stub->getValue('id');
+
+      if (!is_string($id) || $id === '') {
         throw new \InvalidArgumentException('Cannot delete a block placement from a stub without a string "id" property.');
       }
 
-      $block = \Drupal::entityTypeManager()->getStorage('block')->load($block->id);
+      $entity = \Drupal::entityTypeManager()->getStorage('block')->load($id);
     }
 
-    if ($block instanceof EntityInterface) {
-      $block->delete();
+    if ($entity instanceof EntityInterface) {
+      $entity->delete();
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockContentCreate(\stdClass $block_content): object {
-    return $this->entityCreate('block_content', $block_content);
+  public function blockContentCreate(EntityStubInterface $stub): EntityStubInterface {
+    return $this->entityCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockContentDelete(object $block_content): void {
-    $this->entityDelete('block_content', $block_content);
+  public function blockContentDelete(EntityStubInterface $stub): void {
+    $this->entityDelete($stub);
   }
 
   /**
@@ -877,22 +914,26 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function languageCreate(\stdClass $language): \stdClass|false {
+  public function languageCreate(EntityStubInterface $stub): EntityStubInterface|false {
+    $langcode = $stub->getValue('langcode');
+
     // Enable a language only if it has not been enabled already.
-    if (ConfigurableLanguage::load($language->langcode)) {
+    if (ConfigurableLanguage::load($langcode)) {
       return FALSE;
     }
 
-    ConfigurableLanguage::createFromLangcode($language->langcode)->save();
+    $entity = ConfigurableLanguage::createFromLangcode($langcode);
+    $entity->save();
+    $stub->markSaved($entity);
 
-    return $language;
+    return $stub;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function languageDelete(\stdClass $language): void {
-    $configurable_language = ConfigurableLanguage::load($language->langcode);
+  public function languageDelete(EntityStubInterface $stub): void {
+    $configurable_language = ConfigurableLanguage::load($stub->getValue('langcode'));
     $configurable_language->delete();
   }
 
@@ -934,7 +975,9 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityCreate(string $entity_type, \stdClass $entity): EntityInterface {
+  public function entityCreate(EntityStubInterface $stub): EntityStubInterface {
+    $entity_type = $stub->getEntityType();
+
     if ($entity_type === '') {
       throw new \InvalidArgumentException('You must specify an entity type to create an entity.');
     }
@@ -943,45 +986,50 @@ class Core implements CoreInterface {
     $bundle_key = $definition->getKey('bundle');
     $id_key = $definition->getKey('id');
 
-    // If the bundle field is empty, put the inferred bundle value in it.
-    if (!isset($entity->$bundle_key) && isset($entity->step_bundle)) {
-      $entity->$bundle_key = $entity->step_bundle;
+    // Sync the typed bundle property into the values bag so
+    // storage->create() picks it up under the entity type's own bundle key.
+    if ($bundle_key && !$stub->hasValue($bundle_key) && $stub->getBundle() !== NULL) {
+      $stub->setValue($bundle_key, $stub->getBundle());
     }
 
     // Throw an exception if a bundle is specified but does not exist.
-    if (isset($entity->$bundle_key) && ($entity->$bundle_key !== NULL)) {
+    if ($bundle_key && $stub->hasValue($bundle_key) && $stub->getValue($bundle_key) !== NULL) {
       /** @var \Drupal\Core\Entity\EntityTypeBundleInfo $bundle_info */
       $bundle_info = \Drupal::service('entity_type.bundle.info');
       $bundles = $bundle_info->getBundleInfo($entity_type);
 
-      if (!in_array($entity->$bundle_key, array_keys($bundles))) {
-        throw new \InvalidArgumentException(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $entity->$bundle_key));
+      if (!in_array($stub->getValue($bundle_key), array_keys($bundles))) {
+        throw new \InvalidArgumentException(sprintf("Cannot create entity because provided bundle '%s' does not exist.", $stub->getValue($bundle_key)));
       }
     }
 
-    $this->expandEntityFields($entity_type, $entity);
-    $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create((array) $entity);
+    $this->expandEntityFields($stub);
+    $created_entity = \Drupal::entityTypeManager()->getStorage($entity_type)->create($stub->getValues());
     $created_entity->save();
 
     // Mutate the stub under the entity type's own id key ('uid' for user,
     // 'nid' for node, 'tid' for term, 'id' for entity_test and others), so
     // callers can round-trip it back through entityDelete().
-    $entity->$id_key = $created_entity->id();
+    $stub->setValue($id_key, $created_entity->id());
+    $stub->markSaved($created_entity);
 
-    return $created_entity;
+    return $stub;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityDelete(string $entity_type, object $entity): void {
+  public function entityDelete(EntityStubInterface $stub): void {
+    $entity_type = $stub->getEntityType();
+    $entity = $stub->isSaved() ? $stub->getSavedEntity() : NULL;
+
     if (!$entity instanceof EntityInterface) {
       $id_key = $this->loadEntityTypeDefinition($entity_type)->getKey('id');
 
       // Fail loudly if the stub does not carry the resolved id key. Without
       // this guard a missing property would silently call storage->load(NULL)
       // - the delete would appear to succeed while doing nothing.
-      if (!is_string($id_key) || !isset($entity->$id_key)) {
+      if (!is_string($id_key) || !$stub->hasValue($id_key)) {
         throw new \InvalidArgumentException(sprintf(
           'Cannot delete an entity of type "%s" from a stub without the id key "%s" set.',
           $entity_type,
@@ -989,7 +1037,7 @@ class Core implements CoreInterface {
         ));
       }
 
-      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity->$id_key);
+      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($stub->getValue($id_key));
     }
 
     if ($entity instanceof EntityInterface) {
@@ -1128,8 +1176,8 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function login(\stdClass $user): void {
-    $account = User::load($user->uid);
+  public function login(EntityStubInterface $stub): void {
+    $account = User::load($this->resolveUid($stub));
     \Drupal::service('account_switcher')->switchTo($account);
   }
 

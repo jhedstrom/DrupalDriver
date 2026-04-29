@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
@@ -61,40 +62,41 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
     $parent = Term::create(['name' => 'Frameworks', 'vid' => 'tags']);
     $parent->save();
 
-    $child_stub = (object) [
-      'vocabulary_machine_name' => 'tags',
+    $child_stub = new EntityStub('taxonomy_term', 'tags', [
       'name' => 'Drupal',
       'parent' => 'Frameworks',
-    ];
+    ]);
     $result = $this->core->termCreate($child_stub);
 
-    $this->assertNotEmpty($result->tid);
-    $child = Term::load($result->tid);
+    $this->assertSame($child_stub, $result);
+    $this->assertNotEmpty($result->getValue('tid'));
+    $this->assertTrue($result->isSaved());
+    $child = Term::load($result->getValue('tid'));
     $this->assertInstanceOf(Term::class, $child);
     $this->assertSame('Drupal', $child->getName());
     $this->assertSame((int) $parent->id(), (int) $child->get('parent')->target_id, 'parent name was resolved to tid.');
 
     $this->assertTrue($this->core->termDelete($result));
-    $this->assertNull(Term::load($result->tid));
+    $this->assertNull(Term::load($result->getValue('tid')));
   }
 
   /**
    * Tests that termDelete returns FALSE for a non-existent term.
    */
   public function testTermDeleteReturnsFalseForMissingTerm(): void {
-    $missing = (object) ['tid' => 99999];
+    $missing = new EntityStub('taxonomy_term', 'tags', ['tid' => 99999]);
 
     $this->assertFalse($this->core->termDelete($missing));
   }
 
   /**
-   * Tests that termCreate rejects a stub missing 'vocabulary_machine_name'.
+   * Tests that termCreate rejects a stub missing the vocabulary.
    */
   public function testTermCreateRejectsMissingVocabularyProperty(): void {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches("/missing the required property 'vocabulary_machine_name'/");
 
-    $this->core->termCreate((object) ['name' => 'Orphan']);
+    $this->core->termCreate(new EntityStub('taxonomy_term', NULL, ['name' => 'Orphan']));
   }
 
   /**
@@ -104,10 +106,9 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches("/vocabulary 'ghosts' does not exist/");
 
-    $this->core->termCreate((object) [
-      'vocabulary_machine_name' => 'ghosts',
+    $this->core->termCreate(new EntityStub('taxonomy_term', 'ghosts', [
       'name' => 'Casper',
-    ]);
+    ]));
   }
 
   /**
@@ -121,11 +122,10 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches("/parent term 'Missing' does not exist in vocabulary 'tags'/");
 
-    $this->core->termCreate((object) [
-      'vocabulary_machine_name' => 'tags',
+    $this->core->termCreate(new EntityStub('taxonomy_term', 'tags', [
       'name' => 'Orphaned',
       'parent' => 'Missing',
-    ]);
+    ]));
   }
 
 }

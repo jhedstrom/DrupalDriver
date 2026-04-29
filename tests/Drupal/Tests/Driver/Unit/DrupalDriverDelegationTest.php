@@ -7,6 +7,7 @@ namespace Drupal\Tests\Driver\Unit;
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Core\CoreInterface;
 use Drupal\Driver\DrupalDriver;
+use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -100,7 +101,7 @@ class DrupalDriverDelegationTest extends TestCase {
     $core = $this->createMock(CoreInterface::class);
     $driver = $this->createDriverWithCore($core);
 
-    $driver->login(new \stdClass());
+    $driver->login(new EntityStub('user'));
 
     $this->addToAssertionCount(1);
   }
@@ -142,11 +143,13 @@ class DrupalDriverDelegationTest extends TestCase {
    * Data provider listing every delegating method and its arguments.
    */
   public static function dataProviderForwardsToCore(): \Iterator {
-    $user = new \stdClass();
-    $node = new \stdClass();
-    $term = new \stdClass();
-    $entity = new \stdClass();
-    $language = new \stdClass();
+    $user = new EntityStub('user');
+    $node = new EntityStub('node', 'article');
+    $term = new EntityStub('taxonomy_term', 'tags');
+    $entity = new EntityStub('node', 'article');
+    $language = new EntityStub('language', NULL, ['langcode' => 'fr']);
+    $block = new EntityStub('block');
+    $block_content = new EntityStub('block_content', 'basic');
 
     yield 'userCreate' => ['userCreate', [$user], 'userCreate'];
     yield 'userDelete' => ['userDelete', [$user], 'userDelete'];
@@ -168,12 +171,12 @@ class DrupalDriverDelegationTest extends TestCase {
     yield 'configGet' => ['configGet', ['system.site', 'name'], 'configGet'];
     yield 'configGetOriginal' => ['configGetOriginal', ['system.site', 'name'], 'configGetOriginal'];
     yield 'configSet' => ['configSet', ['system.site', 'name', 'v'], 'configSet'];
-    yield 'entityCreate' => ['entityCreate', ['node', $entity], 'entityCreate'];
-    yield 'entityDelete' => ['entityDelete', ['node', $entity], 'entityDelete'];
-    yield 'blockPlace' => ['blockPlace', [new \stdClass()], 'blockPlace'];
-    yield 'blockDelete' => ['blockDelete', [new \stdClass()], 'blockDelete'];
-    yield 'blockContentCreate' => ['blockContentCreate', [new \stdClass()], 'blockContentCreate'];
-    yield 'blockContentDelete' => ['blockContentDelete', [new \stdClass()], 'blockContentDelete'];
+    yield 'entityCreate' => ['entityCreate', [$entity], 'entityCreate'];
+    yield 'entityDelete' => ['entityDelete', [$entity], 'entityDelete'];
+    yield 'blockPlace' => ['blockPlace', [$block], 'blockPlace'];
+    yield 'blockDelete' => ['blockDelete', [$block], 'blockDelete'];
+    yield 'blockContentCreate' => ['blockContentCreate', [$block_content], 'blockContentCreate'];
+    yield 'blockContentDelete' => ['blockContentDelete', [$block_content], 'blockContentDelete'];
     yield 'mailStartCollecting' => ['mailStartCollecting', [], 'mailStartCollecting'];
     yield 'mailStopCollecting' => ['mailStopCollecting', [], 'mailStopCollecting'];
     yield 'mailGet' => ['mailGet', [], 'mailGet'];
