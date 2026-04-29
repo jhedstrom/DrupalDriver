@@ -237,9 +237,13 @@ jobs:
         working-directory: drupalextension
         run: composer config repositories.drupaldriver path ../drupaldriver
 
+      - name: Allow dev stability for the local DrupalDriver path repo
+        working-directory: drupalextension
+        run: composer config minimum-stability dev
+
       - name: Require local DrupalDriver
         working-directory: drupalextension
-        run: composer require --no-interaction --no-update 'drupal/drupal-driver:*'
+        run: composer require --no-interaction --no-update 'drupal/drupal-driver:*@dev'
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
