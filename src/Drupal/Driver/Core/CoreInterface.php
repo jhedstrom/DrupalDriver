@@ -142,12 +142,12 @@ interface CoreInterface extends
   /**
    * Returns the field classifier, lazily instantiating on first access.
    *
-   * Consumers call into the classifier to ask which F-row a field belongs to
-   * (F1, F2, ..., F9). See 'src/Drupal/Driver/Core/Field/README.md'.
+   * Consumers call into the field classifier to ask which F-row a field belongs
+   * to (F1, F2, ..., F9). See 'src/Drupal/Driver/Core/Field/README.md'.
    *
    * @return \Drupal\Driver\Core\Field\FieldClassifierInterface
-   *   The classifier instance.
+   *   The field classifier instance.
    */
-  public function classifier(): FieldClassifierInterface;
+  public function getFieldClassifier(): FieldClassifierInterface;
 
 }

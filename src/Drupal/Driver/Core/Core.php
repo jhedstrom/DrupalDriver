@@ -199,7 +199,7 @@ class Core implements CoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function classifier(): FieldClassifierInterface {
+  public function getFieldClassifier(): FieldClassifierInterface {
     if (!$this->fieldClassifier instanceof FieldClassifierInterface) {
       $this->fieldClassifier = $this->createFieldClassifier();
     }
@@ -885,11 +885,11 @@ class Core implements CoreInterface {
       // F5 is additionally scoped to the bundle when known - otherwise a
       // configurable field storage attached only to other bundles would slip
       // into the type map and blow up in AbstractHandler::__construct().
-      $is_base_standard = $this->classifier()->fieldIsBaseStandard($entity_type, $field_name);
-      $is_configurable = $this->classifier()->fieldIsConfigurable($entity_type, $field_name)
+      $is_base_standard = $this->getFieldClassifier()->fieldIsBaseStandard($entity_type, $field_name);
+      $is_configurable = $this->getFieldClassifier()->fieldIsConfigurable($entity_type, $field_name)
         && ($bundle === NULL || isset($bundle_fields[$field_name]));
       $is_bundle_storage_backed = $bundle !== NULL
-        && $this->classifier()->fieldIsBundleStorageBacked($entity_type, $field_name, $bundle);
+        && $this->getFieldClassifier()->fieldIsBundleStorageBacked($entity_type, $field_name, $bundle);
 
       if (!$is_base_standard && !$is_configurable && !$is_bundle_storage_backed) {
         continue;
