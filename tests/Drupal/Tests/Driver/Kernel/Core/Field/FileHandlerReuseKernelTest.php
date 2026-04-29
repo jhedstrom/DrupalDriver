@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\file\Entity\File;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -54,15 +55,14 @@ class FileHandlerReuseKernelTest extends FieldHandlerKernelTestBase {
 
     $existing = $this->createManagedFileAt('public://preexisting-uri.txt', 'hello uri');
 
-    $stub = (object) [
-      'type' => self::BUNDLE,
+    $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'with existing file',
       'field_attachment' => ['public://preexisting-uri.txt'],
-    ];
+    ]);
 
-    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+    $this->core->entityCreate($stub);
 
-    $this->assertEquals($existing->id(), $this->loadFieldTargetId($stub->id, 'field_attachment'));
+    $this->assertEquals($existing->id(), $this->loadFieldTargetId($stub->getValue('id'), 'field_attachment'));
     $this->assertSame(1, $this->fileEntityCount(), 'A second managed file was created instead of reusing the existing one.');
   }
 
@@ -74,15 +74,14 @@ class FileHandlerReuseKernelTest extends FieldHandlerKernelTestBase {
 
     $existing = $this->createManagedFileAt('public://preexisting-basename.txt', 'hello basename');
 
-    $stub = (object) [
-      'type' => self::BUNDLE,
+    $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'with existing file by basename',
       'field_attachment' => ['preexisting-basename.txt'],
-    ];
+    ]);
 
-    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+    $this->core->entityCreate($stub);
 
-    $this->assertEquals($existing->id(), $this->loadFieldTargetId($stub->id, 'field_attachment'));
+    $this->assertEquals($existing->id(), $this->loadFieldTargetId($stub->getValue('id'), 'field_attachment'));
     $this->assertSame(1, $this->fileEntityCount());
   }
 

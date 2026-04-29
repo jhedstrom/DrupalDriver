@@ -8,6 +8,7 @@ use Drupal\Component\Utility\Random;
 use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
 use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core\CoreInterface;
+use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
 
 /**
@@ -159,11 +160,11 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function login(\stdClass $user): void {
+  public function login(EntityStubInterface $stub): void {
     $auth = $this->getAuthCore();
 
     if ($auth instanceof AuthenticationCapabilityInterface) {
-      $auth->login($user);
+      $auth->login($stub);
     }
   }
 
@@ -216,71 +217,71 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function nodeCreate(\stdClass $node): object {
-    return $this->getCore()->nodeCreate($node);
+  public function nodeCreate(EntityStubInterface $stub): EntityStubInterface {
+    return $this->getCore()->nodeCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function nodeDelete(object $node): void {
-    $this->getCore()->nodeDelete($node);
+  public function nodeDelete(EntityStubInterface $stub): void {
+    $this->getCore()->nodeDelete($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function termCreate(\stdClass $term): object {
-    return $this->getCore()->termCreate($term);
+  public function termCreate(EntityStubInterface $stub): EntityStubInterface {
+    return $this->getCore()->termCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function termDelete(object $term): bool {
-    return $this->getCore()->termDelete($term);
+  public function termDelete(EntityStubInterface $stub): bool {
+    return $this->getCore()->termDelete($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityCreate(string $entity_type, \stdClass $entity): object {
-    return $this->getCore()->entityCreate($entity_type, $entity);
+  public function entityCreate(EntityStubInterface $stub): EntityStubInterface {
+    return $this->getCore()->entityCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityDelete(string $entity_type, object $entity): void {
-    $this->getCore()->entityDelete($entity_type, $entity);
+  public function entityDelete(EntityStubInterface $stub): void {
+    $this->getCore()->entityDelete($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockPlace(\stdClass $block): object {
-    return $this->getCore()->blockPlace($block);
+  public function blockPlace(EntityStubInterface $stub): EntityStubInterface {
+    return $this->getCore()->blockPlace($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockDelete(object $block): void {
-    $this->getCore()->blockDelete($block);
+  public function blockDelete(EntityStubInterface $stub): void {
+    $this->getCore()->blockDelete($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockContentCreate(\stdClass $block_content): object {
-    return $this->getCore()->blockContentCreate($block_content);
+  public function blockContentCreate(EntityStubInterface $stub): EntityStubInterface {
+    return $this->getCore()->blockContentCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockContentDelete(object $block_content): void {
-    $this->getCore()->blockContentDelete($block_content);
+  public function blockContentDelete(EntityStubInterface $stub): void {
+    $this->getCore()->blockContentDelete($stub);
   }
 
   /**
@@ -293,15 +294,15 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function languageCreate(\stdClass $language): \stdClass|false {
-    return $this->getCore()->languageCreate($language);
+  public function languageCreate(EntityStubInterface $stub): EntityStubInterface|false {
+    return $this->getCore()->languageCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function languageDelete(\stdClass $language): void {
-    $this->getCore()->languageDelete($language);
+  public function languageDelete(EntityStubInterface $stub): void {
+    $this->getCore()->languageDelete($stub);
   }
 
   /**
@@ -370,22 +371,22 @@ class DrupalDriver implements DrupalDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user): void {
-    $this->getCore()->userCreate($user);
+  public function userCreate(EntityStubInterface $stub): void {
+    $this->getCore()->userCreate($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userDelete(\stdClass $user): void {
-    $this->getCore()->userDelete($user);
+  public function userDelete(EntityStubInterface $stub): void {
+    $this->getCore()->userDelete($stub);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, string $role): void {
-    $this->getCore()->userAddRole($user, $role);
+  public function userAddRole(EntityStubInterface $stub, string $role): void {
+    $this->getCore()->userAddRole($stub, $role);
   }
 
   /**

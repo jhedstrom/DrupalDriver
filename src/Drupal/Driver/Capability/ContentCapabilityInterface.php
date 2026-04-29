@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Capability;
 
+use Drupal\Driver\Entity\EntityStubInterface;
+
 /**
  * Capability: create and delete content (nodes, terms, generic entities).
  */
@@ -12,65 +14,66 @@ interface ContentCapabilityInterface {
   /**
    * Creates a node.
    *
-   * @param \stdClass $node
-   *   The node stub.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The node stub. The bundle property selects the node type.
    *
-   * @return object
-   *   The created node, with its identifier populated.
+   * @return \Drupal\Driver\Entity\EntityStubInterface
+   *   The same stub, now flagged as saved with the created node attached.
    */
-  public function nodeCreate(\stdClass $node): object;
+  public function nodeCreate(EntityStubInterface $stub): EntityStubInterface;
 
   /**
    * Deletes a node.
    *
-   * @param object $node
-   *   The node to delete.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The stub returned from a previous 'nodeCreate()' call, or one that
+   *   carries a 'nid' value resolving to an existing node.
    */
-  public function nodeDelete(object $node): void;
+  public function nodeDelete(EntityStubInterface $stub): void;
 
   /**
    * Creates a taxonomy term.
    *
-   * @param \stdClass $term
-   *   The term stub.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The term stub. The bundle property selects the vocabulary.
    *
-   * @return object
-   *   The created term, with its identifier populated.
+   * @return \Drupal\Driver\Entity\EntityStubInterface
+   *   The same stub, now flagged as saved with the created term attached.
    */
-  public function termCreate(\stdClass $term): object;
+  public function termCreate(EntityStubInterface $stub): EntityStubInterface;
 
   /**
    * Deletes a taxonomy term.
    *
-   * @param object $term
-   *   The term stub or loaded term entity to delete.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The stub returned from a previous 'termCreate()' call, or one that
+   *   carries a 'tid' value resolving to an existing term.
    *
    * @return bool
    *   TRUE when the term was deleted.
    */
-  public function termDelete(object $term): bool;
+  public function termDelete(EntityStubInterface $stub): bool;
 
   /**
-   * Creates an entity of a given type.
+   * Creates an entity of any type.
    *
-   * @param string $entity_type
-   *   The entity type ID.
-   * @param \stdClass $entity
-   *   The entity stub.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The entity stub. Its typed entity type (via 'getEntityType()') selects
+   *   the storage, and its typed bundle (via 'getBundle()') selects the
+   *   bundle. The values bag carries base properties and field values.
    *
-   * @return object
-   *   The created entity.
+   * @return \Drupal\Driver\Entity\EntityStubInterface
+   *   The same stub, now flagged as saved with the created entity attached.
    */
-  public function entityCreate(string $entity_type, \stdClass $entity): object;
+  public function entityCreate(EntityStubInterface $stub): EntityStubInterface;
 
   /**
-   * Deletes an entity of a given type.
+   * Deletes an entity of any type.
    *
-   * @param string $entity_type
-   *   The entity type ID.
-   * @param object $entity
-   *   The entity stub or loaded entity to delete.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The stub returned from a previous 'entityCreate()' call, or one that
+   *   carries the entity type's id key resolving to an existing entity.
    */
-  public function entityDelete(string $entity_type, object $entity): void;
+  public function entityDelete(EntityStubInterface $stub): void;
 
 }

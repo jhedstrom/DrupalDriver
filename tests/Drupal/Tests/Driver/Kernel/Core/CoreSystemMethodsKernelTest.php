@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\user\Entity\User;
@@ -87,11 +88,14 @@ class CoreSystemMethodsKernelTest extends KernelTestBase {
   public function testLanguageLifecycle(): void {
     $this->assertNull(ConfigurableLanguage::load('fr'));
 
-    $result = $this->core->languageCreate((object) ['langcode' => 'fr']);
+    $stub = new EntityStub('language', NULL, ['langcode' => 'fr']);
+    $result = $this->core->languageCreate($stub);
     $this->assertNotFalse($result, 'languageCreate returned the stub for a new language.');
+    $this->assertSame($stub, $result);
+    $this->assertTrue($result->isSaved());
     $this->assertInstanceOf(ConfigurableLanguage::class, ConfigurableLanguage::load('fr'));
 
-    $this->core->languageDelete((object) ['langcode' => 'fr']);
+    $this->core->languageDelete($stub);
     $this->assertNull(ConfigurableLanguage::load('fr'));
   }
 
@@ -99,9 +103,9 @@ class CoreSystemMethodsKernelTest extends KernelTestBase {
    * Tests that languageCreate returns FALSE when the language already exists.
    */
   public function testLanguageCreateReturnsFalseWhenLanguageExists(): void {
-    $this->core->languageCreate((object) ['langcode' => 'fr']);
+    $this->core->languageCreate(new EntityStub('language', NULL, ['langcode' => 'fr']));
 
-    $second = $this->core->languageCreate((object) ['langcode' => 'fr']);
+    $second = $this->core->languageCreate(new EntityStub('language', NULL, ['langcode' => 'fr']));
 
     $this->assertFalse($second);
   }
@@ -115,7 +119,7 @@ class CoreSystemMethodsKernelTest extends KernelTestBase {
 
     $before_uid = \Drupal::currentUser()->id();
 
-    $this->core->login((object) ['uid' => $alice->id()]);
+    $this->core->login(new EntityStub('user', NULL, ['uid' => $alice->id()]));
     $this->assertSame((int) $alice->id(), (int) \Drupal::currentUser()->id(), 'login switched to alice.');
 
     $this->core->logout();

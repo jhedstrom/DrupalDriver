@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
-
 use Symfony\Component\Process\Process;
 
 /**
@@ -237,34 +237,36 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function userCreate(\stdClass $user): void {
-    $arguments = [sprintf('"%s"', $user->name)];
+  public function userCreate(EntityStubInterface $stub): void {
+    $arguments = [escapeshellarg((string) $stub->getValue('name'))];
     $options = [
-      'password' => $user->pass,
-      'mail' => $user->mail,
+      'password' => escapeshellarg((string) $stub->getValue('pass')),
+      'mail' => escapeshellarg((string) $stub->getValue('mail')),
     ];
 
     $result = $this->drush('user-create', $arguments, $options);
     $uid = $this->parseUserId($result);
 
     if ($uid) {
-      $user->uid = $uid;
+      $stub->setValue('uid', $uid);
     }
 
-    if (!isset($user->roles) || !is_array($user->roles)) {
+    $roles = $stub->getValue('roles');
+
+    if (!is_array($roles)) {
       return;
     }
 
-    foreach ($user->roles as $role) {
-      $this->userAddRole($user, $role);
+    foreach ($roles as $role) {
+      $this->userAddRole($stub, $role);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function userDelete(\stdClass $user): void {
-    $arguments = [sprintf('"%s"', $user->name)];
+  public function userDelete(EntityStubInterface $stub): void {
+    $arguments = [escapeshellarg((string) $stub->getValue('name'))];
     $options = [
       'yes' => NULL,
       'delete-content' => NULL,
@@ -275,10 +277,10 @@ class DrushDriver implements DrushDriverInterface {
   /**
    * {@inheritdoc}
    */
-  public function userAddRole(\stdClass $user, string $role): void {
+  public function userAddRole(EntityStubInterface $stub, string $role): void {
     $arguments = [
-      sprintf('"%s"', $role),
-      sprintf('"%s"', $user->name),
+      escapeshellarg($role),
+      escapeshellarg((string) $stub->getValue('name')),
     ];
     $this->drush('user-add-role', $arguments);
   }

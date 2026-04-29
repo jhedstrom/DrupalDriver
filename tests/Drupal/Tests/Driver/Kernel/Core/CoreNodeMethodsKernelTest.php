@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -65,22 +66,23 @@ class CoreNodeMethodsKernelTest extends KernelTestBase {
     $author = User::create(['name' => 'article_author', 'status' => 1]);
     $author->save();
 
-    $node_data = (object) [
-      'type' => 'article',
+    $stub = new EntityStub('node', 'article', [
       'title' => 'Hello world',
       'author' => 'article_author',
-    ];
+    ]);
 
-    $result = $this->core->nodeCreate($node_data);
+    $result = $this->core->nodeCreate($stub);
 
-    $this->assertNotEmpty($result->nid, 'nodeCreate populated nid.');
-    $node = Node::load($result->nid);
+    $this->assertSame($stub, $result, 'nodeCreate returns the same stub.');
+    $this->assertNotEmpty($result->getValue('nid'), 'nodeCreate populated nid.');
+    $this->assertTrue($result->isSaved(), 'nodeCreate marked the stub saved.');
+    $node = Node::load($result->getValue('nid'));
     $this->assertInstanceOf(Node::class, $node);
     $this->assertSame('Hello world', $node->getTitle());
     $this->assertSame((int) $author->id(), (int) $node->getOwnerId(), 'author mapped to uid.');
 
     $this->core->nodeDelete($result);
-    $this->assertNull(Node::load($result->nid));
+    $this->assertNull(Node::load($result->getValue('nid')));
   }
 
   /**
@@ -90,7 +92,7 @@ class CoreNodeMethodsKernelTest extends KernelTestBase {
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage('Cannot create content because provided content type bogus does not exist.');
 
-    $this->core->nodeCreate((object) ['type' => 'bogus', 'title' => 'Nope']);
+    $this->core->nodeCreate(new EntityStub('node', 'bogus', ['title' => 'Nope']));
   }
 
   /**
@@ -100,7 +102,7 @@ class CoreNodeMethodsKernelTest extends KernelTestBase {
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage("Cannot create content because it is missing the required property 'type'.");
 
-    $this->core->nodeCreate((object) ['title' => 'Nope']);
+    $this->core->nodeCreate(new EntityStub('node', NULL, ['title' => 'Nope']));
   }
 
 }

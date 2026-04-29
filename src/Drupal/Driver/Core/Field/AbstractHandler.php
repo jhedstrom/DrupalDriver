@@ -6,6 +6,7 @@ namespace Drupal\Driver\Core\Field;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Driver\Entity\EntityStubInterface;
 
 /**
  * Base class for field handlers.
@@ -24,8 +25,8 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * Constructs an AbstractHandler object.
    *
-   * @param \StdClass $entity
-   *   The simulated entity object containing field information.
+   * @param \Drupal\Driver\Entity\EntityStubInterface $stub
+   *   The simulated entity stub providing the bundle context.
    * @param string $entity_type
    *   The entity type.
    * @param string $field_name
@@ -34,7 +35,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    * @throws \Exception
    *   Thrown when the given field name does not exist on the entity.
    */
-  public function __construct(\StdClass $entity, string $entity_type, string $field_name) {
+  public function __construct(EntityStubInterface $stub, string $entity_type, string $field_name) {
     if ($entity_type === '') {
       throw new \InvalidArgumentException('You must specify an entity type in order to parse entity fields.');
     }
@@ -43,10 +44,17 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     $entity_field_manager = \Drupal::service('entity_field.manager');
     $storage_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type);
 
-    // Resolve the bundle: explicit bundle key > step_bundle > entity type
-    // (single-bundle entities like 'user' use the entity type as bundle).
+    // Resolve the bundle: bundle key value > typed bundle > entity type
+    // (single-bundle entities like 'user' use the entity type as the bundle).
     $bundle_key = \Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('bundle');
-    $bundle = empty($entity->$bundle_key) ? ($entity->step_bundle ?? $entity_type) : $entity->$bundle_key;
+    $bundle = $entity_type;
+
+    if ($bundle_key && !empty($stub->getValue($bundle_key))) {
+      $bundle = (string) $stub->getValue($bundle_key);
+    }
+    elseif ($stub->getBundle() !== NULL && $stub->getBundle() !== '') {
+      $bundle = $stub->getBundle();
+    }
 
     $field_definitions = $entity_field_manager->getFieldDefinitions($entity_type, $bundle);
 

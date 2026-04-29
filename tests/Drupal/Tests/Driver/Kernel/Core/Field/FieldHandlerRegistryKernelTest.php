@@ -6,6 +6,7 @@ namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
+use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -54,19 +55,19 @@ class FieldHandlerRegistryKernelTest extends FieldHandlerKernelTestBase {
     $this->core->registerFieldHandler('text_with_summary', MarkerTextWithSummaryHandler::class);
     $this->attachField('field_body', 'text_with_summary');
 
-    $stub = (object) [
-      'type' => self::BUNDLE,
+    $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'test entity',
       'field_body' => [
         ['value' => 'raw input', 'format' => 'plain_text'],
       ],
-    ];
+    ]);
 
-    $this->core->entityCreate(self::ENTITY_TYPE, $stub);
+    $this->core->entityCreate($stub);
 
-    $this->assertSame(MarkerTextWithSummaryHandler::MARKER, $stub->field_body[0]['value'], 'Consumer handler did not transform the field value during expand().');
+    $field_body = $stub->getValue('field_body');
+    $this->assertSame(MarkerTextWithSummaryHandler::MARKER, $field_body[0]['value'], 'Consumer handler did not transform the field value during expand().');
 
-    $reloaded = \Drupal::entityTypeManager()->getStorage(self::ENTITY_TYPE)->loadUnchanged($stub->id);
+    $reloaded = \Drupal::entityTypeManager()->getStorage(self::ENTITY_TYPE)->loadUnchanged($stub->getValue('id'));
     $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
     $this->assertSame(MarkerTextWithSummaryHandler::MARKER, $reloaded->get('field_body')->getValue()[0]['value'], 'Storage did not receive the consumer handler output.');
   }

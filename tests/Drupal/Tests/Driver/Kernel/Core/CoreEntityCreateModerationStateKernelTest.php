@@ -7,6 +7,7 @@ namespace Drupal\Tests\Driver\Kernel\Core;
 use Drupal\content_moderation\Entity\ContentModerationState;
 use Drupal\content_moderation\Plugin\WorkflowType\ContentModeration;
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -95,17 +96,16 @@ class CoreEntityCreateModerationStateKernelTest extends KernelTestBase {
    * Tests that 'moderation_state' on a stub is captured at save.
    */
   public function testEntityCreatePassesModerationStateThrough(): void {
-    $stub = (object) [
-      'type' => 'article',
+    $stub = new EntityStub('node', 'article', [
       'title' => 'Draft article',
       'moderation_state' => 'draft',
-    ];
+    ]);
 
-    $this->core->entityCreate('node', $stub);
+    $this->core->entityCreate($stub);
 
-    $this->assertNotEmpty($stub->nid, 'entityCreate populated node nid on the stub.');
+    $this->assertNotEmpty($stub->getValue('nid'), 'entityCreate populated node nid on the stub.');
 
-    $node = Node::load((int) $stub->nid);
+    $node = Node::load((int) $stub->getValue('nid'));
     $this->assertInstanceOf(Node::class, $node);
 
     $revision_id = $node->getRevisionId();

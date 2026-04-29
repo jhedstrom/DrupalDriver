@@ -14,6 +14,7 @@ use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\AddressHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -55,7 +56,7 @@ class CoreFieldHandlerLookupTest extends TestCase {
   public function testConstructorRegistersBuiltInHandlers(): void {
     $core = new FieldTypeMapCore(__DIR__, 'default', ['field_address' => 'address']);
 
-    $handler = $core->getFieldHandler(new \stdClass(), 'node', 'field_address');
+    $handler = $core->getFieldHandler(new EntityStub('node'), 'node', 'field_address');
 
     $this->assertInstanceOf(AddressHandler::class, $handler);
   }
@@ -67,7 +68,7 @@ class CoreFieldHandlerLookupTest extends TestCase {
     $core = new FieldTypeMapCore(__DIR__, 'default', ['field_address' => 'address']);
     $core->registerFieldHandler('address', CustomFieldHandler::class);
 
-    $handler = $core->getFieldHandler(new \stdClass(), 'node', 'field_address');
+    $handler = $core->getFieldHandler(new EntityStub('node'), 'node', 'field_address');
 
     $this->assertInstanceOf(CustomFieldHandler::class, $handler);
   }
@@ -78,7 +79,7 @@ class CoreFieldHandlerLookupTest extends TestCase {
   public function testUnknownFieldTypeFallsBackToDefaultHandler(): void {
     $core = new FieldTypeMapCore(__DIR__, 'default', ['field_x' => 'nonexistent_type']);
 
-    $handler = $core->getFieldHandler(new \stdClass(), 'node', 'field_x');
+    $handler = $core->getFieldHandler(new EntityStub('node'), 'node', 'field_x');
 
     $this->assertInstanceOf(DefaultHandler::class, $handler);
   }
@@ -92,7 +93,7 @@ class CoreFieldHandlerLookupTest extends TestCase {
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessageMatches('/Field "field_missing" not found/');
 
-    $core->getFieldHandler(new \stdClass(), 'node', 'field_missing');
+    $core->getFieldHandler(new EntityStub('node'), 'node', 'field_missing');
   }
 
   /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -29,7 +30,7 @@ class AbstractHandlerErrorPathsTest extends TestCase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches('/You must specify an entity type/');
 
-    new DefaultHandler((object) [], '', 'field_any');
+    new DefaultHandler(new EntityStub(''), '', 'field_any');
   }
 
 }

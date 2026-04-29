@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core;
 
 use Drupal\Driver\Core\Core;
+use Drupal\Driver\Entity\EntityStub;
 use Drupal\Driver\Exception\BootstrapException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -81,7 +82,7 @@ class CoreErrorPathsTest extends TestCase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessageMatches('/You must specify an entity type/');
 
-    $core->entityCreate('', (object) []);
+    $core->entityCreate(new EntityStub(''));
   }
 
   /**
