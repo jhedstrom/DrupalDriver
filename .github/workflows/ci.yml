@@ -211,6 +211,11 @@ jobs:
       - name: Checkout DrupalDriver
         uses: actions/checkout@v6
         with:
+          # Check out the branch by name (not the merge SHA) so the path
+          # repo composer adds below presents the package as
+          # 'dev-<branch>', matching the dev-branch constraint that the
+          # downstream DrupalExtension branch pins for this PR.
+          ref: ${{ github.head_ref || github.ref_name }}
           path: drupaldriver
 
       - name: Checkout DrupalExtension
@@ -236,14 +241,6 @@ jobs:
       - name: Add path repository for DrupalDriver
         working-directory: drupalextension
         run: composer config repositories.drupaldriver path ../drupaldriver
-
-      - name: Allow dev stability for the local DrupalDriver path repo
-        working-directory: drupalextension
-        run: composer config minimum-stability dev
-
-      - name: Require local DrupalDriver
-        working-directory: drupalextension
-        run: composer require --no-interaction --no-update 'drupal/drupal-driver:*@dev'
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
