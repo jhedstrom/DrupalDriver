@@ -126,9 +126,9 @@ No aggregate predicate. Code that needs to decide whether a field enters the
 expansion pipeline OR's the three expand-row predicates inline:
 
 ```php
-if ($this->classifier()->fieldIsBaseStandard($entity_type, $field_name)
-  || $this->classifier()->fieldIsConfigurable($entity_type, $field_name)
-  || $this->classifier()->fieldIsBundleStorageBacked($entity_type, $field_name, $bundle)) {
+if ($this->getFieldClassifier()->fieldIsBaseStandard($entity_type, $field_name)
+  || $this->getFieldClassifier()->fieldIsConfigurable($entity_type, $field_name)
+  || $this->getFieldClassifier()->fieldIsBundleStorageBacked($entity_type, $field_name, $bundle)) {
   // expand
 }
 ```
