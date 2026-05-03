@@ -256,10 +256,12 @@ jobs:
         run: composer show drupal/drupal-driver
 
       # BrowserKitFactoryTest mocks getCwd() to '/var/www/html/build' and calls
-      # DrupalFinder on it. Symlink that path to the DrupalExtension checkout
-      # so DrupalFinder locates 'build/web/core' via composer.json scaffolding.
+      # DrupalFinder on it. DrupalExtension's composer scaffolds drupal/core
+      # to 'build/web/core' (via installer-paths), so symlink the mocked
+      # cwd to the 'build' subdirectory of the checkout so DrupalFinder
+      # locates 'web/core' from there.
       - name: Symlink expected Drupal root for BrowserKitFactoryTest
-        run: sudo ln -sfn "${GITHUB_WORKSPACE}/drupalextension" /var/www/html/build
+        run: sudo ln -sfn "${GITHUB_WORKSPACE}/drupalextension/build" /var/www/html/build
 
       - name: Run DrupalExtension PHPUnit
         working-directory: drupalextension
