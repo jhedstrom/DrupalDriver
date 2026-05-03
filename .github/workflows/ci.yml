@@ -244,7 +244,8 @@ jobs:
         # Override the version exposed by the path repo to 'dev-master' so
         # DrupalExtension's 'dev-master as 3.0.0' constraint resolves to
         # this PR's checkout regardless of the feature branch name.
-        run: composer config repositories.drupaldriver '{"type": "path", "url": "../drupaldriver", "options": {"versions": {"drupal/drupal-driver": "dev-master"}}}'
+        run: |
+          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"dev-master"}}}' --json
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
