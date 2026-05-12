@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
+use Drupal\Driver\Core\Field\NameHandler;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -60,12 +61,12 @@ class NameHandlerKernelTest extends FieldHandlerKernelTestBase {
   public function testNamePositionalSkipsDisabledComponents(): void {
     $this->attachField('field_author', 'name', [], [
       'components' => [
-        'title' => TRUE,
-        'given' => TRUE,
-        'middle' => FALSE,
-        'family' => TRUE,
-        'generational' => FALSE,
-        'credentials' => FALSE,
+        NameHandler::COMPONENT_TITLE => TRUE,
+        NameHandler::COMPONENT_GIVEN => TRUE,
+        NameHandler::COMPONENT_MIDDLE => FALSE,
+        NameHandler::COMPONENT_FAMILY => TRUE,
+        NameHandler::COMPONENT_GENERATIONAL => FALSE,
+        NameHandler::COMPONENT_CREDENTIALS => FALSE,
       ],
     ]);
 

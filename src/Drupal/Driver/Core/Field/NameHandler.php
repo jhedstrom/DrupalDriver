@@ -11,6 +11,13 @@ namespace Drupal\Driver\Core\Field;
  */
 class NameHandler extends AbstractHandler {
 
+  public const COMPONENT_TITLE = 'title';
+  public const COMPONENT_GIVEN = 'given';
+  public const COMPONENT_MIDDLE = 'middle';
+  public const COMPONENT_FAMILY = 'family';
+  public const COMPONENT_GENERATIONAL = 'generational';
+  public const COMPONENT_CREDENTIALS = 'credentials';
+
   /**
    * Canonical order of name components.
    *
@@ -19,7 +26,14 @@ class NameHandler extends AbstractHandler {
    *
    * @var array<int, string>
    */
-  protected const COMPONENTS = ['title', 'given', 'middle', 'family', 'generational', 'credentials'];
+  protected const COMPONENTS = [
+    self::COMPONENT_TITLE,
+    self::COMPONENT_GIVEN,
+    self::COMPONENT_MIDDLE,
+    self::COMPONENT_FAMILY,
+    self::COMPONENT_GENERATIONAL,
+    self::COMPONENT_CREDENTIALS,
+  ];
 
   /**
    * {@inheritdoc}
@@ -75,20 +89,20 @@ class NameHandler extends AbstractHandler {
   protected function normaliseString(string $value, array $enabled): array {
     $parts = array_map(trim(...), explode(',', $value));
 
-    if (!in_array('family', $enabled, TRUE)) {
+    if (!in_array(self::COMPONENT_FAMILY, $enabled, TRUE)) {
       throw new \RuntimeException('Cannot use the "Family, Given" shorthand because the "family" component is disabled on this field.');
     }
 
-    $name = ['family' => $parts[0]];
+    $name = [self::COMPONENT_FAMILY => $parts[0]];
     $has_given_part = isset($parts[1]);
-    $given_enabled = in_array('given', $enabled, TRUE);
+    $given_enabled = in_array(self::COMPONENT_GIVEN, $enabled, TRUE);
 
     if ($has_given_part && !$given_enabled) {
       throw new \RuntimeException('Cannot use the "Family, Given" shorthand because the "given" component is disabled on this field.');
     }
 
     if ($given_enabled) {
-      $name['given'] = $parts[1] ?? NULL;
+      $name[self::COMPONENT_GIVEN] = $parts[1] ?? NULL;
     }
 
     return $name;

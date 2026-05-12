@@ -24,12 +24,12 @@ class NameHandlerTest extends TestCase {
    * @var array<string, bool>
    */
   protected const ALL_ENABLED = [
-    'title' => TRUE,
-    'given' => TRUE,
-    'middle' => TRUE,
-    'family' => TRUE,
-    'generational' => TRUE,
-    'credentials' => TRUE,
+    NameHandler::COMPONENT_TITLE => TRUE,
+    NameHandler::COMPONENT_GIVEN => TRUE,
+    NameHandler::COMPONENT_MIDDLE => TRUE,
+    NameHandler::COMPONENT_FAMILY => TRUE,
+    NameHandler::COMPONENT_GENERATIONAL => TRUE,
+    NameHandler::COMPONENT_CREDENTIALS => TRUE,
   ];
 
   /**
@@ -86,12 +86,12 @@ class NameHandlerTest extends TestCase {
    */
   public function testNumericIndicesSkipDisabledComponents(): void {
     $handler = $this->createHandler([
-      'title' => TRUE,
-      'given' => TRUE,
-      'middle' => FALSE,
-      'family' => TRUE,
-      'generational' => FALSE,
-      'credentials' => FALSE,
+      NameHandler::COMPONENT_TITLE => TRUE,
+      NameHandler::COMPONENT_GIVEN => TRUE,
+      NameHandler::COMPONENT_MIDDLE => FALSE,
+      NameHandler::COMPONENT_FAMILY => TRUE,
+      NameHandler::COMPONENT_GENERATIONAL => FALSE,
+      NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
     $result = $handler->expand([['Dr', 'John', 'Doe']]);
@@ -106,12 +106,12 @@ class NameHandlerTest extends TestCase {
    */
   public function testTooManyNumericIndicesThrows(): void {
     $handler = $this->createHandler([
-      'title' => FALSE,
-      'given' => TRUE,
-      'middle' => FALSE,
-      'family' => TRUE,
-      'generational' => FALSE,
-      'credentials' => FALSE,
+      NameHandler::COMPONENT_TITLE => FALSE,
+      NameHandler::COMPONENT_GIVEN => TRUE,
+      NameHandler::COMPONENT_MIDDLE => FALSE,
+      NameHandler::COMPONENT_FAMILY => TRUE,
+      NameHandler::COMPONENT_GENERATIONAL => FALSE,
+      NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
     $this->expectException(\RuntimeException::class);
@@ -125,12 +125,12 @@ class NameHandlerTest extends TestCase {
    */
   public function testNamedKeyForDisabledComponentThrows(): void {
     $handler = $this->createHandler([
-      'title' => FALSE,
-      'given' => TRUE,
-      'middle' => FALSE,
-      'family' => TRUE,
-      'generational' => FALSE,
-      'credentials' => FALSE,
+      NameHandler::COMPONENT_TITLE => FALSE,
+      NameHandler::COMPONENT_GIVEN => TRUE,
+      NameHandler::COMPONENT_MIDDLE => FALSE,
+      NameHandler::COMPONENT_FAMILY => TRUE,
+      NameHandler::COMPONENT_GENERATIONAL => FALSE,
+      NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
     $this->expectException(\RuntimeException::class);
@@ -168,12 +168,12 @@ class NameHandlerTest extends TestCase {
    */
   public function testShorthandThrowsWhenFamilyDisabled(): void {
     $handler = $this->createHandler([
-      'title' => TRUE,
-      'given' => TRUE,
-      'middle' => FALSE,
-      'family' => FALSE,
-      'generational' => FALSE,
-      'credentials' => FALSE,
+      NameHandler::COMPONENT_TITLE => TRUE,
+      NameHandler::COMPONENT_GIVEN => TRUE,
+      NameHandler::COMPONENT_MIDDLE => FALSE,
+      NameHandler::COMPONENT_FAMILY => FALSE,
+      NameHandler::COMPONENT_GENERATIONAL => FALSE,
+      NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
     $this->expectException(\RuntimeException::class);
@@ -187,12 +187,12 @@ class NameHandlerTest extends TestCase {
    */
   public function testShorthandThrowsWhenGivenPartSuppliedButDisabled(): void {
     $handler = $this->createHandler([
-      'title' => FALSE,
-      'given' => FALSE,
-      'middle' => FALSE,
-      'family' => TRUE,
-      'generational' => FALSE,
-      'credentials' => FALSE,
+      NameHandler::COMPONENT_TITLE => FALSE,
+      NameHandler::COMPONENT_GIVEN => FALSE,
+      NameHandler::COMPONENT_MIDDLE => FALSE,
+      NameHandler::COMPONENT_FAMILY => TRUE,
+      NameHandler::COMPONENT_GENERATIONAL => FALSE,
+      NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
     $this->expectException(\RuntimeException::class);
@@ -206,12 +206,12 @@ class NameHandlerTest extends TestCase {
    */
   public function testShorthandFamilyOnlyWhenGivenDisabled(): void {
     $handler = $this->createHandler([
-      'title' => FALSE,
-      'given' => FALSE,
-      'middle' => FALSE,
-      'family' => TRUE,
-      'generational' => FALSE,
-      'credentials' => FALSE,
+      NameHandler::COMPONENT_TITLE => FALSE,
+      NameHandler::COMPONENT_GIVEN => FALSE,
+      NameHandler::COMPONENT_MIDDLE => FALSE,
+      NameHandler::COMPONENT_FAMILY => TRUE,
+      NameHandler::COMPONENT_GENERATIONAL => FALSE,
+      NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
     $result = $handler->expand(['Doe']);
