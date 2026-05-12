@@ -106,6 +106,10 @@ class NameHandler extends AbstractHandler {
    *   A keyed array of name components.
    */
   protected function normaliseArray(array $value, array $enabled): array {
+    if ($value !== [] && !array_is_list($value) && $this->hasNumericKey($value)) {
+      throw new \RuntimeException('Cannot mix numeric and named keys in the same name value; use one shape consistently.');
+    }
+
     $name = [];
     $position = 0;
 
@@ -133,6 +137,22 @@ class NameHandler extends AbstractHandler {
     }
 
     return $name;
+  }
+
+  /**
+   * Returns TRUE if any key in the array is numeric.
+   *
+   * @param array<int|string, mixed> $value
+   *   The array to check.
+   */
+  protected function hasNumericKey(array $value): bool {
+    foreach (array_keys($value) as $key) {
+      if (is_numeric($key)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
 }

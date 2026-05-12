@@ -138,6 +138,18 @@ class NameHandlerTest extends TestCase {
   }
 
   /**
+   * Tests that mixing numeric and named keys in one delta throws.
+   */
+  public function testMixedNumericAndNamedKeysThrows(): void {
+    $handler = $this->createHandler();
+
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage('Cannot mix numeric and named keys in the same name value; use one shape consistently.');
+
+    $handler->expand([['John', 'family' => 'Smith']]);
+  }
+
+  /**
    * Tests that an unknown sub-field key throws.
    */
   public function testUnknownKeyThrows(): void {
