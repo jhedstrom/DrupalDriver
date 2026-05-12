@@ -45,9 +45,18 @@ class ParentTermHint implements PreCreateHintInterface {
         ->accessCheck(FALSE)
         ->condition('name', $parent_name)
         ->condition('vid', $vid)
+        ->range(0, 2)
         ->execute();
 
-      return empty($tids) ? NULL : reset($tids);
+      if (empty($tids)) {
+        return NULL;
+      }
+
+      if (count($tids) > 1) {
+        throw new CreationHintResolutionException(sprintf("Cannot resolve parent term '%s' in vocabulary '%s' because multiple terms share that name.", $parent_name, $vid));
+      }
+
+      return reset($tids);
     };
   }
 
@@ -82,13 +91,24 @@ class ParentTermHint implements PreCreateHintInterface {
       return;
     }
 
-    $vid = (string) ($stub->getBundle() ?? $stub->getValue('vid'));
+    if (!is_scalar($parent_name) && !$parent_name instanceof \Stringable) {
+      throw new CreationHintResolutionException("Cannot resolve parent term because the 'parent' value is not a scalar or stringable object.");
+    }
+
+    $vid_raw = $stub->getBundle() ?? $stub->getValue('vid');
+
+    if ($vid_raw !== NULL && !is_scalar($vid_raw) && !$vid_raw instanceof \Stringable) {
+      throw new CreationHintResolutionException("Cannot resolve parent term because the vocabulary value is not a scalar or stringable object.");
+    }
+
+    $vid = (string) $vid_raw;
+    $parent_name = (string) $parent_name;
 
     if ($vid === '') {
       throw new CreationHintResolutionException(sprintf("Cannot resolve parent term '%s' because the stub has no vocabulary.", $parent_name));
     }
 
-    $tid = ($this->parentLookup)((string) $parent_name, $vid);
+    $tid = ($this->parentLookup)($parent_name, $vid);
 
     if ($tid === NULL) {
       throw new CreationHintResolutionException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vid));

@@ -78,6 +78,10 @@ class AuthorHint implements PreCreateHintInterface {
       throw new CreationHintResolutionException(sprintf("Cannot create node because user '%s', referenced via the 'author' creation hint, does not exist.", $name));
     }
 
+    if (!method_exists($user, 'id')) {
+      throw new CreationHintResolutionException(sprintf("Cannot create node because the 'author' lookup returned an object without an 'id()' method while resolving '%s'.", $name));
+    }
+
     $stub->setValue('uid', $user->id());
     $stub->removeValue('author');
   }

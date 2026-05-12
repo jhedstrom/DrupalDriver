@@ -150,6 +150,10 @@ class DrupalDriver implements DrupalDriverInterface, CreationHintCapabilityInter
    * {@inheritdoc}
    */
   public function getCreationHints(string $entity_type): array {
+    if (!isset($this->core)) {
+      return [];
+    }
+
     $core = $this->getCore();
 
     if (!$core instanceof CreationHintCapabilityInterface) {
