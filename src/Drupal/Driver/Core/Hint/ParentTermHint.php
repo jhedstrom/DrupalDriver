@@ -84,6 +84,10 @@ class ParentTermHint implements PreCreateHintInterface {
 
     $vid = (string) ($stub->getBundle() ?? $stub->getValue('vid'));
 
+    if ($vid === '') {
+      throw new CreationHintResolutionException(sprintf("Cannot resolve parent term '%s' because the stub has no vocabulary.", $parent_name));
+    }
+
     $tid = ($this->parentLookup)((string) $parent_name, $vid);
 
     if ($tid === NULL) {
