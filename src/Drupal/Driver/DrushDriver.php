@@ -269,15 +269,10 @@ class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterfa
       $stub->setValue('uid', $uid);
     }
 
-    $roles = $stub->getValue('roles');
+    $account = new \stdClass();
+    $account->uid = $uid;
 
-    if (!is_array($roles)) {
-      return;
-    }
-
-    foreach ($roles as $role) {
-      $this->userAddRole($stub, $role);
-    }
+    $this->applyPostCreateHints($stub, $account, 'user');
   }
 
   /**

@@ -408,15 +408,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
       $stub->setValue('type', $type);
     }
 
-    // If 'author' is set, remap it to 'uid'.
-    if ($stub->hasValue('author')) {
-      /** @var \Drupal\user\Entity\User|null $user */
-      $user = user_load_by_name($stub->getValue('author'));
-
-      if ($user) {
-        $stub->setValue('uid', $user->id());
-      }
-    }
+    $this->applyPreCreateHints($stub, 'node');
 
     $this->expandEntityFields($stub);
     $entity = Node::create($stub->getValues());
@@ -424,6 +416,8 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
 
     $stub->setValue('nid', $entity->id());
     $stub->markSaved($entity);
+
+    $this->applyPostCreateHints($stub, $entity, 'node');
 
     return $stub;
   }
@@ -545,6 +539,8 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
       $stub->setValue('status', 1);
     }
 
+    $this->applyPreCreateHints($stub, 'user');
+
     $this->expandEntityFields($stub);
     $account = \Drupal::entityTypeManager()->getStorage('user')->create($stub->getValues());
     $account->save();
@@ -552,6 +548,8 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
     // Store UID and the saved account.
     $stub->setValue('uid', $account->id());
     $stub->markSaved($account);
+
+    $this->applyPostCreateHints($stub, $account, 'user');
   }
 
   /**
@@ -758,7 +756,9 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
    * {@inheritdoc}
    */
   public function termCreate(EntityStubInterface $stub): EntityStubInterface {
-    $vocabulary = $stub->getBundle() ?? $stub->getValue('vocabulary_machine_name');
+    $this->applyPreCreateHints($stub, 'taxonomy_term');
+
+    $vocabulary = $stub->getBundle() ?? $stub->getValue('vid');
 
     if (empty($vocabulary)) {
       throw new \InvalidArgumentException("Cannot create term because it is missing the required property 'vocabulary_machine_name'.");
@@ -770,27 +770,14 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
 
     $stub->setValue('vid', $vocabulary);
 
-    if ($stub->hasValue('parent') && !empty($stub->getValue('parent'))) {
-      $parent_name = $stub->getValue('parent');
-      $parent_terms = \Drupal::entityQuery('taxonomy_term')
-        ->accessCheck(FALSE)
-        ->condition('name', $parent_name)
-        ->condition('vid', $vocabulary)
-        ->execute();
-
-      if (empty($parent_terms)) {
-        throw new \InvalidArgumentException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vocabulary));
-      }
-
-      $stub->setValue('parent', reset($parent_terms));
-    }
-
     $this->expandEntityFields($stub);
     $entity = Term::create($stub->getValues());
     $entity->save();
 
     $stub->setValue('tid', $entity->id());
     $stub->markSaved($entity);
+
+    $this->applyPostCreateHints($stub, $entity, 'taxonomy_term');
 
     return $stub;
   }
