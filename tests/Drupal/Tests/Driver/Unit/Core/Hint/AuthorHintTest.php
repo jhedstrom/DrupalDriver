@@ -99,9 +99,40 @@ class AuthorHintTest extends TestCase {
    */
   public static function dataProviderApplyToStubCoercesValueToString(): iterable {
     yield 'plain string' => ['alice', 'alice'];
-    yield 'empty string' => ['', ''];
     yield 'integer-like string' => ['7', '7'];
-    yield 'null is coerced to empty string' => [NULL, ''];
+  }
+
+  /**
+   * Tests that empty or null 'author' values throw a clear error.
+   *
+   * Empty strings used to be coerced into a 'user "" not found' message
+   * which buried the actual problem (the alias is set but empty). The
+   * resolver now throws before the lookup with the empty-alias signal.
+   *
+   * @param mixed $author
+   *   The empty-ish 'author' value placed on the stub.
+   */
+  #[DataProvider('dataProviderApplyToStubThrowsOnEmptyAuthor')]
+  public function testApplyToStubThrowsOnEmptyAuthor(mixed $author): void {
+    $hint = new AuthorHint(static fn (): object => new FakeUser(1));
+
+    $stub = new EntityStub('node', 'article', ['author' => $author]);
+
+    $this->expectException(CreationHintResolutionException::class);
+    $this->expectExceptionMessageMatches("/'author' creation hint is set but empty/");
+
+    $hint->applyToStub($stub);
+  }
+
+  /**
+   * Data provider for 'testApplyToStubThrowsOnEmptyAuthor()'.
+   *
+   * @return iterable<string, array<int, mixed>>
+   *   Cases of empty-ish 'author' value.
+   */
+  public static function dataProviderApplyToStubThrowsOnEmptyAuthor(): iterable {
+    yield 'empty string' => [''];
+    yield 'null' => [NULL];
   }
 
 }

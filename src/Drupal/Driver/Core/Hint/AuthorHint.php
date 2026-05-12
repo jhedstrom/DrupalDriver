@@ -67,6 +67,11 @@ class AuthorHint implements PreCreateHintInterface {
    */
   public function applyToStub(EntityStubInterface $stub): void {
     $name = (string) $stub->getValue('author');
+
+    if ($name === '') {
+      throw new CreationHintResolutionException("Cannot create node because the 'author' creation hint is set but empty.");
+    }
+
     $user = ($this->userLookup)($name);
 
     if ($user === NULL) {

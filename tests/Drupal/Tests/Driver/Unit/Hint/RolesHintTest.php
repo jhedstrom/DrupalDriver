@@ -86,7 +86,7 @@ class RolesHintTest extends TestCase {
     $driver = new RecordingUserCapability();
     $hint = new RolesHint($driver);
 
-    $stub = new EntityStub('user', NULL, ['roles' => []]);
+    $stub = new EntityStub('user', NULL, ['name' => 'bob', 'roles' => []]);
     $entity = new \stdClass();
 
     $hint->applyAfterCreate($stub, $entity);

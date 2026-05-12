@@ -37,6 +37,9 @@ interface CreationHintInterface {
    * Used by documentation tools and error messages. Should describe the
    * input shape, the resolution behaviour, and the resulting effect on
    * the created entity in a single sentence.
+   *
+   * @return string
+   *   A single-sentence description of the hint's behaviour.
    */
   public function getDescription(): string;
 
