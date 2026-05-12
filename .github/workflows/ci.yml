@@ -241,11 +241,12 @@ jobs:
 
       - name: Add path repository for DrupalDriver
         working-directory: drupalextension
-        # Override the version exposed by the path repo to 'dev-master' so
-        # DrupalExtension's 'dev-master as 3.0.0' constraint resolves to
-        # this PR's checkout regardless of the feature branch name.
+        # Expose the path repo as a high alpha version so DrupalExtension's
+        # '^3.0.0-alpha1' constraint (with 'minimum-stability: alpha') resolves
+        # to this PR's checkout. 'dev-master' is rejected because its dev
+        # stability falls below the consumer's alpha floor.
         run: |
-          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"dev-master"}}}' --json
+          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"3.0.99-alpha"}}}' --json
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
