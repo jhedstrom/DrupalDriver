@@ -342,6 +342,77 @@ else {
 }
 ```
 
+### Creation hints are now first-class
+
+Ergonomic stub aliases that are not real Drupal fields - `author` on a node,
+`vocabulary_machine_name` and `parent` on a term, `roles` on a user - are no
+longer scattered as inline `if ($stub->hasValue('...'))` blocks in the create
+methods. They are declared, discoverable artefacts:
+
+- `Drupal\Driver\Hint\CreationHintInterface` - base contract.
+- `Drupal\Driver\Hint\PreCreateHintInterface` - mutates the stub before
+  `Entity::create()`.
+- `Drupal\Driver\Hint\PostCreateHintInterface` - acts on the entity after
+  save (e.g. role assignment).
+- `Drupal\Driver\Capability\CreationHintCapabilityInterface` -
+  `getCreationHints(string $entity_type): array<string, CreationHintInterface>`.
+
+The new capability interface is **opt-in**. It is NOT extended by the
+composite driver interfaces (`DrupalDriverInterface`, `DrushDriverInterface`,
+`BlackboxDriverInterface`) or by `CoreInterface`. Hand-rolled implementations
+of those composite contracts (and PHPUnit-style test doubles built against
+them) are NOT required to add `getCreationHints()`. The concrete classes
+`Core`, `DrupalDriver`, and `DrushDriver` implement the capability directly;
+`BlackboxDriver` does not.
+
+Consumers (typically DrupalExtension) check for the capability before
+calling:
+
+```php
+if ($driver instanceof CreationHintCapabilityInterface) {
+    $ignored = array_keys($driver->getCreationHints('node'));
+    // pass $ignored into the stub parser as the allow-list
+}
+```
+
+#### Behavioural change: unresolvable hints now throw
+
+The hint resolvers raise
+`Drupal\Driver\Exception\CreationHintResolutionException` (a subclass of
+`\InvalidArgumentException`) when a referenced value cannot be resolved.
+Previously the `author` path silently coerced an unknown username into
+`uid = 0`, leaving typos invisible. There is no deprecation period.
+
+| Trigger | v2 behaviour | v3 behaviour |
+|---|---|---|
+| `author` → unknown username on node stub | Silent; `uid` left unset or `0` | Throws `CreationHintResolutionException` |
+| `vocabulary_machine_name` → unknown vocab | Throws `\InvalidArgumentException` | Throws `\InvalidArgumentException` (unchanged - validated by `termCreate()`) |
+| `parent` → unknown term name | Throws `\InvalidArgumentException` | Throws `CreationHintResolutionException` (subclass of `\InvalidArgumentException`; existing catches still match) |
+| `roles` on Core `userCreate` | Silently ignored - roles never assigned | Roles assigned via `RolesHint` (post-create); unknown role throws `\RuntimeException` from `userAddRole()` |
+
+Test suites that relied on silent failures should fix the underlying typo
+or stop sending the alias. Test suites that already caught
+`\InvalidArgumentException` (for `parent` or `vocabulary_machine_name`) keep
+working unchanged.
+
+#### `roles` symmetry on Core
+
+Before v3, `'roles' => [...]` on a user stub only had effect when the driver
+was `DrushDriver` - Core silently ignored it. Both drivers now honour the
+alias via a shared `RolesHint`, eliminating the asymmetry. Consumers that
+fell back to a follow-up `userAddRole()` call after `userCreate()` on Core
+can simplify, but they don't have to - calling `userAddRole()` after a
+roles-bearing stub is harmless (the role is already assigned).
+
+#### Overriding or adding hints
+
+Subclasses of `Core` can override `registerDefaultCreationHints()` (called
+once from the constructor) to add, replace, or remove hints. Re-registering
+the same name on the same entity type replaces the inherited entry. Drivers
+that compose `Drupal\Driver\Hint\CreationHintRegistryTrait` get
+`registerCreationHint()`, `getCreationHints()`, and two protected
+dispatchers (`applyPreCreateHints()`, `applyPostCreateHints()`) for free.
+
 ### What stays the same
 
 - The three driver class names (`BlackboxDriver`, `DrupalDriver`,

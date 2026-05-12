@@ -128,4 +128,25 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
     ]));
   }
 
+  /**
+   * Tests that 'vocabulary_machine_name' on a stub selects the vocabulary.
+   *
+   * Existing happy-path coverage relies on the bundle constructor arg; this
+   * test pins the alternative path that uses the alias as a stub value.
+   */
+  public function testTermCreateWithVocabularyMachineNameHint(): void {
+    $stub = new EntityStub('taxonomy_term', NULL, [
+      'name' => 'Drupal',
+      'vocabulary_machine_name' => 'tags',
+    ]);
+
+    $result = $this->core->termCreate($stub);
+
+    $this->assertTrue($result->isSaved(), 'termCreate marked the stub saved.');
+    $this->assertFalse($result->hasValue('vocabulary_machine_name'), 'Alias removed after resolution.');
+    $term = Term::load($result->getValue('tid'));
+    $this->assertInstanceOf(Term::class, $term);
+    $this->assertSame('tags', $term->bundle());
+  }
+
 }

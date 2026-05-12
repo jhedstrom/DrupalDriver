@@ -167,4 +167,28 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
     $this->assertSame('content_editor', $role->label());
   }
 
+  /**
+   * Tests that 'userCreate()' honours the 'roles' creation hint.
+   *
+   * Mirrors the existing Drush-side test (DrushDriverMethodsTest) on Core
+   * and closes the symmetry gap: a stub created via Core can now assign
+   * roles in one call instead of requiring a follow-up 'userAddRole()'.
+   */
+  public function testUserCreateAppliesRolesHint(): void {
+    $role_id = $this->core->roleCreate(['access user profiles'], 'editor');
+
+    $stub = new EntityStub('user', NULL, [
+      'name' => 'roleuser',
+      'mail' => 'role@example.com',
+      'pass' => 'pw',
+      'roles' => [$role_id],
+    ]);
+
+    $this->core->userCreate($stub);
+
+    $account = User::load($stub->getValue('uid'));
+    $this->assertInstanceOf(User::class, $account);
+    $this->assertContains($role_id, $account->getRoles());
+  }
+
 }

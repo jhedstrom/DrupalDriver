@@ -10,12 +10,18 @@ use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Driver\Capability\CreationHintCapabilityInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldClassifier;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
+use Drupal\Driver\Core\Hint\AuthorHint;
+use Drupal\Driver\Core\Hint\ParentTermHint;
+use Drupal\Driver\Core\Hint\VocabularyMachineNameHint;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Hint\CreationHintRegistryTrait;
+use Drupal\Driver\Hint\RolesHint;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
@@ -31,7 +37,9 @@ use Symfony\Component\Routing\Route;
 /**
  * Default Drupal core implementation.
  */
-class Core implements CoreInterface {
+class Core implements CoreInterface, CreationHintCapabilityInterface {
+
+  use CreationHintRegistryTrait;
 
   /**
    * System path to the Drupal installation.
@@ -98,6 +106,23 @@ class Core implements CoreInterface {
     $this->random = $random ?? new Random();
 
     $this->registerDefaultFieldHandlers();
+    $this->registerDefaultCreationHints();
+  }
+
+  /**
+   * Populates the creation-hint registry with hints this class ships.
+   *
+   * A 'Core' subclass that wants to add version-specific overrides
+   * should override this method, call
+   * 'parent::registerDefaultCreationHints()' first, and then register
+   * its own hints. Re-registering a name on the same entity type
+   * replaces the inherited entry.
+   */
+  protected function registerDefaultCreationHints(): void {
+    $this->registerCreationHint(new AuthorHint());
+    $this->registerCreationHint(new VocabularyMachineNameHint());
+    $this->registerCreationHint(new ParentTermHint());
+    $this->registerCreationHint(new RolesHint($this));
   }
 
   /**
@@ -383,15 +408,7 @@ class Core implements CoreInterface {
       $stub->setValue('type', $type);
     }
 
-    // If 'author' is set, remap it to 'uid'.
-    if ($stub->hasValue('author')) {
-      /** @var \Drupal\user\Entity\User|null $user */
-      $user = user_load_by_name($stub->getValue('author'));
-
-      if ($user) {
-        $stub->setValue('uid', $user->id());
-      }
-    }
+    $this->applyPreCreateHints($stub, 'node');
 
     $this->expandEntityFields($stub);
     $entity = Node::create($stub->getValues());
@@ -399,6 +416,8 @@ class Core implements CoreInterface {
 
     $stub->setValue('nid', $entity->id());
     $stub->markSaved($entity);
+
+    $this->applyPostCreateHints($stub, $entity, 'node');
 
     return $stub;
   }
@@ -520,6 +539,8 @@ class Core implements CoreInterface {
       $stub->setValue('status', 1);
     }
 
+    $this->applyPreCreateHints($stub, 'user');
+
     $this->expandEntityFields($stub);
     $account = \Drupal::entityTypeManager()->getStorage('user')->create($stub->getValues());
     $account->save();
@@ -527,6 +548,8 @@ class Core implements CoreInterface {
     // Store UID and the saved account.
     $stub->setValue('uid', $account->id());
     $stub->markSaved($account);
+
+    $this->applyPostCreateHints($stub, $account, 'user');
   }
 
   /**
@@ -733,7 +756,9 @@ class Core implements CoreInterface {
    * {@inheritdoc}
    */
   public function termCreate(EntityStubInterface $stub): EntityStubInterface {
-    $vocabulary = $stub->getBundle() ?? $stub->getValue('vocabulary_machine_name');
+    $this->applyPreCreateHints($stub, 'taxonomy_term');
+
+    $vocabulary = $stub->getBundle() ?? $stub->getValue('vid');
 
     if (empty($vocabulary)) {
       throw new \InvalidArgumentException("Cannot create term because it is missing the required property 'vocabulary_machine_name'.");
@@ -745,27 +770,14 @@ class Core implements CoreInterface {
 
     $stub->setValue('vid', $vocabulary);
 
-    if ($stub->hasValue('parent') && !empty($stub->getValue('parent'))) {
-      $parent_name = $stub->getValue('parent');
-      $parent_terms = \Drupal::entityQuery('taxonomy_term')
-        ->accessCheck(FALSE)
-        ->condition('name', $parent_name)
-        ->condition('vid', $vocabulary)
-        ->execute();
-
-      if (empty($parent_terms)) {
-        throw new \InvalidArgumentException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vocabulary));
-      }
-
-      $stub->setValue('parent', reset($parent_terms));
-    }
-
     $this->expandEntityFields($stub);
     $entity = Term::create($stub->getValues());
     $entity->save();
 
     $stub->setValue('tid', $entity->id());
     $stub->markSaved($entity);
+
+    $this->applyPostCreateHints($stub, $entity, 'taxonomy_term');
 
     return $stub;
   }
