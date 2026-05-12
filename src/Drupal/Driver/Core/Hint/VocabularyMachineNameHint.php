@@ -43,6 +43,10 @@ class VocabularyMachineNameHint implements PreCreateHintInterface {
    * {@inheritdoc}
    */
   public function applyToStub(EntityStubInterface $stub): void {
+    if (!$stub->hasValue('vocabulary_machine_name')) {
+      return;
+    }
+
     $vid = $stub->getValue('vocabulary_machine_name');
 
     if ($stub->getBundle() === NULL && !$stub->hasValue('vid')) {
