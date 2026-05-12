@@ -39,6 +39,8 @@ class NameHandlerTest extends TestCase {
    *   The input values to expand.
    * @param array<int, mixed> $expected
    *   The expected expanded values.
+   *
+   * @dataProvider dataProviderExpand
    */
   #[DataProvider('dataProviderExpand')]
   public function testExpand(array $input, array $expected): void {
