@@ -74,6 +74,8 @@ class AuthorHintTest extends TestCase {
    *   The raw 'author' value placed on the stub.
    * @param string $expected_lookup
    *   The string the closure is expected to receive.
+   *
+   * @dataProvider dataProviderApplyToStubCoercesValueToString
    */
   #[DataProvider('dataProviderApplyToStubCoercesValueToString')]
   public function testApplyToStubCoercesValueToString(mixed $author, string $expected_lookup): void {
@@ -111,6 +113,8 @@ class AuthorHintTest extends TestCase {
    *
    * @param mixed $author
    *   The empty-ish 'author' value placed on the stub.
+   *
+   * @dataProvider dataProviderApplyToStubThrowsOnEmptyAuthor
    */
   #[DataProvider('dataProviderApplyToStubThrowsOnEmptyAuthor')]
   public function testApplyToStubThrowsOnEmptyAuthor(mixed $author): void {

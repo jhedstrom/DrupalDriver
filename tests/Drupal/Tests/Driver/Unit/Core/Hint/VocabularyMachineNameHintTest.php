@@ -41,6 +41,8 @@ class VocabularyMachineNameHintTest extends TestCase {
    * @param string|null $expected_vid
    *   The expected 'vid' value after the hint runs, or NULL when 'vid'
    *   should remain absent.
+   *
+   * @dataProvider dataProviderApplyToStub
    */
   #[DataProvider('dataProviderApplyToStub')]
   public function testApplyToStub(?string $bundle, array $values, ?string $expected_vid): void {

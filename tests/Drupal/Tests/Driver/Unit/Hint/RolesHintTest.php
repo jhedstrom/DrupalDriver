@@ -52,6 +52,8 @@ class RolesHintTest extends TestCase {
    *
    * @param mixed $roles
    *   The 'roles' value placed on the stub.
+   *
+   * @dataProvider dataProviderApplyAfterCreateIgnoresNonArrayValues
    */
   #[DataProvider('dataProviderApplyAfterCreateIgnoresNonArrayValues')]
   public function testApplyAfterCreateIgnoresNonArrayValues(mixed $roles): void {

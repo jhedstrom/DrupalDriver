@@ -88,6 +88,8 @@ class ParentTermHintTest extends TestCase {
    *
    * @param mixed $parent
    *   The empty-ish value placed on the stub.
+   *
+   * @dataProvider dataProviderApplyToStubNoOpsOnEmptyParent
    */
   #[DataProvider('dataProviderApplyToStubNoOpsOnEmptyParent')]
   public function testApplyToStubNoOpsOnEmptyParent(mixed $parent): void {
