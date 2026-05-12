@@ -6,6 +6,7 @@ namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Capability\AuthenticationCapabilityInterface;
+use Drupal\Driver\Capability\CreationHintCapabilityInterface;
 use Drupal\Driver\Core\Core;
 use Drupal\Driver\Core\CoreInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
@@ -14,7 +15,7 @@ use Drupal\Driver\Exception\BootstrapException;
 /**
  * Fully bootstraps Drupal and uses native API calls.
  */
-class DrupalDriver implements DrupalDriverInterface {
+class DrupalDriver implements DrupalDriverInterface, CreationHintCapabilityInterface {
 
   /**
    * Track whether Drupal has been bootstrapped.
@@ -143,6 +144,19 @@ class DrupalDriver implements DrupalDriverInterface {
    */
   public function setCore(CoreInterface $core): void {
     $this->core = $core;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreationHints(string $entity_type): array {
+    $core = $this->getCore();
+
+    if (!$core instanceof CreationHintCapabilityInterface) {
+      return [];
+    }
+
+    return $core->getCreationHints($entity_type);
   }
 
   /**

@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Driver\Capability\CreationHintCapabilityInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Hint\CreationHintRegistryTrait;
+use Drupal\Driver\Hint\RolesHint;
 use Symfony\Component\Process\Process;
 
 /**
  * Drives a Drupal site via the Drush CLI.
  */
-class DrushDriver implements DrushDriverInterface {
+class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterface {
+
+  use CreationHintRegistryTrait;
+
   /**
    * Store a drush alias for tests requiring shell access.
    */
@@ -87,6 +93,18 @@ class DrushDriver implements DrushDriverInterface {
 
     $this->binary = $binary;
     $this->random = $random ?? new Random();
+
+    $this->registerDefaultCreationHints();
+  }
+
+  /**
+   * Populates the creation-hint registry with hints this driver ships.
+   *
+   * A subclass that wants to add custom hints should override this method
+   * and call 'parent::registerDefaultCreationHints()' first.
+   */
+  protected function registerDefaultCreationHints(): void {
+    $this->registerCreationHint(new RolesHint($this));
   }
 
   /**

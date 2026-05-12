@@ -10,12 +10,18 @@ use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Driver\Capability\CreationHintCapabilityInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldClassifier;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
+use Drupal\Driver\Core\Hint\AuthorHint;
+use Drupal\Driver\Core\Hint\ParentTermHint;
+use Drupal\Driver\Core\Hint\VocabularyMachineNameHint;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Hint\CreationHintRegistryTrait;
+use Drupal\Driver\Hint\RolesHint;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
@@ -31,7 +37,9 @@ use Symfony\Component\Routing\Route;
 /**
  * Default Drupal core implementation.
  */
-class Core implements CoreInterface {
+class Core implements CoreInterface, CreationHintCapabilityInterface {
+
+  use CreationHintRegistryTrait;
 
   /**
    * System path to the Drupal installation.
@@ -98,6 +106,23 @@ class Core implements CoreInterface {
     $this->random = $random ?? new Random();
 
     $this->registerDefaultFieldHandlers();
+    $this->registerDefaultCreationHints();
+  }
+
+  /**
+   * Populates the creation-hint registry with hints this class ships.
+   *
+   * A 'Core' subclass that wants to add version-specific overrides
+   * should override this method, call
+   * 'parent::registerDefaultCreationHints()' first, and then register
+   * its own hints. Re-registering a name on the same entity type
+   * replaces the inherited entry.
+   */
+  protected function registerDefaultCreationHints(): void {
+    $this->registerCreationHint(new AuthorHint());
+    $this->registerCreationHint(new VocabularyMachineNameHint());
+    $this->registerCreationHint(new ParentTermHint());
+    $this->registerCreationHint(new RolesHint($this));
   }
 
   /**
