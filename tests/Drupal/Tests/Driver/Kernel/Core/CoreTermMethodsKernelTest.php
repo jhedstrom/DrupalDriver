@@ -134,7 +134,7 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
    * Existing happy-path coverage relies on the bundle constructor arg; this
    * test pins the alternative path that uses the alias as a stub value.
    */
-  public function testTermCreateWithVocabularyMachineNameHint(): void {
+  public function testTermCreateWithVocabularyMachineNameAlias(): void {
     $stub = new EntityStub('taxonomy_term', NULL, [
       'name' => 'Drupal',
       'vocabulary_machine_name' => 'tags',

@@ -2,33 +2,33 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Unit\Core\Hint;
+namespace Drupal\Tests\Driver\Unit\Core\Alias;
 
-use Drupal\Driver\Core\Hint\VocabularyMachineNameHint;
+use Drupal\Driver\Alias\PreCreateAliasInterface;
+use Drupal\Driver\Core\Alias\VocabularyMachineNameAlias;
 use Drupal\Driver\Entity\EntityStub;
-use Drupal\Driver\Hint\PreCreateHintInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the 'VocabularyMachineNameHint' creation hint.
+ * Tests the 'VocabularyMachineNameAlias' creation alias.
  *
- * @group hints
+ * @group aliases
  */
-#[Group('hints')]
-class VocabularyMachineNameHintTest extends TestCase {
+#[Group('aliases')]
+class VocabularyMachineNameAliasTest extends TestCase {
 
   /**
    * Tests metadata accessors.
    */
   public function testMetadataAccessors(): void {
-    $hint = new VocabularyMachineNameHint();
+    $alias = new VocabularyMachineNameAlias();
 
-    $this->assertInstanceOf(PreCreateHintInterface::class, $hint);
-    $this->assertSame('vocabulary_machine_name', $hint->getName());
-    $this->assertSame('taxonomy_term', $hint->getEntityType());
-    $this->assertNotSame('', $hint->getDescription());
+    $this->assertInstanceOf(PreCreateAliasInterface::class, $alias);
+    $this->assertSame('vocabulary_machine_name', $alias->getName());
+    $this->assertSame('taxonomy_term', $alias->getEntityType());
+    $this->assertNotSame('', $alias->getDescription());
   }
 
   /**
@@ -39,19 +39,19 @@ class VocabularyMachineNameHintTest extends TestCase {
    * @param array<string, mixed> $values
    *   The initial stub values.
    * @param string|null $expected_vid
-   *   The expected 'vid' value after the hint runs, or NULL when 'vid'
+   *   The expected 'vid' value after the alias runs, or NULL when 'vid'
    *   should remain absent.
    *
    * @dataProvider dataProviderApplyToStub
    */
   #[DataProvider('dataProviderApplyToStub')]
   public function testApplyToStub(?string $bundle, array $values, ?string $expected_vid): void {
-    $hint = new VocabularyMachineNameHint();
+    $alias = new VocabularyMachineNameAlias();
     $stub = new EntityStub('taxonomy_term', $bundle, $values);
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
 
-    $this->assertFalse($stub->hasValue('vocabulary_machine_name'), 'Alias must be removed after the hint runs.');
+    $this->assertFalse($stub->hasValue('vocabulary_machine_name'), 'Alias must be removed after it runs.');
 
     if ($expected_vid === NULL) {
       $this->assertFalse($stub->hasValue('vid'));

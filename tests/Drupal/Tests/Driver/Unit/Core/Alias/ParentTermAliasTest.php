@@ -2,45 +2,45 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Unit\Core\Hint;
+namespace Drupal\Tests\Driver\Unit\Core\Alias;
 
-use Drupal\Driver\Core\Hint\ParentTermHint;
+use Drupal\Driver\Alias\PreCreateAliasInterface;
+use Drupal\Driver\Core\Alias\ParentTermAlias;
 use Drupal\Driver\Entity\EntityStub;
-use Drupal\Driver\Exception\CreationHintResolutionException;
-use Drupal\Driver\Hint\PreCreateHintInterface;
+use Drupal\Driver\Exception\CreationAliasResolutionException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the 'ParentTermHint' creation hint.
+ * Tests the 'ParentTermAlias' creation alias.
  *
- * @group hints
+ * @group aliases
  */
-#[Group('hints')]
-class ParentTermHintTest extends TestCase {
+#[Group('aliases')]
+class ParentTermAliasTest extends TestCase {
 
   /**
    * Tests metadata accessors.
    */
   public function testMetadataAccessors(): void {
-    $hint = new ParentTermHint(static fn (): ?int => NULL);
+    $alias = new ParentTermAlias(static fn (): ?int => NULL);
 
-    $this->assertInstanceOf(PreCreateHintInterface::class, $hint);
-    $this->assertSame('parent', $hint->getName());
-    $this->assertSame('taxonomy_term', $hint->getEntityType());
-    $this->assertNotSame('', $hint->getDescription());
+    $this->assertInstanceOf(PreCreateAliasInterface::class, $alias);
+    $this->assertSame('parent', $alias->getName());
+    $this->assertSame('taxonomy_term', $alias->getEntityType());
+    $this->assertNotSame('', $alias->getDescription());
   }
 
   /**
    * Tests that a resolved parent term replaces the value in place.
    */
   public function testApplyToStubResolvesParent(): void {
-    $hint = new ParentTermHint(static fn (string $name, string $vid): int => $name === 'Frameworks' && $vid === 'tags' ? 99 : 0);
+    $alias = new ParentTermAlias(static fn (string $name, string $vid): int => $name === 'Frameworks' && $vid === 'tags' ? 99 : 0);
 
     $stub = new EntityStub('taxonomy_term', 'tags', ['name' => 'Symfony', 'parent' => 'Frameworks']);
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
 
     $this->assertSame(99, $stub->getValue('parent'));
   }
@@ -50,7 +50,7 @@ class ParentTermHintTest extends TestCase {
    */
   public function testApplyToStubFallsBackToVidValue(): void {
     $received_vid = NULL;
-    $hint = new ParentTermHint(static function (string $name, string $vid) use (&$received_vid): int {
+    $alias = new ParentTermAlias(static function (string $name, string $vid) use (&$received_vid): int {
       $received_vid = $vid;
 
       return 7;
@@ -58,7 +58,7 @@ class ParentTermHintTest extends TestCase {
 
     $stub = new EntityStub('taxonomy_term', NULL, ['parent' => 'Frameworks', 'vid' => 'tags']);
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
 
     $this->assertSame('tags', $received_vid);
     $this->assertSame(7, $stub->getValue('parent'));
@@ -68,15 +68,15 @@ class ParentTermHintTest extends TestCase {
    * Tests that unresolved parents throw and the value is left alone.
    */
   public function testApplyToStubThrowsOnUnknownParent(): void {
-    $hint = new ParentTermHint(static fn (): ?int => NULL);
+    $alias = new ParentTermAlias(static fn (): ?int => NULL);
 
     $stub = new EntityStub('taxonomy_term', 'tags', ['parent' => 'Nope']);
 
     try {
-      $hint->applyToStub($stub);
-      $this->fail('Expected CreationHintResolutionException.');
+      $alias->applyToStub($stub);
+      $this->fail('Expected CreationAliasResolutionException.');
     }
-    catch (CreationHintResolutionException $e) {
+    catch (CreationAliasResolutionException $e) {
       $this->assertStringContainsString("'Nope'", $e->getMessage());
       $this->assertStringContainsString("'tags'", $e->getMessage());
       $this->assertSame('Nope', $stub->getValue('parent'));
@@ -92,15 +92,15 @@ class ParentTermHintTest extends TestCase {
    * indirectly via the parent-not-found assertion.
    */
   public function testApplyToStubThrowsOnMissingVocabulary(): void {
-    $hint = new ParentTermHint(static fn (): int => 1);
+    $alias = new ParentTermAlias(static fn (): int => 1);
 
     $stub = new EntityStub('taxonomy_term', NULL, ['parent' => 'Frameworks']);
 
     try {
-      $hint->applyToStub($stub);
-      $this->fail('Expected CreationHintResolutionException.');
+      $alias->applyToStub($stub);
+      $this->fail('Expected CreationAliasResolutionException.');
     }
-    catch (CreationHintResolutionException $e) {
+    catch (CreationAliasResolutionException $e) {
       $this->assertStringContainsString("'Frameworks'", $e->getMessage());
       $this->assertStringContainsString('no vocabulary', $e->getMessage());
       $this->assertSame('Frameworks', $stub->getValue('parent'));
@@ -118,7 +118,7 @@ class ParentTermHintTest extends TestCase {
   #[DataProvider('dataProviderApplyToStubNoOpsOnEmptyParent')]
   public function testApplyToStubNoOpsOnEmptyParent(mixed $parent): void {
     $calls = 0;
-    $hint = new ParentTermHint(static function () use (&$calls): int {
+    $alias = new ParentTermAlias(static function () use (&$calls): int {
       $calls++;
 
       return 1;
@@ -126,7 +126,7 @@ class ParentTermHintTest extends TestCase {
 
     $stub = new EntityStub('taxonomy_term', 'tags', ['parent' => $parent]);
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
 
     $this->assertSame(0, $calls, 'Lookup must not be invoked for empty values.');
     $this->assertSame($parent, $stub->getValue('parent'), 'Value must remain unchanged.');

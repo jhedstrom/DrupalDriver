@@ -10,18 +10,18 @@ use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Driver\Capability\CreationHintCapabilityInterface;
+use Drupal\Driver\Capability\CreationAliasCapabilityInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldClassifier;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
-use Drupal\Driver\Core\Hint\AuthorHint;
-use Drupal\Driver\Core\Hint\ParentTermHint;
-use Drupal\Driver\Core\Hint\VocabularyMachineNameHint;
+use Drupal\Driver\Core\Alias\AuthorAlias;
+use Drupal\Driver\Core\Alias\ParentTermAlias;
+use Drupal\Driver\Core\Alias\VocabularyMachineNameAlias;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\Driver\Hint\CreationHintRegistryTrait;
-use Drupal\Driver\Hint\RolesHint;
+use Drupal\Driver\Alias\CreationAliasRegistryTrait;
+use Drupal\Driver\Alias\RolesAlias;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\mailsystem\MailsystemManager;
 use Drupal\node\Entity\Node;
@@ -37,9 +37,9 @@ use Symfony\Component\Routing\Route;
 /**
  * Default Drupal core implementation.
  */
-class Core implements CoreInterface, CreationHintCapabilityInterface {
+class Core implements CoreInterface, CreationAliasCapabilityInterface {
 
-  use CreationHintRegistryTrait;
+  use CreationAliasRegistryTrait;
 
   /**
    * System path to the Drupal installation.
@@ -106,23 +106,23 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
     $this->random = $random ?? new Random();
 
     $this->registerDefaultFieldHandlers();
-    $this->registerDefaultCreationHints();
+    $this->registerDefaultCreationAliases();
   }
 
   /**
-   * Populates the creation-hint registry with hints this class ships.
+   * Populates the creation-alias registry with aliases this class ships.
    *
    * A 'Core' subclass that wants to add version-specific overrides
    * should override this method, call
-   * 'parent::registerDefaultCreationHints()' first, and then register
-   * its own hints. Re-registering a name on the same entity type
+   * 'parent::registerDefaultCreationAliases()' first, and then register
+   * its own aliases. Re-registering a name on the same entity type
    * replaces the inherited entry.
    */
-  protected function registerDefaultCreationHints(): void {
-    $this->registerCreationHint(new AuthorHint());
-    $this->registerCreationHint(new VocabularyMachineNameHint());
-    $this->registerCreationHint(new ParentTermHint());
-    $this->registerCreationHint(new RolesHint($this));
+  protected function registerDefaultCreationAliases(): void {
+    $this->registerCreationAlias(new AuthorAlias());
+    $this->registerCreationAlias(new VocabularyMachineNameAlias());
+    $this->registerCreationAlias(new ParentTermAlias());
+    $this->registerCreationAlias(new RolesAlias($this));
   }
 
   /**
@@ -408,7 +408,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
       $stub->setValue('type', $type);
     }
 
-    $this->applyPreCreateHints($stub, 'node');
+    $this->applyPreCreateAliases($stub, 'node');
 
     $this->expandEntityFields($stub);
     $entity = Node::create($stub->getValues());
@@ -417,7 +417,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
     $stub->setValue('nid', $entity->id());
     $stub->markSaved($entity);
 
-    $this->applyPostCreateHints($stub, $entity, 'node');
+    $this->applyPostCreateAliases($stub, $entity, 'node');
 
     return $stub;
   }
@@ -539,7 +539,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
       $stub->setValue('status', 1);
     }
 
-    $this->applyPreCreateHints($stub, 'user');
+    $this->applyPreCreateAliases($stub, 'user');
 
     $this->expandEntityFields($stub);
     $account = \Drupal::entityTypeManager()->getStorage('user')->create($stub->getValues());
@@ -549,7 +549,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
     $stub->setValue('uid', $account->id());
     $stub->markSaved($account);
 
-    $this->applyPostCreateHints($stub, $account, 'user');
+    $this->applyPostCreateAliases($stub, $account, 'user');
   }
 
   /**
@@ -756,12 +756,12 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
    * {@inheritdoc}
    */
   public function termCreate(EntityStubInterface $stub): EntityStubInterface {
-    $this->applyPreCreateHints($stub, 'taxonomy_term');
+    $this->applyPreCreateAliases($stub, 'taxonomy_term');
 
     $vocabulary = $stub->getBundle() ?? $stub->getValue('vid');
 
     if (empty($vocabulary)) {
-      throw new \InvalidArgumentException("Cannot create term because the vocabulary is missing. Supply a bundle, a 'vid' value, or the 'vocabulary_machine_name' creation hint.");
+      throw new \InvalidArgumentException("Cannot create term because the vocabulary is missing. Supply a bundle, a 'vid' value, or the 'vocabulary_machine_name' creation alias.");
     }
 
     if (Vocabulary::load($vocabulary) === NULL) {
@@ -777,7 +777,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
     $stub->setValue('tid', $entity->id());
     $stub->markSaved($entity);
 
-    $this->applyPostCreateHints($stub, $entity, 'taxonomy_term');
+    $this->applyPostCreateAliases($stub, $entity, 'taxonomy_term');
 
     return $stub;
   }

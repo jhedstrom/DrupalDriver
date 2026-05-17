@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Driver\Hint;
+namespace Drupal\Driver\Alias;
 
 use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
-use Drupal\Driver\Exception\CreationHintResolutionException;
+use Drupal\Driver\Exception\CreationAliasResolutionException;
 
 /**
  * Assigns roles to a user after the user has been created.
@@ -20,10 +20,10 @@ use Drupal\Driver\Exception\CreationHintResolutionException;
  * all register an instance that targets their own 'userAddRole()'
  * implementation.
  */
-class RolesHint implements PostCreateHintInterface {
+class RolesAlias implements PostCreateAliasInterface {
 
   /**
-   * Constructs the hint with the driver that receives role calls.
+   * Constructs the alias with the driver that receives role calls.
    *
    * @param \Drupal\Driver\Capability\UserCapabilityInterface $driver
    *   The driver whose 'userAddRole()' will be called per role.
@@ -64,13 +64,13 @@ class RolesHint implements PostCreateHintInterface {
 
     foreach ($roles as $role) {
       if (!is_scalar($role) && !$role instanceof \Stringable) {
-        throw new CreationHintResolutionException("Cannot assign role because one of the 'roles' entries is not a scalar or stringable value.");
+        throw new CreationAliasResolutionException("Cannot assign role because one of the 'roles' entries is not a scalar or stringable value.");
       }
 
       $name = trim((string) $role);
 
       if ($name === '') {
-        throw new CreationHintResolutionException("Cannot assign role because one of the 'roles' entries is empty after trimming.");
+        throw new CreationAliasResolutionException("Cannot assign role because one of the 'roles' entries is empty after trimming.");
       }
 
       $this->driver->userAddRole($stub, $name);

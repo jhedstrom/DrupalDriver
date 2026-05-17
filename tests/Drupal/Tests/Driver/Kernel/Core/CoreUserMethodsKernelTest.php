@@ -168,13 +168,13 @@ class CoreUserMethodsKernelTest extends KernelTestBase {
   }
 
   /**
-   * Tests that 'userCreate()' honours the 'roles' creation hint.
+   * Tests that 'userCreate()' honours the 'roles' creation alias.
    *
    * Mirrors the existing Drush-side test (DrushDriverMethodsTest) on Core
    * and closes the symmetry gap: a stub created via Core can now assign
    * roles in one call instead of requiring a follow-up 'userAddRole()'.
    */
-  public function testUserCreateAppliesRolesHint(): void {
+  public function testUserCreateAppliesRolesAlias(): void {
     $role_id = $this->core->roleCreate(['access user profiles'], 'editor');
 
     $stub = new EntityStub('user', NULL, [

@@ -7,7 +7,7 @@ namespace Drupal\Tests\Driver\Unit\Fixtures;
 /**
  * Test double for the user object returned by user-lookup closures.
  *
- * Exposes the single 'id()' accessor that hint resolvers read; keeps
+ * Exposes the single 'id()' accessor that alias resolvers read; keeps
  * the surface intentionally small so tests stay coupled only to what
  * the production code calls.
  */

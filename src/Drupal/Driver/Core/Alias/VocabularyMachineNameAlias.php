@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Driver\Core\Hint;
+namespace Drupal\Driver\Core\Alias;
 
+use Drupal\Driver\Alias\PreCreateAliasInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
-use Drupal\Driver\Hint\PreCreateHintInterface;
 
 /**
  * Renames 'vocabulary_machine_name' on a term stub to 'vid'.
  *
- * The typed bundle constructor argument and an explicit 'vid' value both
- * take priority over the alias. When neither is present the alias value
- * is copied to 'vid'. The alias key is always removed once handled. The
- * hint does not validate vocabulary existence - the create method does
- * that after all pre-create hints have run.
+ * The typed bundle constructor argument and an explicit 'vid' value
+ * both take priority over this alias. When neither is present the
+ * alias value is copied to 'vid'. The alias key is always removed once
+ * handled. The alias does not validate vocabulary existence - the
+ * create method does that after all pre-create aliases have run.
  */
-class VocabularyMachineNameHint implements PreCreateHintInterface {
+class VocabularyMachineNameAlias implements PreCreateAliasInterface {
 
   /**
    * {@inheritdoc}

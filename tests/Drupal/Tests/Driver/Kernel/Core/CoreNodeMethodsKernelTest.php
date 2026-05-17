@@ -6,7 +6,7 @@ namespace Drupal\Tests\Driver\Kernel\Core;
 
 use Drupal\Driver\Core\Core;
 use Drupal\Driver\Entity\EntityStub;
-use Drupal\Driver\Exception\CreationHintResolutionException;
+use Drupal\Driver\Exception\CreationAliasResolutionException;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -110,10 +110,10 @@ class CoreNodeMethodsKernelTest extends KernelTestBase {
    * Tests that nodeCreate rejects an unknown 'author' value.
    *
    * Previously a missing user was silently coerced into 'uid = 0', leaving
-   * the typo invisible to the test author. The creation hint now throws.
+   * the typo invisible to the test author. The creation alias now throws.
    */
   public function testNodeCreateRejectsUnknownAuthor(): void {
-    $this->expectException(CreationHintResolutionException::class);
+    $this->expectException(CreationAliasResolutionException::class);
     $this->expectExceptionMessageMatches("/user 'auther'.*does not exist/");
 
     $this->core->nodeCreate(new EntityStub('node', 'article', [

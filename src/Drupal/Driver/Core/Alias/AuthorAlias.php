@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Driver\Core\Hint;
+namespace Drupal\Driver\Core\Alias;
 
+use Drupal\Driver\Alias\PreCreateAliasInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
-use Drupal\Driver\Exception\CreationHintResolutionException;
-use Drupal\Driver\Hint\PreCreateHintInterface;
+use Drupal\Driver\Exception\CreationAliasResolutionException;
 
 /**
  * Resolves a username on a node stub into the corresponding 'uid' value.
@@ -15,7 +15,7 @@ use Drupal\Driver\Hint\PreCreateHintInterface;
  * user's id to 'uid'. The 'author' key is removed from the stub once
  * resolved. Throws when the username does not match any existing user.
  */
-class AuthorHint implements PreCreateHintInterface {
+class AuthorAlias implements PreCreateAliasInterface {
 
   /**
    * Lookup callable for resolving a username to a user object.
@@ -28,7 +28,7 @@ class AuthorHint implements PreCreateHintInterface {
   protected \Closure $userLookup;
 
   /**
-   * Constructs the hint.
+   * Constructs the alias.
    *
    * @param \Closure(string): ?object|null $user_lookup
    *   Lookup callable. NULL uses 'user_load_by_name()' from the Drupal API.
@@ -69,17 +69,17 @@ class AuthorHint implements PreCreateHintInterface {
     $name = (string) $stub->getValue('author');
 
     if ($name === '') {
-      throw new CreationHintResolutionException("Cannot create node because the 'author' creation hint is set but empty.");
+      throw new CreationAliasResolutionException("Cannot create node because the 'author' creation alias is set but empty.");
     }
 
     $user = ($this->userLookup)($name);
 
     if ($user === NULL) {
-      throw new CreationHintResolutionException(sprintf("Cannot create node because user '%s', referenced via the 'author' creation hint, does not exist.", $name));
+      throw new CreationAliasResolutionException(sprintf("Cannot create node because user '%s', referenced via the 'author' creation alias, does not exist.", $name));
     }
 
     if (!method_exists($user, 'id')) {
-      throw new CreationHintResolutionException(sprintf("Cannot create node because the 'author' lookup returned an object without an 'id()' method while resolving '%s'.", $name));
+      throw new CreationAliasResolutionException(sprintf("Cannot create node because the 'author' lookup returned an object without an 'id()' method while resolving '%s'.", $name));
     }
 
     $stub->setValue('uid', $user->id());

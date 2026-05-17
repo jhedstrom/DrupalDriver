@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Driver\Core\Hint;
+namespace Drupal\Driver\Core\Alias;
 
+use Drupal\Driver\Alias\PreCreateAliasInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
-use Drupal\Driver\Exception\CreationHintResolutionException;
-use Drupal\Driver\Hint\PreCreateHintInterface;
+use Drupal\Driver\Exception\CreationAliasResolutionException;
 
 /**
  * Resolves a parent term name on a term stub to the parent's 'tid'.
@@ -16,11 +16,11 @@ use Drupal\Driver\Hint\PreCreateHintInterface;
  * No-ops when the value is empty. Throws when the parent term cannot
  * be found in the target vocabulary.
  *
- * The hint reads the target vocabulary from the stub's typed bundle or
- * from 'vid' (which the 'VocabularyMachineNameHint' may have populated
- * earlier in the pre-create pipeline).
+ * The alias reads the target vocabulary from the stub's typed bundle
+ * or from 'vid' (which the 'VocabularyMachineNameAlias' may have
+ * populated earlier in the pre-create pipeline).
  */
-class ParentTermHint implements PreCreateHintInterface {
+class ParentTermAlias implements PreCreateAliasInterface {
 
   /**
    * Lookup callable for resolving a parent term name to a tid.
@@ -33,7 +33,7 @@ class ParentTermHint implements PreCreateHintInterface {
   protected \Closure $parentLookup;
 
   /**
-   * Constructs the hint.
+   * Constructs the alias.
    *
    * @param \Closure(string, string): (int|string|null)|null $parent_lookup
    *   Lookup callable. NULL uses a Drupal entity query against the
@@ -53,7 +53,7 @@ class ParentTermHint implements PreCreateHintInterface {
       }
 
       if (count($tids) > 1) {
-        throw new CreationHintResolutionException(sprintf("Cannot resolve parent term '%s' in vocabulary '%s' because multiple terms share that name.", $parent_name, $vid));
+        throw new CreationAliasResolutionException(sprintf("Cannot resolve parent term '%s' in vocabulary '%s' because multiple terms share that name.", $parent_name, $vid));
       }
 
       return reset($tids);
@@ -92,26 +92,26 @@ class ParentTermHint implements PreCreateHintInterface {
     }
 
     if (!is_scalar($parent_name) && !$parent_name instanceof \Stringable) {
-      throw new CreationHintResolutionException("Cannot resolve parent term because the 'parent' value is not a scalar or stringable object.");
+      throw new CreationAliasResolutionException("Cannot resolve parent term because the 'parent' value is not a scalar or stringable object.");
     }
 
     $vid_raw = $stub->getBundle() ?? $stub->getValue('vid');
 
     if ($vid_raw !== NULL && !is_scalar($vid_raw) && !$vid_raw instanceof \Stringable) {
-      throw new CreationHintResolutionException("Cannot resolve parent term because the vocabulary value is not a scalar or stringable object.");
+      throw new CreationAliasResolutionException("Cannot resolve parent term because the vocabulary value is not a scalar or stringable object.");
     }
 
     $vid = (string) $vid_raw;
     $parent_name = (string) $parent_name;
 
     if ($vid === '') {
-      throw new CreationHintResolutionException(sprintf("Cannot resolve parent term '%s' because the stub has no vocabulary.", $parent_name));
+      throw new CreationAliasResolutionException(sprintf("Cannot resolve parent term '%s' because the stub has no vocabulary.", $parent_name));
     }
 
     $tid = ($this->parentLookup)($parent_name, $vid);
 
     if ($tid === NULL) {
-      throw new CreationHintResolutionException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vid));
+      throw new CreationAliasResolutionException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vid));
     }
 
     $stub->setValue('parent', $tid);

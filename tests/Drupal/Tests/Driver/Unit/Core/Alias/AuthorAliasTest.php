@@ -2,46 +2,46 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\Driver\Unit\Core\Hint;
+namespace Drupal\Tests\Driver\Unit\Core\Alias;
 
-use Drupal\Driver\Core\Hint\AuthorHint;
+use Drupal\Driver\Alias\PreCreateAliasInterface;
+use Drupal\Driver\Core\Alias\AuthorAlias;
 use Drupal\Driver\Entity\EntityStub;
-use Drupal\Driver\Exception\CreationHintResolutionException;
-use Drupal\Driver\Hint\PreCreateHintInterface;
+use Drupal\Driver\Exception\CreationAliasResolutionException;
 use Drupal\Tests\Driver\Unit\Fixtures\FakeUser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the 'AuthorHint' creation hint.
+ * Tests the 'AuthorAlias' creation alias.
  *
- * @group hints
+ * @group aliases
  */
-#[Group('hints')]
-class AuthorHintTest extends TestCase {
+#[Group('aliases')]
+class AuthorAliasTest extends TestCase {
 
   /**
    * Tests metadata accessors.
    */
   public function testMetadataAccessors(): void {
-    $hint = new AuthorHint(static fn (): ?object => NULL);
+    $alias = new AuthorAlias(static fn (): ?object => NULL);
 
-    $this->assertInstanceOf(PreCreateHintInterface::class, $hint);
-    $this->assertSame('author', $hint->getName());
-    $this->assertSame('node', $hint->getEntityType());
-    $this->assertNotSame('', $hint->getDescription());
+    $this->assertInstanceOf(PreCreateAliasInterface::class, $alias);
+    $this->assertSame('author', $alias->getName());
+    $this->assertSame('node', $alias->getEntityType());
+    $this->assertNotSame('', $alias->getDescription());
   }
 
   /**
    * Tests that a known username resolves to 'uid' and removes 'author'.
    */
   public function testApplyToStubResolvesKnownUser(): void {
-    $hint = new AuthorHint(static fn (string $name): object => new FakeUser(42));
+    $alias = new AuthorAlias(static fn (string $name): object => new FakeUser(42));
 
     $stub = new EntityStub('node', 'article', ['title' => 'Hello', 'author' => 'alice']);
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
 
     $this->assertSame(42, $stub->getValue('uid'));
     $this->assertFalse($stub->hasValue('author'));
@@ -52,15 +52,15 @@ class AuthorHintTest extends TestCase {
    * Tests that an unknown username throws and leaves the stub alone.
    */
   public function testApplyToStubThrowsOnUnknownUser(): void {
-    $hint = new AuthorHint(static fn (): ?object => NULL);
+    $alias = new AuthorAlias(static fn (): ?object => NULL);
 
     $stub = new EntityStub('node', 'article', ['author' => 'auther']);
 
     try {
-      $hint->applyToStub($stub);
-      $this->fail('Expected CreationHintResolutionException.');
+      $alias->applyToStub($stub);
+      $this->fail('Expected CreationAliasResolutionException.');
     }
-    catch (CreationHintResolutionException $e) {
+    catch (CreationAliasResolutionException $e) {
       $this->assertStringContainsString("'auther'", $e->getMessage());
       $this->assertTrue($stub->hasValue('author'), 'Stub must still carry the alias when resolution fails.');
       $this->assertFalse($stub->hasValue('uid'), 'No uid should be written when resolution fails.');
@@ -80,7 +80,7 @@ class AuthorHintTest extends TestCase {
   #[DataProvider('dataProviderApplyToStubCoercesValueToString')]
   public function testApplyToStubCoercesValueToString(mixed $author, string $expected_lookup): void {
     $received = NULL;
-    $hint = new AuthorHint(static function (string $name) use (&$received): object {
+    $alias = new AuthorAlias(static function (string $name) use (&$received): object {
       $received = $name;
 
       return new FakeUser(1);
@@ -88,7 +88,7 @@ class AuthorHintTest extends TestCase {
 
     $stub = new EntityStub('node', 'article', ['author' => $author]);
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
 
     $this->assertSame($expected_lookup, $received);
   }
@@ -119,14 +119,14 @@ class AuthorHintTest extends TestCase {
    */
   #[DataProvider('dataProviderApplyToStubThrowsOnEmptyAuthor')]
   public function testApplyToStubThrowsOnEmptyAuthor(mixed $author): void {
-    $hint = new AuthorHint(static fn (): object => new FakeUser(1));
+    $alias = new AuthorAlias(static fn (): object => new FakeUser(1));
 
     $stub = new EntityStub('node', 'article', ['author' => $author]);
 
-    $this->expectException(CreationHintResolutionException::class);
-    $this->expectExceptionMessageMatches("/'author' creation hint is set but empty/");
+    $this->expectException(CreationAliasResolutionException::class);
+    $this->expectExceptionMessageMatches("/'author' creation alias is set but empty/");
 
-    $hint->applyToStub($stub);
+    $alias->applyToStub($stub);
   }
 
   /**

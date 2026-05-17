@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
-use Drupal\Driver\Capability\CreationHintCapabilityInterface;
+use Drupal\Driver\Capability\CreationAliasCapabilityInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
-use Drupal\Driver\Hint\CreationHintRegistryTrait;
-use Drupal\Driver\Hint\RolesHint;
+use Drupal\Driver\Alias\CreationAliasRegistryTrait;
+use Drupal\Driver\Alias\RolesAlias;
 use Symfony\Component\Process\Process;
 
 /**
  * Drives a Drupal site via the Drush CLI.
  */
-class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterface {
+class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterface {
 
-  use CreationHintRegistryTrait;
+  use CreationAliasRegistryTrait;
 
   /**
    * Store a drush alias for tests requiring shell access.
@@ -94,17 +94,17 @@ class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterfa
     $this->binary = $binary;
     $this->random = $random ?? new Random();
 
-    $this->registerDefaultCreationHints();
+    $this->registerDefaultCreationAliases();
   }
 
   /**
-   * Populates the creation-hint registry with hints this driver ships.
+   * Populates the creation-alias registry with aliases this driver ships.
    *
-   * A subclass that wants to add custom hints should override this method
-   * and call 'parent::registerDefaultCreationHints()' first.
+   * A subclass that wants to add custom aliases should override this
+   * method and call 'parent::registerDefaultCreationAliases()' first.
    */
-  protected function registerDefaultCreationHints(): void {
-    $this->registerCreationHint(new RolesHint($this));
+  protected function registerDefaultCreationAliases(): void {
+    $this->registerCreationAlias(new RolesAlias($this));
   }
 
   /**
@@ -267,7 +267,7 @@ class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterfa
 
     if (!$uid) {
       // Drush did not return a parseable user id - the user record cannot
-      // be reasoned about. Skip post-create hints rather than dispatch
+      // be reasoned about. Skip post-create aliases rather than dispatch
       // them with a null-backed entity.
       return;
     }
@@ -277,7 +277,7 @@ class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterfa
     $account = new \stdClass();
     $account->uid = $uid;
 
-    $this->applyPostCreateHints($stub, $account, 'user');
+    $this->applyPostCreateAliases($stub, $account, 'user');
   }
 
   /**

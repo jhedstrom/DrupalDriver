@@ -10,7 +10,7 @@ use Drupal\Driver\Entity\EntityStubInterface;
 /**
  * Recording test double for 'UserCapabilityInterface'.
  *
- * Used by hint tests that need to assert which roles were assigned to a
+ * Used by alias tests that need to assert which roles were assigned to a
  * user without booting a real driver. Calls to 'userCreate()' and
  * 'userDelete()' are intentional no-ops; only 'userAddRole()' records.
  */
