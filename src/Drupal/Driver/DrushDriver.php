@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Driver\Capability\CreationAliasCapabilityInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
+use Drupal\Driver\Alias\CreationAliasRegistryTrait;
+use Drupal\Driver\Alias\RolesAlias;
 use Symfony\Component\Process\Process;
 
 /**
  * Drives a Drupal site via the Drush CLI.
  */
-class DrushDriver implements DrushDriverInterface {
+class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterface {
+
+  use CreationAliasRegistryTrait;
+
   /**
    * Store a drush alias for tests requiring shell access.
    */
@@ -87,6 +93,18 @@ class DrushDriver implements DrushDriverInterface {
 
     $this->binary = $binary;
     $this->random = $random ?? new Random();
+
+    $this->registerDefaultCreationAliases();
+  }
+
+  /**
+   * Populates the creation-alias registry with aliases this driver ships.
+   *
+   * A subclass that wants to add custom aliases should override this
+   * method and call 'parent::registerDefaultCreationAliases()' first.
+   */
+  protected function registerDefaultCreationAliases(): void {
+    $this->registerCreationAlias(new RolesAlias($this));
   }
 
   /**
@@ -247,19 +265,19 @@ class DrushDriver implements DrushDriverInterface {
     $result = $this->drush('user-create', $arguments, $options);
     $uid = $this->parseUserId($result);
 
-    if ($uid) {
-      $stub->setValue('uid', $uid);
-    }
-
-    $roles = $stub->getValue('roles');
-
-    if (!is_array($roles)) {
+    if (!$uid) {
+      // Drush did not return a parseable user id - the user record cannot
+      // be reasoned about. Skip post-create aliases rather than dispatch
+      // them with a null-backed entity.
       return;
     }
 
-    foreach ($roles as $role) {
-      $this->userAddRole($stub, $role);
-    }
+    $stub->setValue('uid', $uid);
+
+    $account = new \stdClass();
+    $account->uid = $uid;
+
+    $this->applyPostCreateAliases($stub, $account, 'user');
   }
 
   /**
