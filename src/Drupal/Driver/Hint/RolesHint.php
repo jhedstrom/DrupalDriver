@@ -6,6 +6,7 @@ namespace Drupal\Driver\Hint;
 
 use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
+use Drupal\Driver\Exception\CreationHintResolutionException;
 
 /**
  * Assigns roles to a user after the user has been created.
@@ -62,7 +63,17 @@ class RolesHint implements PostCreateHintInterface {
     }
 
     foreach ($roles as $role) {
-      $this->driver->userAddRole($stub, (string) $role);
+      if (!is_scalar($role) && !$role instanceof \Stringable) {
+        throw new CreationHintResolutionException("Cannot assign role because one of the 'roles' entries is not a scalar or stringable value.");
+      }
+
+      $name = trim((string) $role);
+
+      if ($name === '') {
+        throw new CreationHintResolutionException("Cannot assign role because one of the 'roles' entries is empty after trimming.");
+      }
+
+      $this->driver->userAddRole($stub, $name);
     }
   }
 

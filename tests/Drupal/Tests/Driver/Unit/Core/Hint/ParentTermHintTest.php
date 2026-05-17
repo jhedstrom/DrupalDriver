@@ -84,6 +84,30 @@ class ParentTermHintTest extends TestCase {
   }
 
   /**
+   * Tests that a missing vocabulary throws with a clear message.
+   *
+   * Pins the new strict-failure branch added when 'parent' is resolved
+   * without a bundle or 'vid' to scope the term lookup. Without this
+   * coverage, the missing-vocabulary path would only be exercised
+   * indirectly via the parent-not-found assertion.
+   */
+  public function testApplyToStubThrowsOnMissingVocabulary(): void {
+    $hint = new ParentTermHint(static fn (): int => 1);
+
+    $stub = new EntityStub('taxonomy_term', NULL, ['parent' => 'Frameworks']);
+
+    try {
+      $hint->applyToStub($stub);
+      $this->fail('Expected CreationHintResolutionException.');
+    }
+    catch (CreationHintResolutionException $e) {
+      $this->assertStringContainsString("'Frameworks'", $e->getMessage());
+      $this->assertStringContainsString('no vocabulary', $e->getMessage());
+      $this->assertSame('Frameworks', $stub->getValue('parent'));
+    }
+  }
+
+  /**
    * Tests that empty parent values short-circuit without calling lookup.
    *
    * @param mixed $parent

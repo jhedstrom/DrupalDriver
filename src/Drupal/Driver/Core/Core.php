@@ -761,7 +761,7 @@ class Core implements CoreInterface, CreationHintCapabilityInterface {
     $vocabulary = $stub->getBundle() ?? $stub->getValue('vid');
 
     if (empty($vocabulary)) {
-      throw new \InvalidArgumentException("Cannot create term because it is missing the required property 'vocabulary_machine_name'.");
+      throw new \InvalidArgumentException("Cannot create term because the vocabulary is missing. Supply a bundle, a 'vid' value, or the 'vocabulary_machine_name' creation hint.");
     }
 
     if (Vocabulary::load($vocabulary) === NULL) {

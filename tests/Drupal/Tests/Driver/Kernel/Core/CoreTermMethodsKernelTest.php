@@ -94,7 +94,7 @@ class CoreTermMethodsKernelTest extends KernelTestBase {
    */
   public function testTermCreateRejectsMissingVocabularyProperty(): void {
     $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessageMatches("/missing the required property 'vocabulary_machine_name'/");
+    $this->expectExceptionMessageMatches("/vocabulary is missing/");
 
     $this->core->termCreate(new EntityStub('taxonomy_term', NULL, ['name' => 'Orphan']));
   }

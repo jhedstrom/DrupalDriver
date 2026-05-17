@@ -265,9 +265,14 @@ class DrushDriver implements DrushDriverInterface, CreationHintCapabilityInterfa
     $result = $this->drush('user-create', $arguments, $options);
     $uid = $this->parseUserId($result);
 
-    if ($uid) {
-      $stub->setValue('uid', $uid);
+    if (!$uid) {
+      // Drush did not return a parseable user id - the user record cannot
+      // be reasoned about. Skip post-create hints rather than dispatch
+      // them with a null-backed entity.
+      return;
     }
+
+    $stub->setValue('uid', $uid);
 
     $account = new \stdClass();
     $account->uid = $uid;

@@ -102,6 +102,7 @@ class AuthorHintTest extends TestCase {
   public static function dataProviderApplyToStubCoercesValueToString(): iterable {
     yield 'plain string' => ['alice', 'alice'];
     yield 'integer-like string' => ['7', '7'];
+    yield 'integer coerced' => [7, '7'];
   }
 
   /**
