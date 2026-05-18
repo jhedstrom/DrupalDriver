@@ -15,6 +15,11 @@ class DatetimeHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
+   *
+   * Canonical contract: '$values' is a list of records keyed by column name
+   * ('value'). Returns the same shape with each 'value' formatted for
+   * storage. Callers that hold scalar dates must wrap them into
+   * '['value' => $date]' records.
    */
   public function expand($values): array {
     // Fresh Drupal installs leave system.date:timezone.default NULL until the
@@ -24,12 +29,10 @@ class DatetimeHandler extends AbstractHandler {
     $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
     $formatted = [];
 
-    foreach ($values as $value) {
-      // EntityFieldParser emits compound-mode deltas as '['value' => '...']'
-      // arrays. Sibling DaterangeHandler accepts the same shape; mirror it
-      // here so 'datetime' fields work uniformly with the parser.
-      $date = is_array($value) ? ($value['value'] ?? $value[0] ?? NULL) : $value;
-      $formatted[] = $this->formatDateValue($date, $site_timezone, $storage_timezone);
+    foreach ($values as $record) {
+      $formatted[] = [
+        'value' => $this->formatDateValue($record['value'] ?? NULL, $site_timezone, $storage_timezone),
+      ];
     }
 
     return $formatted;

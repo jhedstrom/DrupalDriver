@@ -36,26 +36,18 @@ class ImageHandlerTest extends TestCase {
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage('Error reading file /tmp/drupal-driver-nonexistent-image.jpg.');
 
-    @$handler->expand(['/tmp/drupal-driver-nonexistent-image.jpg']);
+    @$handler->expand([['target_id' => '/tmp/drupal-driver-nonexistent-image.jpg']]);
   }
 
   /**
-   * Tests every accepted input shape on the upload code path.
+   * Tests the upload code path under the canonical input shape.
    *
-   * Covers the three shapes the handler is contracted to accept:
-   *   - Scalar mode from EntityFieldParser ('['foo.jpg']').
-   *   - Legacy flat-positional with extras (['foo.jpg', 'alt' => ...]).
-   *   - Compound mode from EntityFieldParser row 16
-   *     ('[['target_id' => 'foo.jpg', ...]]') including multi-record input.
-   *
-   * @param \Closure(string): array<int|string, mixed> $build_input
-   *   Builds the input array given the temp file path.
-   * @param array<int|string, mixed> $expected
-   *   The expected expand() output.
+   * @param \Closure(string): array<int, array<string, mixed>> $build_input
+   *   Builds the canonical input given the temp file path.
+   * @param array<int, array<string, mixed>> $expected
+   *   The expected expand() output (always a list of records).
    *
    * @dataProvider dataProviderExpandUploadsFile
-   *
-   * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
    */
   #[DataProvider('dataProviderExpandUploadsFile')]
   public function testExpandUploadsFile(\Closure $build_input, array $expected): void {
@@ -74,23 +66,15 @@ class ImageHandlerTest extends TestCase {
    * Data provider for testExpandUploadsFile().
    */
   public static function dataProviderExpandUploadsFile(): \Iterator {
-    yield 'scalar single' => [
-      static fn (string $path): array => [$path],
-      ['target_id' => 7, 'alt' => NULL, 'title' => NULL],
-    ];
-    yield 'legacy flat positional with extras' => [
-      static fn (string $path): array => [$path, 'alt' => 'Alt text', 'title' => 'Title text'],
-      ['target_id' => 7, 'alt' => 'Alt text', 'title' => 'Title text'],
-    ];
-    yield 'compound single, bare target_id' => [
+    yield 'single record, bare target_id' => [
       static fn (string $path): array => [['target_id' => $path]],
-      ['target_id' => 7, 'alt' => NULL, 'title' => NULL],
+      [['target_id' => 7, 'alt' => NULL, 'title' => NULL]],
     ];
-    yield 'compound single with alt and title' => [
+    yield 'single record with alt and title' => [
       static fn (string $path): array => [['target_id' => $path, 'alt' => 'An image', 'title' => 'A title']],
-      ['target_id' => 7, 'alt' => 'An image', 'title' => 'A title'],
+      [['target_id' => 7, 'alt' => 'An image', 'title' => 'A title']],
     ];
-    yield 'compound multi-record' => [
+    yield 'multi-record' => [
       static fn (string $path): array => [
         ['target_id' => $path, 'alt' => 'First'],
         ['target_id' => $path, 'alt' => 'Second', 'title' => 'Second title'],
@@ -103,15 +87,15 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
-   * Tests every accepted input shape on the reuse-existing-managed-file path.
+   * Tests the reuse-existing-managed-file path under the canonical shape.
    *
    * @param string $managed_uri
    *   URI of the pre-existing managed File the storage stub will return.
    * @param int $file_id
    *   ID of the pre-existing managed File.
-   * @param array<int|string, mixed> $input
-   *   The input passed to expand().
-   * @param array<int|string, mixed> $expected
+   * @param array<int, array<string, mixed>> $input
+   *   The canonical input passed to expand().
+   * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output.
    *
    * @dataProvider dataProviderExpandReusesManagedFile
@@ -131,29 +115,17 @@ class ImageHandlerTest extends TestCase {
    * Data provider for testExpandReusesManagedFile().
    */
   public static function dataProviderExpandReusesManagedFile(): \Iterator {
-    yield 'scalar uri reuse' => [
-      'public://hero.jpg',
-      55,
-      ['public://hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title'],
-      ['target_id' => 55, 'alt' => 'Hero', 'title' => 'Hero title'],
-    ];
-    yield 'scalar bare basename reuse' => [
-      'public://logo.png',
-      66,
-      ['logo.png'],
-      ['target_id' => 66, 'alt' => NULL, 'title' => NULL],
-    ];
-    yield 'compound parser shape, uri reuse' => [
+    yield 'full uri reuse' => [
       'public://hero.jpg',
       77,
       [['target_id' => 'public://hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title']],
-      ['target_id' => 77, 'alt' => 'Hero', 'title' => 'Hero title'],
+      [['target_id' => 77, 'alt' => 'Hero', 'title' => 'Hero title']],
     ];
-    yield 'compound parser shape, bare basename reuse' => [
+    yield 'bare basename reuse' => [
       'public://logo.png',
       88,
       [['target_id' => 'logo.png']],
-      ['target_id' => 88, 'alt' => NULL, 'title' => NULL],
+      [['target_id' => 88, 'alt' => NULL, 'title' => NULL]],
     ];
   }
 

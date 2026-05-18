@@ -15,19 +15,17 @@ class ImageHandler extends FileHandler {
 
   /**
    * {@inheritdoc}
+   *
+   * Canonical contract: '$values' is a list of records keyed by column name
+   * ('target_id', 'alt', 'title'). Returns the same shape with 'target_id'
+   * resolved from path/URI/basename to a File entity id. Callers that hold
+   * scalar paths must wrap them into '['target_id' => $path]' records.
    */
   public function expand($values): array {
-    // Normalise three accepted shapes into a list of records:
-    // - ['foo.jpg'] (scalar mode)
-    // - ['foo.jpg', 'alt' => 'A', 'title' => 'B'] (legacy flat positional)
-    // - [['target_id' => 'foo.jpg', 'alt' => 'A', 'title' => 'B']] (compound
-    //   mode from EntityFieldParser row 16).
-    $records = (isset($values[0]) && is_array($values[0])) ? $values : [$values];
-
     $expanded = [];
 
-    foreach ($records as $record) {
-      $file_path = (string) ($record['target_id'] ?? $record[0] ?? '');
+    foreach ($values as $record) {
+      $file_path = (string) $record['target_id'];
       $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
 
       $expanded[] = [
@@ -37,7 +35,7 @@ class ImageHandler extends FileHandler {
       ];
     }
 
-    return count($expanded) === 1 ? $expanded[0] : $expanded;
+    return $expanded;
   }
 
 }

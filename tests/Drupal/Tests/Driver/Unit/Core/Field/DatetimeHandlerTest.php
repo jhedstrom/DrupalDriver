@@ -56,30 +56,14 @@ class DatetimeHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that empty strings and NULLs pass through as NULL values.
+   * Tests that the canonical shape preserves empty values as a NULL 'value'.
    */
   public function testExpandPreservesEmptyValuesAsNull(): void {
     $handler = $this->createHandler('datetime');
 
-    $result = $handler->expand(['', NULL]);
-
-    $this->assertSame([NULL, NULL], $result);
-  }
-
-  /**
-   * Tests that the compound-parser shape ('[['value' => '']]') is accepted.
-   *
-   * Verifying with an empty value side-steps the DrupalDateTime path (which
-   * needs the language_manager service). The shape coverage is the point.
-   *
-   * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
-   */
-  public function testExpandHandlesCompoundParserShapeEmpty(): void {
-    $handler = $this->createHandler('datetime');
-
     $result = $handler->expand([['value' => ''], ['value' => NULL]]);
 
-    $this->assertSame([NULL, NULL], $result);
+    $this->assertSame([['value' => NULL], ['value' => NULL]], $result);
   }
 
   /**
