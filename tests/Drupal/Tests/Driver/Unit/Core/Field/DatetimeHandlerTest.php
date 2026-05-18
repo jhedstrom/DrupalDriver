@@ -67,6 +67,22 @@ class DatetimeHandlerTest extends TestCase {
   }
 
   /**
+   * Tests that the compound-parser shape ('[['value' => '']]') is accepted.
+   *
+   * Verifying with an empty value side-steps the DrupalDateTime path (which
+   * needs the language_manager service). The shape coverage is the point.
+   *
+   * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
+   */
+  public function testExpandHandlesCompoundParserShapeEmpty(): void {
+    $handler = $this->createHandler('datetime');
+
+    $result = $handler->expand([['value' => ''], ['value' => NULL]]);
+
+    $this->assertSame([NULL, NULL], $result);
+  }
+
+  /**
    * Creates a DatetimeHandler with a fieldInfo mock returning datetime_type.
    */
   protected function createHandler(string $datetime_type): DatetimeHandler {

@@ -22,12 +22,17 @@ class DatetimeHandler extends AbstractHandler {
     // NULL to DateTimeZone.
     $site_timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default') ?: 'UTC');
     $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
+    $formatted = [];
 
-    foreach ($values as $key => $value) {
-      $values[$key] = $this->formatDateValue($value, $site_timezone, $storage_timezone);
+    foreach ($values as $value) {
+      // EntityFieldParser emits compound-mode deltas as '['value' => '...']'
+      // arrays. Sibling DaterangeHandler accepts the same shape; mirror it
+      // here so 'datetime' fields work uniformly with the parser.
+      $date = is_array($value) ? ($value['value'] ?? $value[0] ?? NULL) : $value;
+      $formatted[] = $this->formatDateValue($date, $site_timezone, $storage_timezone);
     }
 
-    return $values;
+    return $formatted;
   }
 
   /**

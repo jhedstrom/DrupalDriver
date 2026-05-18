@@ -70,4 +70,18 @@ class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
     $this->assertSame(['2026-01-02T03:04:05'], $stub->getValue('field_seen'));
   }
 
+  /**
+   * Tests round-trip for the compound-parser shape ('[['value' => ...]]').
+   *
+   * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
+   */
+  public function testDatetimeRoundTripWithCompoundParserShape(): void {
+    $this->attachField('field_event_date', 'datetime', [
+      'datetime_type' => DateTimeItem::DATETIME_TYPE_DATETIME,
+    ]);
+    $this->assertFieldRoundTripViaDriver('field_event_date', [
+      ['value' => '2026-07-15T10:00:00'],
+    ]);
+  }
+
 }
