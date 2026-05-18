@@ -8,6 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Driver\Core\Field\FileHandler;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the FileHandler field handler.
@@ -39,98 +40,123 @@ class FileHandlerTest extends TestCase {
   }
 
   /**
-   * Tests absolute disk paths fall through to upload when no match exists.
+   * Tests every accepted input shape on the upload code path.
+   *
+   * Covers the parser shapes that 'EntityFieldParser' emits:
+   *   - Scalar single ('['foo.bin']') and scalar multi-value.
+   *   - Compound mode from row 16 ('[['target_id' => 'foo.bin', 'display' => 1, ...]]').
+   *
+   * @param \Closure(string): array<int|string, mixed> $build_input
+   *   Builds the input array given the temp file path.
+   * @param array<int, array<string, mixed>> $expected
+   *   The expected expand() output (always a list of records for FileHandler).
    */
-  public function testExpandHandlesStringValueWithDefaults(): void {
-    $path = $this->createTempFile('png');
-    $this->setServicesWithUploadReturnId(99);
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand([$path]);
-
-    $this->assertSame([
-      ['target_id' => 99, 'display' => 1, 'description' => ''],
-    ], $result);
-  }
-
-  /**
-   * Tests that keyed array values honour their explicit overrides.
-   */
-  public function testExpandHandlesArrayValueWithOverrides(): void {
+  #[DataProvider('dataProviderExpandUploadShapes')]
+  public function testExpandUploadsFile(\Closure $build_input, array $expected): void {
     $path = $this->createTempFile('pdf');
     $this->setServicesWithUploadReturnId(42);
 
     $handler = $this->createHandler();
 
-    $result = $handler->expand([
+    $result = $handler->expand($build_input($path));
+
+    $this->assertSame($expected, $result);
+  }
+
+  /**
+   * Data provider for testExpandUploadsFile().
+   */
+  public static function dataProviderExpandUploadShapes(): \Iterator {
+    yield 'scalar single' => [
+      static fn (string $path) => [$path],
+      [['target_id' => 42, 'display' => 1, 'description' => '']],
+    ];
+    yield 'scalar multi-value' => [
+      static fn (string $path) => [$path, $path],
       [
-        'target_id' => $path,
-        'display' => 0,
-        'description' => 'Spec sheet',
+        ['target_id' => 42, 'display' => 1, 'description' => ''],
+        ['target_id' => 42, 'display' => 1, 'description' => ''],
       ],
-    ]);
-
-    $this->assertSame([
-      ['target_id' => 42, 'display' => 0, 'description' => 'Spec sheet'],
-    ], $result);
+    ];
+    yield 'compound single with display and description' => [
+      static fn (string $path) => [
+        ['target_id' => $path, 'display' => 0, 'description' => 'Spec sheet'],
+      ],
+      [['target_id' => 42, 'display' => 0, 'description' => 'Spec sheet']],
+    ];
+    yield 'compound single, bare target_id' => [
+      static fn (string $path) => [['target_id' => $path]],
+      [['target_id' => 42, 'display' => 1, 'description' => '']],
+    ];
+    yield 'compound multi-record' => [
+      static fn (string $path) => [
+        ['target_id' => $path, 'display' => 1, 'description' => 'Public'],
+        ['target_id' => $path, 'display' => 0, 'description' => 'Hidden'],
+      ],
+      [
+        ['target_id' => 42, 'display' => 1, 'description' => 'Public'],
+        ['target_id' => 42, 'display' => 0, 'description' => 'Hidden'],
+      ],
+    ];
   }
 
   /**
-   * Tests that a full URI input reuses an existing managed File if present.
+   * Tests every accepted input shape on the reuse-existing-managed-file path.
    *
-   * Restored 2.x behaviour: passing 'public://logo.png' must not trigger a
-   * new upload when a managed File already points at that URI.
+   * @param string $managed_uri
+   *   URI of the pre-existing managed File the storage stub will return.
+   * @param int $file_id
+   *   ID of the pre-existing managed File.
+   * @param array<int|string, mixed> $input
+   *   The input passed to expand().
+   * @param array<int, array<string, mixed>> $expected
+   *   The expected expand() output.
    */
-  public function testExpandReusesExistingManagedFileByUri(): void {
-    $this->setServicesWithMatchingManagedFile(
-      uri: 'public://logo.png',
-      file_id: 77,
-    );
+  #[DataProvider('dataProviderExpandReuseShapes')]
+  public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {
+    $this->setServicesWithMatchingManagedFile(uri: $managed_uri, file_id: $file_id);
 
     $handler = $this->createHandler();
 
-    $result = $handler->expand(['public://logo.png']);
+    $result = $handler->expand($input);
 
-    $this->assertSame([
-      ['target_id' => 77, 'display' => 1, 'description' => ''],
-    ], $result);
+    $this->assertSame($expected, $result);
   }
 
   /**
-   * Tests that a bare basename reuses an existing managed File via public://.
+   * Data provider for testExpandReusesManagedFile().
    */
-  public function testExpandReusesExistingManagedFileByBareBasenamePublic(): void {
-    $this->setServicesWithMatchingManagedFile(
-      uri: 'public://report.pdf',
-      file_id: 123,
-    );
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand(['report.pdf']);
-
-    $this->assertSame([
-      ['target_id' => 123, 'display' => 1, 'description' => ''],
-    ], $result);
-  }
-
-  /**
-   * Tests that a bare basename falls back to private:// when public:// misses.
-   */
-  public function testExpandReusesExistingManagedFileByBareBasenamePrivate(): void {
-    $this->setServicesWithMatchingManagedFile(
-      uri: 'private://secret.pdf',
-      file_id: 444,
-    );
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand(['secret.pdf']);
-
-    $this->assertSame([
-      ['target_id' => 444, 'display' => 1, 'description' => ''],
-    ], $result);
+  public static function dataProviderExpandReuseShapes(): \Iterator {
+    yield 'scalar full uri reuse' => [
+      'public://logo.png',
+      77,
+      ['public://logo.png'],
+      [['target_id' => 77, 'display' => 1, 'description' => '']],
+    ];
+    yield 'scalar bare basename, public scheme' => [
+      'public://report.pdf',
+      123,
+      ['report.pdf'],
+      [['target_id' => 123, 'display' => 1, 'description' => '']],
+    ];
+    yield 'scalar bare basename, private scheme fallback' => [
+      'private://secret.pdf',
+      444,
+      ['secret.pdf'],
+      [['target_id' => 444, 'display' => 1, 'description' => '']],
+    ];
+    yield 'compound parser shape, uri reuse' => [
+      'public://logo.png',
+      80,
+      [['target_id' => 'public://logo.png', 'display' => 0, 'description' => 'Brand mark']],
+      [['target_id' => 80, 'display' => 0, 'description' => 'Brand mark']],
+    ];
+    yield 'compound parser shape, bare basename reuse' => [
+      'public://report.pdf',
+      90,
+      [['target_id' => 'report.pdf']],
+      [['target_id' => 90, 'display' => 1, 'description' => '']],
+    ];
   }
 
   /**
@@ -187,16 +213,16 @@ class FileHandlerTest extends TestCase {
   /**
    * Creates a stand-in File entity that exposes an id() method.
    */
-  private function createFakeFile(int $file_id): object {
+  protected function createFakeFile(int $file_id): object {
     return new class($file_id) {
 
-      public function __construct(private readonly int $file_id) {}
+      public function __construct(protected readonly int $fileId) {}
 
       /**
        * Returns the stored file entity ID.
        */
       public function id(): int {
-        return $this->file_id;
+        return $this->fileId;
       }
 
       /**
@@ -211,10 +237,10 @@ class FileHandlerTest extends TestCase {
   /**
    * Creates a stand-in file.repository service returning the given file.
    */
-  private function createFileRepositoryReturning(object $file): object {
+  protected function createFileRepositoryReturning(object $file): object {
     return new class($file) {
 
-      public function __construct(private readonly object $file) {}
+      public function __construct(protected readonly object $file) {}
 
       /**
        * Returns the pre-configured stored file.
@@ -229,7 +255,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Creates a stand-in entity_type.manager whose file storage never matches.
    */
-  private function createEntityTypeManagerReturningNoMatches(): object {
+  protected function createEntityTypeManagerReturningNoMatches(): object {
     $storage = new class {
 
       /**
@@ -249,7 +275,7 @@ class FileHandlerTest extends TestCase {
 
     return new class($storage) {
 
-      public function __construct(private readonly object $storage) {}
+      public function __construct(protected readonly object $storage) {}
 
       /**
        * Returns the stub file storage.
@@ -267,10 +293,10 @@ class FileHandlerTest extends TestCase {
    * The storage's loadByProperties() returns $file only when called with
    * exactly ['uri' => $uri], and an empty array for every other lookup.
    */
-  private function createEntityTypeManagerReturningFileAtUri(string $uri, object $file): object {
+  protected function createEntityTypeManagerReturningFileAtUri(string $uri, object $file): object {
     $storage = new class($uri, $file) {
 
-      public function __construct(private readonly string $uri, private readonly object $file) {}
+      public function __construct(protected readonly string $uri, protected readonly object $file) {}
 
       /**
        * Returns the configured file only for lookups matching the stored URI.
@@ -293,7 +319,7 @@ class FileHandlerTest extends TestCase {
 
     return new class($storage) {
 
-      public function __construct(private readonly object $storage) {}
+      public function __construct(protected readonly object $storage) {}
 
       /**
        * Returns the stub file storage.
