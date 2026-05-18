@@ -7,13 +7,13 @@ namespace Drupal\Driver\Core\Field;
 /**
  * Default field handler for Drupal 8.
  */
-class TextWithSummaryHandler implements FieldHandlerInterface {
+class TextWithSummaryHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
   public function expand(mixed $values): array {
-    return (array) $values;
+    return $this->normalise($values);
   }
 
 }

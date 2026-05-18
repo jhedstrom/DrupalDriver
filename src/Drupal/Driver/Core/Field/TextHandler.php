@@ -11,13 +11,13 @@ namespace Drupal\Driver\Core\Field;
  * 'text_long'. Both share the multi-column shape and therefore need a
  * dedicated pass-through so DefaultHandler does not reject the payload.
  */
-class TextHandler implements FieldHandlerInterface {
+class TextHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
   public function expand(mixed $values): array {
-    return (array) $values;
+    return $this->normalise($values);
   }
 
 }
