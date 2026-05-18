@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\ImageHandler;
 use PHPUnit\Framework\TestCase;
@@ -206,17 +205,14 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
-   * Creates an ImageHandler with a fieldInfo stub for normalise().
+   * Creates an ImageHandler with the main property injected.
    */
   protected function createHandler(): ImageHandler {
-    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
-    $field_info->method('getMainPropertyName')->willReturn('target_id');
-
     $reflection = new \ReflectionClass(ImageHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
 
-    $property = new \ReflectionProperty(AbstractHandler::class, 'fieldInfo');
-    $property->setValue($handler, $field_info);
+    $property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $property->setValue($handler, 'target_id');
 
     return $handler;
   }

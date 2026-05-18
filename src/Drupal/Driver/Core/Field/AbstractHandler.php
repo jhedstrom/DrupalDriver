@@ -23,6 +23,19 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   protected FieldDefinitionInterface $fieldConfig;
 
   /**
+   * Main property name of the field's storage definition.
+   *
+   * Cached once at construction so 'normalise()' and subclass 'expand()'
+   * methods do not have to look it up on every call. Resolves to the
+   * column key that a bare scalar maps to ('target_id' for image/file/
+   * entity_reference, 'value' for datetime/boolean/list/text, 'uri' for
+   * link, etc.). NULL for field types without a single main column (e.g.
+   * 'address', 'name'); those handlers must override 'normalise()' or
+   * 'expand()' to interpret records themselves.
+   */
+  protected ?string $mainProperty = NULL;
+
+  /**
    * Constructs an AbstractHandler object.
    *
    * @param \Drupal\Driver\Entity\EntityStubInterface $stub
@@ -64,6 +77,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
 
     $this->fieldInfo = $storage_definitions[$field_name];
     $this->fieldConfig = $field_definitions[$field_name];
+    $this->mainProperty = $this->fieldInfo->getMainPropertyName();
   }
 
   /**
@@ -96,10 +110,12 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *   A canonical list of records.
    */
   protected function normalise(mixed $values): array {
-    $main_property = $this->fieldInfo->getMainPropertyName();
+    if ($this->mainProperty === NULL) {
+      throw new \LogicException(sprintf('Handler "%s" has no main property and cannot use the default normalise(); override normalise() in the handler subclass.', static::class));
+    }
 
     if (!is_array($values)) {
-      return [[$main_property => $values]];
+      return [[$this->mainProperty => $values]];
     }
 
     if ($values === []) {
@@ -135,7 +151,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
       $records = [];
 
       foreach ($values as $value) {
-        $records[] = is_array($value) ? $value : [$main_property => $value];
+        $records[] = is_array($value) ? $value : [$this->mainProperty => $value];
       }
     }
 
@@ -144,10 +160,10 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     // left only the extras like 'alt' or 'format'); flag it here so the
     // handler does not silently dispatch on missing data.
     foreach ($records as $record) {
-      if (!array_key_exists($main_property, $record)) {
+      if (!array_key_exists($this->mainProperty, $record)) {
         throw new \InvalidArgumentException(sprintf(
           'Field record must include the main property "%s". Got keys: %s.',
-          $main_property,
+          $this->mainProperty,
           implode(', ', array_keys($record)) ?: '(none)',
         ));
       }

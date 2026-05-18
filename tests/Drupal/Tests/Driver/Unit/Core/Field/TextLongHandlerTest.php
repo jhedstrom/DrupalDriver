@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\TextLongHandler;
 use PHPUnit\Framework\TestCase;
@@ -32,17 +31,14 @@ class TextLongHandlerTest extends TestCase {
   }
 
   /**
-   * Creates a TextLongHandler with a fieldInfo stub for normalise().
+   * Creates a TextLongHandler with the main property injected.
    */
   protected function createHandler(): TextLongHandler {
-    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
-    $field_info->method('getMainPropertyName')->willReturn('value');
-
     $reflection = new \ReflectionClass(TextLongHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
 
-    $property = new \ReflectionProperty(AbstractHandler::class, 'fieldInfo');
-    $property->setValue($handler, $field_info);
+    $property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $property->setValue($handler, 'value');
 
     return $handler;
   }

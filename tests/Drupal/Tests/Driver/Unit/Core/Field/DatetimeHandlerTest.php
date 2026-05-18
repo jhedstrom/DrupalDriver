@@ -11,6 +11,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DatetimeHandler;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
@@ -107,23 +108,26 @@ class DatetimeHandlerTest extends TestCase {
   }
 
   /**
-   * Creates a DatetimeHandler with a fieldInfo mock.
+   * Creates a DatetimeHandler with fieldInfo and main property injected.
    *
-   * Stubs both getSetting('datetime_type') (used by formatDateValue) and
-   * getMainPropertyName() (used by AbstractHandler::normalise()).
+   * The fieldInfo mock is still needed for getSetting('datetime_type')
+   * (used by formatDateValue); mainProperty is injected separately because
+   * normalise() reads it as a property, not via fieldInfo.
    */
   protected function createHandler(string $datetime_type): DatetimeHandler {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('datetime_type')
       ->willReturn($datetime_type);
-    $field_info->method('getMainPropertyName')->willReturn('value');
 
     $reflection = new \ReflectionClass(DatetimeHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
 
-    $property = new \ReflectionProperty(DatetimeHandler::class, 'fieldInfo');
-    $property->setValue($handler, $field_info);
+    $info_property = new \ReflectionProperty(DatetimeHandler::class, 'fieldInfo');
+    $info_property->setValue($handler, $field_info);
+
+    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_property->setValue($handler, 'value');
 
     return $handler;
   }

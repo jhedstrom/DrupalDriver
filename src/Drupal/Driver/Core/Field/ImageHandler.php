@@ -27,18 +27,18 @@ class ImageHandler extends FileHandler {
     $expanded = [];
 
     foreach ($records as $record) {
-      // normalise() already enforced that 'target_id' is a key on every
+      // normalise() already enforced that the main property key is on every
       // record; here we additionally reject NULL/empty values because the
       // file resolver and uploader need a real path/URI/basename.
-      if ($record['target_id'] === NULL || $record['target_id'] === '') {
-        throw new \InvalidArgumentException('Image field "target_id" must not be NULL or empty.');
+      if ($record[$this->mainProperty] === NULL || $record[$this->mainProperty] === '') {
+        throw new \InvalidArgumentException(sprintf('Image field "%s" must not be NULL or empty.', $this->mainProperty));
       }
 
-      $file_path = (string) $record['target_id'];
+      $file_path = (string) $record[$this->mainProperty];
       $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
 
       $expanded[] = [
-        'target_id' => $file->id(),
+        $this->mainProperty => $file->id(),
         'alt' => $record['alt'] ?? NULL,
         'title' => $record['title'] ?? NULL,
       ];

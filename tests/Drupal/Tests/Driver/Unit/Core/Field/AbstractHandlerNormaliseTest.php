@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -218,20 +217,17 @@ class AbstractHandlerNormaliseTest extends TestCase {
   }
 
   /**
-   * Creates an AbstractHandler subclass with a stubbed fieldInfo.
+   * Creates an AbstractHandler subclass with the main property injected.
    *
    * Bypasses the constructor (which requires a full Drupal entity bootstrap)
-   * and injects a fieldInfo mock whose getMainPropertyName() returns the
-   * given value.
+   * and sets 'mainProperty' directly via reflection - 'normalise()' only
+   * needs that one value.
    */
   protected function createHandler(string $main_property): AbstractHandler {
-    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
-    $field_info->method('getMainPropertyName')->willReturn($main_property);
-
     $handler = (new \ReflectionClass(NormaliseTestHandler::class))->newInstanceWithoutConstructor();
 
-    $property = new \ReflectionProperty(AbstractHandler::class, 'fieldInfo');
-    $property->setValue($handler, $field_info);
+    $property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $property->setValue($handler, $main_property);
 
     return $handler;
   }
