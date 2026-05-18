@@ -16,15 +16,17 @@ class ImageHandler extends FileHandler {
   /**
    * {@inheritdoc}
    *
-   * Canonical contract: '$values' is a list of records keyed by column name
-   * ('target_id', 'alt', 'title'). Returns the same shape with 'target_id'
-   * resolved from path/URI/basename to a File entity id. Callers that hold
-   * scalar paths must wrap them into '['target_id' => $path]' records.
+   * Accepts whatever shape the caller naturally has: a bare path, a list
+   * of paths, a single record, or a list of records. 'normalise()' folds
+   * all of those into a canonical list of records before iteration.
+   * Returns a uniform list of records with 'target_id' resolved to a
+   * File entity id.
    */
   public function expand($values): array {
+    $records = $this->normalise($values);
     $expanded = [];
 
-    foreach ($values as $record) {
+    foreach ($records as $record) {
       $file_path = (string) $record['target_id'];
       $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
 

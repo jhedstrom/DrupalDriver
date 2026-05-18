@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
@@ -56,24 +57,67 @@ class DatetimeHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that the canonical shape preserves empty values as a NULL 'value'.
+   * Tests that empty values are accepted in every input shape.
+   *
+   * @param mixed $input
+   *   Any of the loose shapes 'normalise()' accepts.
+   * @param array<int, array<string, mixed>> $expected
+   *   The expected expand() output: a list of records keyed by 'value'.
+   *
+   * @dataProvider dataProviderExpandPreservesEmptyValuesAsNull
    */
-  public function testExpandPreservesEmptyValuesAsNull(): void {
+  #[DataProvider('dataProviderExpandPreservesEmptyValuesAsNull')]
+  public function testExpandPreservesEmptyValuesAsNull(mixed $input, array $expected): void {
     $handler = $this->createHandler('datetime');
 
-    $result = $handler->expand([['value' => ''], ['value' => NULL]]);
+    $result = $handler->expand($input);
 
-    $this->assertSame([['value' => NULL], ['value' => NULL]], $result);
+    $this->assertSame($expected, $result);
   }
 
   /**
-   * Creates a DatetimeHandler with a fieldInfo mock returning datetime_type.
+   * Data provider for testExpandPreservesEmptyValuesAsNull().
+   *
+   * Non-empty dates exercise DrupalDateTime, which needs the language_manager
+   * service and a full container; those cases live in the kernel test. The
+   * shape coverage here uses empty values so that 'formatDateValue()' early
+   * returns and the only assertion is on the normalised record shape.
+   */
+  public static function dataProviderExpandPreservesEmptyValuesAsNull(): \Iterator {
+    yield 'bare empty string scalar' => [
+      '',
+      [['value' => NULL]],
+    ];
+    yield 'bare NULL scalar' => [
+      NULL,
+      [['value' => NULL]],
+    ];
+    yield 'list of empty scalars' => [
+      ['', NULL],
+      [['value' => NULL], ['value' => NULL]],
+    ];
+    yield 'single record with empty value' => [
+      ['value' => ''],
+      [['value' => NULL]],
+    ];
+    yield 'list of records with empty values' => [
+      [['value' => ''], ['value' => NULL]],
+      [['value' => NULL], ['value' => NULL]],
+    ];
+  }
+
+  /**
+   * Creates a DatetimeHandler with a fieldInfo mock.
+   *
+   * Stubs both getSetting('datetime_type') (used by formatDateValue) and
+   * getMainPropertyName() (used by AbstractHandler::normalise()).
    */
   protected function createHandler(string $datetime_type): DatetimeHandler {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('datetime_type')
       ->willReturn($datetime_type);
+    $field_info->method('getMainPropertyName')->willReturn('value');
 
     $reflection = new \ReflectionClass(DatetimeHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();

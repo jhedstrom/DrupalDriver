@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\ImageHandler;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
@@ -36,14 +38,19 @@ class ImageHandlerTest extends TestCase {
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage('Error reading file /tmp/drupal-driver-nonexistent-image.jpg.');
 
-    @$handler->expand([['target_id' => '/tmp/drupal-driver-nonexistent-image.jpg']]);
+    @$handler->expand('/tmp/drupal-driver-nonexistent-image.jpg');
   }
 
   /**
-   * Tests the upload code path under the canonical input shape.
+   * Tests every accepted input shape on the upload code path.
    *
-   * @param \Closure(string): array<int, array<string, mixed>> $build_input
-   *   Builds the canonical input given the temp file path.
+   * The handler delegates shape normalisation to AbstractHandler::normalise(),
+   * which already has its own dedicated test. This test confirms that every
+   * loose shape arrives at the file-resolution code with the expected
+   * 'target_id' and that extras (alt/title) round-trip when present.
+   *
+   * @param \Closure(string): mixed $build_input
+   *   Builds the input given the temp file path.
    * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output (always a list of records).
    *
@@ -66,15 +73,34 @@ class ImageHandlerTest extends TestCase {
    * Data provider for testExpandUploadsFile().
    */
   public static function dataProviderExpandUploadsFile(): \Iterator {
-    yield 'single record, bare target_id' => [
-      static fn (string $path): array => [['target_id' => $path]],
+    yield 'bare scalar path' => [
+      static fn (string $path): string => $path,
+      [['target_id' => 7, 'alt' => NULL, 'title' => NULL]],
+    ];
+    yield 'list of one scalar path' => [
+      static fn (string $path): array => [$path],
+      [['target_id' => 7, 'alt' => NULL, 'title' => NULL]],
+    ];
+    yield 'list of two scalar paths' => [
+      static fn (string $path): array => [$path, $path],
+      [
+        ['target_id' => 7, 'alt' => NULL, 'title' => NULL],
+        ['target_id' => 7, 'alt' => NULL, 'title' => NULL],
+      ],
+    ];
+    yield 'single record with target_id only' => [
+      static fn (string $path): array => ['target_id' => $path],
       [['target_id' => 7, 'alt' => NULL, 'title' => NULL]],
     ];
     yield 'single record with alt and title' => [
-      static fn (string $path): array => [['target_id' => $path, 'alt' => 'An image', 'title' => 'A title']],
+      static fn (string $path): array => ['target_id' => $path, 'alt' => 'An image', 'title' => 'A title'],
       [['target_id' => 7, 'alt' => 'An image', 'title' => 'A title']],
     ];
-    yield 'multi-record' => [
+    yield 'list of one record' => [
+      static fn (string $path): array => [['target_id' => $path, 'alt' => 'Solo']],
+      [['target_id' => 7, 'alt' => 'Solo', 'title' => NULL]],
+    ];
+    yield 'list of multiple records' => [
       static fn (string $path): array => [
         ['target_id' => $path, 'alt' => 'First'],
         ['target_id' => $path, 'alt' => 'Second', 'title' => 'Second title'],
@@ -87,21 +113,22 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
-   * Tests the reuse-existing-managed-file path under the canonical shape.
+   * Tests every accepted input shape on the reuse-existing-managed-file path.
    *
    * @param string $managed_uri
    *   URI of the pre-existing managed File the storage stub will return.
    * @param int $file_id
    *   ID of the pre-existing managed File.
-   * @param array<int, array<string, mixed>> $input
-   *   The canonical input passed to expand().
+   * @param mixed $input
+   *   The input passed to expand() (any of the loose shapes the consumer
+   *   can naturally produce).
    * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output.
    *
    * @dataProvider dataProviderExpandReusesManagedFile
    */
   #[DataProvider('dataProviderExpandReusesManagedFile')]
-  public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {
+  public function testExpandReusesManagedFile(string $managed_uri, int $file_id, mixed $input, array $expected): void {
     $this->setServicesWithMatchingManagedFile(uri: $managed_uri, file_id: $file_id);
 
     $handler = $this->createHandler();
@@ -115,13 +142,25 @@ class ImageHandlerTest extends TestCase {
    * Data provider for testExpandReusesManagedFile().
    */
   public static function dataProviderExpandReusesManagedFile(): \Iterator {
-    yield 'full uri reuse' => [
+    yield 'bare scalar uri' => [
+      'public://hero.jpg',
+      55,
+      'public://hero.jpg',
+      [['target_id' => 55, 'alt' => NULL, 'title' => NULL]],
+    ];
+    yield 'bare scalar basename' => [
+      'public://logo.png',
+      66,
+      'logo.png',
+      [['target_id' => 66, 'alt' => NULL, 'title' => NULL]],
+    ];
+    yield 'single record with uri and extras' => [
       'public://hero.jpg',
       77,
-      [['target_id' => 'public://hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title']],
+      ['target_id' => 'public://hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title'],
       [['target_id' => 77, 'alt' => 'Hero', 'title' => 'Hero title']],
     ];
-    yield 'bare basename reuse' => [
+    yield 'list of one record with basename' => [
       'public://logo.png',
       88,
       [['target_id' => 'logo.png']],
@@ -130,11 +169,19 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
-   * Creates an ImageHandler that bypasses the parent constructor.
+   * Creates an ImageHandler with a fieldInfo stub for normalise().
    */
   protected function createHandler(): ImageHandler {
+    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
+    $field_info->method('getMainPropertyName')->willReturn('target_id');
+
     $reflection = new \ReflectionClass(ImageHandler::class);
-    return $reflection->newInstanceWithoutConstructor();
+    $handler = $reflection->newInstanceWithoutConstructor();
+
+    $property = new \ReflectionProperty(AbstractHandler::class, 'fieldInfo');
+    $property->setValue($handler, $field_info);
+
+    return $handler;
   }
 
   /**
