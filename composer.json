@@ -37,6 +37,7 @@
         "drupal/core-recommended": "^11.2",
         "drupal/mailsystem": "^4.4",
         "drupal/name": "^1.2",
+        "drupal/smart_date": "^4.2",
         "drupal/supported_image": "^1",
         "drupal/time_field": "^2.2.1",
         "ergebnis/composer-normalize": "^2.50",
