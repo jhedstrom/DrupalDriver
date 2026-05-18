@@ -44,7 +44,7 @@ class ImageHandlerTest extends TestCase {
    *
    * Covers the three shapes the handler is contracted to accept:
    *   - Scalar mode from EntityFieldParser ('['foo.jpg']').
-   *   - Legacy flat-positional shape kept for back-compat ('['foo.jpg', 'alt' => ...]').
+   *   - Legacy flat-positional with extras (['foo.jpg', 'alt' => ...]).
    *   - Compound mode from EntityFieldParser row 16
    *     ('[['target_id' => 'foo.jpg', ...]]') including multi-record input.
    *
@@ -55,7 +55,7 @@ class ImageHandlerTest extends TestCase {
    *
    * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
    */
-  #[DataProvider('dataProviderExpandUploadShapes')]
+  #[DataProvider('dataProviderExpandUploadsFile')]
   public function testExpandUploadsFile(\Closure $build_input, array $expected): void {
     $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.jpg';
     file_put_contents($path, 'fixture');
@@ -71,25 +71,25 @@ class ImageHandlerTest extends TestCase {
   /**
    * Data provider for testExpandUploadsFile().
    */
-  public static function dataProviderExpandUploadShapes(): \Iterator {
+  public static function dataProviderExpandUploadsFile(): \Iterator {
     yield 'scalar single' => [
-      static fn (string $path) => [$path],
+      static fn (string $path): array => [$path],
       ['target_id' => 7, 'alt' => NULL, 'title' => NULL],
     ];
     yield 'legacy flat positional with extras' => [
-      static fn (string $path) => [$path, 'alt' => 'Alt text', 'title' => 'Title text'],
+      static fn (string $path): array => [$path, 'alt' => 'Alt text', 'title' => 'Title text'],
       ['target_id' => 7, 'alt' => 'Alt text', 'title' => 'Title text'],
     ];
     yield 'compound single, bare target_id' => [
-      static fn (string $path) => [['target_id' => $path]],
+      static fn (string $path): array => [['target_id' => $path]],
       ['target_id' => 7, 'alt' => NULL, 'title' => NULL],
     ];
     yield 'compound single with alt and title' => [
-      static fn (string $path) => [['target_id' => $path, 'alt' => 'An image', 'title' => 'A title']],
+      static fn (string $path): array => [['target_id' => $path, 'alt' => 'An image', 'title' => 'A title']],
       ['target_id' => 7, 'alt' => 'An image', 'title' => 'A title'],
     ];
     yield 'compound multi-record' => [
-      static fn (string $path) => [
+      static fn (string $path): array => [
         ['target_id' => $path, 'alt' => 'First'],
         ['target_id' => $path, 'alt' => 'Second', 'title' => 'Second title'],
       ],
@@ -112,7 +112,7 @@ class ImageHandlerTest extends TestCase {
    * @param array<int|string, mixed> $expected
    *   The expected expand() output.
    */
-  #[DataProvider('dataProviderExpandReuseShapes')]
+  #[DataProvider('dataProviderExpandReusesManagedFile')]
   public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {
     $this->setServicesWithMatchingManagedFile(uri: $managed_uri, file_id: $file_id);
 
@@ -126,7 +126,7 @@ class ImageHandlerTest extends TestCase {
   /**
    * Data provider for testExpandReusesManagedFile().
    */
-  public static function dataProviderExpandReuseShapes(): \Iterator {
+  public static function dataProviderExpandReusesManagedFile(): \Iterator {
     yield 'scalar uri reuse' => [
       'public://hero.jpg',
       55,

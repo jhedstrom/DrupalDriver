@@ -18,10 +18,10 @@ class ImageHandler extends FileHandler {
    */
   public function expand($values): array {
     // Normalise three accepted shapes into a list of records:
-    //   - ['foo.jpg'] (scalar mode)
-    //   - ['foo.jpg', 'alt' => 'A', 'title' => 'B'] (legacy flat positional)
-    //   - [['target_id' => 'foo.jpg', 'alt' => 'A', 'title' => 'B']] (compound
-    //     mode from EntityFieldParser row 16).
+    // - ['foo.jpg'] (scalar mode)
+    // - ['foo.jpg', 'alt' => 'A', 'title' => 'B'] (legacy flat positional)
+    // - [['target_id' => 'foo.jpg', 'alt' => 'A', 'title' => 'B']] (compound
+    //   mode from EntityFieldParser row 16).
     $records = (isset($values[0]) && is_array($values[0])) ? $values : [$values];
 
     $expanded = [];

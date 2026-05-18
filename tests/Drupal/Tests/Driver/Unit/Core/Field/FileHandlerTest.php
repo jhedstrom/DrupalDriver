@@ -44,14 +44,14 @@ class FileHandlerTest extends TestCase {
    *
    * Covers the parser shapes that 'EntityFieldParser' emits:
    *   - Scalar single ('['foo.bin']') and scalar multi-value.
-   *   - Compound mode from row 16 ('[['target_id' => 'foo.bin', 'display' => 1, ...]]').
+   *   - Compound mode (['target_id' => 'foo.bin', 'display' => 1, ...]).
    *
    * @param \Closure(string): array<int|string, mixed> $build_input
    *   Builds the input array given the temp file path.
    * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output (always a list of records for FileHandler).
    */
-  #[DataProvider('dataProviderExpandUploadShapes')]
+  #[DataProvider('dataProviderExpandUploadsFile')]
   public function testExpandUploadsFile(\Closure $build_input, array $expected): void {
     $path = $this->createTempFile('pdf');
     $this->setServicesWithUploadReturnId(42);
@@ -66,30 +66,30 @@ class FileHandlerTest extends TestCase {
   /**
    * Data provider for testExpandUploadsFile().
    */
-  public static function dataProviderExpandUploadShapes(): \Iterator {
+  public static function dataProviderExpandUploadsFile(): \Iterator {
     yield 'scalar single' => [
-      static fn (string $path) => [$path],
+      static fn (string $path): array => [$path],
       [['target_id' => 42, 'display' => 1, 'description' => '']],
     ];
     yield 'scalar multi-value' => [
-      static fn (string $path) => [$path, $path],
+      static fn (string $path): array => [$path, $path],
       [
         ['target_id' => 42, 'display' => 1, 'description' => ''],
         ['target_id' => 42, 'display' => 1, 'description' => ''],
       ],
     ];
     yield 'compound single with display and description' => [
-      static fn (string $path) => [
+      static fn (string $path): array => [
         ['target_id' => $path, 'display' => 0, 'description' => 'Spec sheet'],
       ],
       [['target_id' => 42, 'display' => 0, 'description' => 'Spec sheet']],
     ];
     yield 'compound single, bare target_id' => [
-      static fn (string $path) => [['target_id' => $path]],
+      static fn (string $path): array => [['target_id' => $path]],
       [['target_id' => 42, 'display' => 1, 'description' => '']],
     ];
     yield 'compound multi-record' => [
-      static fn (string $path) => [
+      static fn (string $path): array => [
         ['target_id' => $path, 'display' => 1, 'description' => 'Public'],
         ['target_id' => $path, 'display' => 0, 'description' => 'Hidden'],
       ],
@@ -112,7 +112,7 @@ class FileHandlerTest extends TestCase {
    * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output.
    */
-  #[DataProvider('dataProviderExpandReuseShapes')]
+  #[DataProvider('dataProviderExpandReusesManagedFile')]
   public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {
     $this->setServicesWithMatchingManagedFile(uri: $managed_uri, file_id: $file_id);
 
@@ -126,7 +126,7 @@ class FileHandlerTest extends TestCase {
   /**
    * Data provider for testExpandReusesManagedFile().
    */
-  public static function dataProviderExpandReuseShapes(): \Iterator {
+  public static function dataProviderExpandReusesManagedFile(): \Iterator {
     yield 'scalar full uri reuse' => [
       'public://logo.png',
       77,
