@@ -50,6 +50,8 @@ class FileHandlerTest extends TestCase {
    *   Builds the input array given the temp file path.
    * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output (always a list of records for FileHandler).
+   *
+   * @dataProvider dataProviderExpandUploadsFile
    */
   #[DataProvider('dataProviderExpandUploadsFile')]
   public function testExpandUploadsFile(\Closure $build_input, array $expected): void {
@@ -111,6 +113,8 @@ class FileHandlerTest extends TestCase {
    *   The input passed to expand().
    * @param array<int, array<string, mixed>> $expected
    *   The expected expand() output.
+   *
+   * @dataProvider dataProviderExpandReusesManagedFile
    */
   #[DataProvider('dataProviderExpandReusesManagedFile')]
   public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {

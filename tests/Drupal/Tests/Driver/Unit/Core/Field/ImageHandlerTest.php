@@ -53,6 +53,8 @@ class ImageHandlerTest extends TestCase {
    * @param array<int|string, mixed> $expected
    *   The expected expand() output.
    *
+   * @dataProvider dataProviderExpandUploadsFile
+   *
    * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
    */
   #[DataProvider('dataProviderExpandUploadsFile')]
@@ -111,6 +113,8 @@ class ImageHandlerTest extends TestCase {
    *   The input passed to expand().
    * @param array<int|string, mixed> $expected
    *   The expected expand() output.
+   *
+   * @dataProvider dataProviderExpandReusesManagedFile
    */
   #[DataProvider('dataProviderExpandReusesManagedFile')]
   public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {
