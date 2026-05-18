@@ -27,6 +27,10 @@ class ImageHandler extends FileHandler {
     $expanded = [];
 
     foreach ($records as $record) {
+      if (!array_key_exists('target_id', $record) || $record['target_id'] === NULL || $record['target_id'] === '') {
+        throw new \InvalidArgumentException('Image field record must include a non-empty "target_id".');
+      }
+
       $file_path = (string) $record['target_id'];
       $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
 

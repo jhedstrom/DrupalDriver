@@ -42,6 +42,42 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
+   * Tests that records missing 'target_id' throw with a clear message.
+   *
+   * @param array<int|string, mixed> $input
+   *   The malformed input (a record with no 'target_id' or an empty one).
+   *
+   * @dataProvider dataProviderExpandThrowsWhenTargetIdMissing
+   */
+  #[DataProvider('dataProviderExpandThrowsWhenTargetIdMissing')]
+  public function testExpandThrowsWhenTargetIdMissing(array $input): void {
+    $handler = $this->createHandler();
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Image field record must include a non-empty "target_id".');
+
+    $handler->expand($input);
+  }
+
+  /**
+   * Data provider for testExpandThrowsWhenTargetIdMissing().
+   */
+  public static function dataProviderExpandThrowsWhenTargetIdMissing(): \Iterator {
+    yield 'record missing target_id key' => [
+      ['alt' => 'A', 'title' => 'B'],
+    ];
+    yield 'record with NULL target_id' => [
+      ['target_id' => NULL, 'alt' => 'A'],
+    ];
+    yield 'record with empty string target_id' => [
+      ['target_id' => '', 'alt' => 'A'],
+    ];
+    yield 'list with the bad record first' => [
+      [['alt' => 'orphan'], ['target_id' => 'foo.jpg']],
+    ];
+  }
+
+  /**
    * Tests every accepted input shape on the upload code path.
    *
    * The handler delegates shape normalisation to AbstractHandler::normalise(),
