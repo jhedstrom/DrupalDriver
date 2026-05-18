@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DatetimeHandler;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
@@ -56,18 +58,61 @@ class DatetimeHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that empty strings and NULLs pass through as NULL values.
+   * Tests that empty values are accepted in every input shape.
+   *
+   * @param mixed $input
+   *   Any of the loose shapes 'normalise()' accepts.
+   * @param array<int, array<string, mixed>> $expected
+   *   The expected expand() output: a list of records keyed by 'value'.
+   *
+   * @dataProvider dataProviderExpandPreservesEmptyValuesAsNull
    */
-  public function testExpandPreservesEmptyValuesAsNull(): void {
+  #[DataProvider('dataProviderExpandPreservesEmptyValuesAsNull')]
+  public function testExpandPreservesEmptyValuesAsNull(mixed $input, array $expected): void {
     $handler = $this->createHandler('datetime');
 
-    $result = $handler->expand(['', NULL]);
+    $result = $handler->expand($input);
 
-    $this->assertSame([NULL, NULL], $result);
+    $this->assertSame($expected, $result);
   }
 
   /**
-   * Creates a DatetimeHandler with a fieldInfo mock returning datetime_type.
+   * Data provider for testExpandPreservesEmptyValuesAsNull().
+   *
+   * Non-empty dates exercise DrupalDateTime, which needs the language_manager
+   * service and a full container; those cases live in the kernel test. The
+   * shape coverage here uses empty values so that 'formatDateValue()' early
+   * returns and the only assertion is on the normalised record shape.
+   */
+  public static function dataProviderExpandPreservesEmptyValuesAsNull(): \Iterator {
+    yield 'bare empty string scalar' => [
+      '',
+      [['value' => NULL]],
+    ];
+    yield 'bare NULL scalar' => [
+      NULL,
+      [['value' => NULL]],
+    ];
+    yield 'list of empty scalars' => [
+      ['', NULL],
+      [['value' => NULL], ['value' => NULL]],
+    ];
+    yield 'single record with empty value' => [
+      ['value' => ''],
+      [['value' => NULL]],
+    ];
+    yield 'list of records with empty values' => [
+      [['value' => ''], ['value' => NULL]],
+      [['value' => NULL], ['value' => NULL]],
+    ];
+  }
+
+  /**
+   * Creates a DatetimeHandler with fieldInfo and main property injected.
+   *
+   * The fieldInfo mock is still needed for getSetting('datetime_type')
+   * (used by formatDateValue); mainProperty is injected separately because
+   * normalise() reads it as a property, not via fieldInfo.
    */
   protected function createHandler(string $datetime_type): DatetimeHandler {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
@@ -78,8 +123,11 @@ class DatetimeHandlerTest extends TestCase {
     $reflection = new \ReflectionClass(DatetimeHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
 
-    $property = new \ReflectionProperty(DatetimeHandler::class, 'fieldInfo');
-    $property->setValue($handler, $field_info);
+    $info_property = new \ReflectionProperty(DatetimeHandler::class, 'fieldInfo');
+    $info_property->setValue($handler, $field_info);
+
+    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_property->setValue($handler, 'value');
 
     return $handler;
   }

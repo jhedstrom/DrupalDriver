@@ -50,18 +50,21 @@ class ImageHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**
    * Tests round-trip for an image field with a source JPEG from disk.
+   *
+   * Input matches the canonical handler contract: a list of records keyed
+   * by image column name ('target_id', 'alt', 'title').
    */
   public function testImageRoundTrip(): void {
     $this->attachField('field_photo', 'image');
 
     $fixture = dirname(__DIR__, 6) . '/fixtures/files/sample.jpg';
 
-    // ImageHandler takes [$path] or [$path, 'alt' => ..., 'title' => ...].
-    // The alt/title keys come in as associative keys beside the numeric path.
     $this->assertFieldRoundTripViaDriver('field_photo', [
-      0 => $fixture,
-      'alt' => 'A red pixel.',
-      'title' => 'Sample photo.',
+      [
+        'target_id' => $fixture,
+        'alt' => 'A red pixel.',
+        'title' => 'Sample photo.',
+      ],
     ]);
 
     $this->assertInstanceOf(File::class, File::load($this->latestFileId()));

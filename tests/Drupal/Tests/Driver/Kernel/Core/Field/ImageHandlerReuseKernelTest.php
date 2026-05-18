@@ -58,7 +58,9 @@ class ImageHandlerReuseKernelTest extends FieldHandlerKernelTestBase {
 
     $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'reuse by uri',
-      'field_photo' => ['public://existing-hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title'],
+      'field_photo' => [
+        ['target_id' => 'public://existing-hero.jpg', 'alt' => 'Hero', 'title' => 'Hero title'],
+      ],
     ]);
 
     $this->core->entityCreate($stub);
@@ -80,7 +82,9 @@ class ImageHandlerReuseKernelTest extends FieldHandlerKernelTestBase {
 
     $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'reuse by basename',
-      'field_photo' => ['existing-logo.png'],
+      'field_photo' => [
+        ['target_id' => 'existing-logo.png'],
+      ],
     ]);
 
     $this->core->entityCreate($stub);

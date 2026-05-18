@@ -33,12 +33,17 @@ class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
 
   /**
    * Tests round-trip for a datetime field (with time component).
+   *
+   * Input matches the canonical handler contract: a list of records keyed
+   * by datetime column name ('value').
    */
   public function testDatetimeRoundTrip(): void {
     $this->attachField('field_event_date', 'datetime', [
       'datetime_type' => DateTimeItem::DATETIME_TYPE_DATETIME,
     ]);
-    $this->assertFieldRoundTripViaDriver('field_event_date', ['2026-07-15T10:00:00']);
+    $this->assertFieldRoundTripViaDriver('field_event_date', [
+      ['value' => '2026-07-15T10:00:00'],
+    ]);
   }
 
   /**
@@ -48,7 +53,9 @@ class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
     $this->attachField('field_birthday', 'datetime', [
       'datetime_type' => DateTimeItem::DATETIME_TYPE_DATE,
     ]);
-    $this->assertFieldRoundTripViaDriver('field_birthday', ['2026-07-15']);
+    $this->assertFieldRoundTripViaDriver('field_birthday', [
+      ['value' => '2026-07-15'],
+    ]);
   }
 
   /**
@@ -61,13 +68,13 @@ class DatetimeHandlerKernelTest extends FieldHandlerKernelTestBase {
 
     $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'relative-date',
-      'field_seen' => ['relative:2026-01-02 03:04:05'],
+      'field_seen' => [['value' => 'relative:2026-01-02 03:04:05']],
     ]);
     $this->core->entityCreate($stub);
 
     // The 'relative:' prefix is stripped before parsing; the resulting value
     // matches the same storage string the plain timestamp would have produced.
-    $this->assertSame(['2026-01-02T03:04:05'], $stub->getValue('field_seen'));
+    $this->assertSame([['value' => '2026-01-02T03:04:05']], $stub->getValue('field_seen'));
   }
 
 }

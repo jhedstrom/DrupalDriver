@@ -11,13 +11,13 @@ namespace Drupal\Driver\Core\Field;
  * paragraph body, custom block body. DefaultHandler cannot marshal it
  * because it is multi-column, so a dedicated pass-through is required.
  */
-class TextLongHandler implements FieldHandlerInterface {
+class TextLongHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
   public function expand(mixed $values): array {
-    return (array) $values;
+    return $this->normalise($values);
   }
 
 }

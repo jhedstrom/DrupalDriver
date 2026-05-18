@@ -15,6 +15,12 @@ class DatetimeHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
+   *
+   * Accepts whatever shape the caller naturally has: a bare date string,
+   * a list of date strings, a single record, or a list of records.
+   * 'normalise()' folds all of those into a canonical list of records
+   * before iteration. Returns a uniform list of records with 'value'
+   * formatted for storage.
    */
   public function expand($values): array {
     // Fresh Drupal installs leave system.date:timezone.default NULL until the
@@ -22,12 +28,16 @@ class DatetimeHandler extends AbstractHandler {
     // NULL to DateTimeZone.
     $site_timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default') ?: 'UTC');
     $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
+    $records = $this->normalise($values);
+    $formatted = [];
 
-    foreach ($values as $key => $value) {
-      $values[$key] = $this->formatDateValue($value, $site_timezone, $storage_timezone);
+    foreach ($records as $record) {
+      $formatted[] = [
+        'value' => $this->formatDateValue($record['value'] ?? NULL, $site_timezone, $storage_timezone),
+      ];
     }
 
-    return $values;
+    return $formatted;
   }
 
   /**

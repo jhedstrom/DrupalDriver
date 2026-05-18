@@ -15,17 +15,36 @@ class ImageHandler extends FileHandler {
 
   /**
    * {@inheritdoc}
+   *
+   * Accepts whatever shape the caller naturally has: a bare path, a list
+   * of paths, a single record, or a list of records. 'normalise()' folds
+   * all of those into a canonical list of records before iteration.
+   * Returns a uniform list of records with 'target_id' resolved to a
+   * File entity id.
    */
   public function expand($values): array {
-    $file_path = $values[0];
+    $records = $this->normalise($values);
+    $expanded = [];
 
-    $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
+    foreach ($records as $record) {
+      // normalise() already enforced that the main property key is on every
+      // record; here we additionally reject NULL/empty values because the
+      // file resolver and uploader need a real path/URI/basename.
+      if ($record[$this->mainProperty] === NULL || $record[$this->mainProperty] === '') {
+        throw new \InvalidArgumentException(sprintf('Image field "%s" must not be NULL or empty.', $this->mainProperty));
+      }
 
-    return [
-      'target_id' => $file->id(),
-      'alt' => $values['alt'] ?? NULL,
-      'title' => $values['title'] ?? NULL,
-    ];
+      $file_path = (string) $record[$this->mainProperty];
+      $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
+
+      $expanded[] = [
+        $this->mainProperty => $file->id(),
+        'alt' => $record['alt'] ?? NULL,
+        'title' => $record['title'] ?? NULL,
+      ];
+    }
+
+    return $expanded;
   }
 
 }
