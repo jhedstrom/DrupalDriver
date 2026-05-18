@@ -27,8 +27,11 @@ class ImageHandler extends FileHandler {
     $expanded = [];
 
     foreach ($records as $record) {
-      if (!array_key_exists('target_id', $record) || $record['target_id'] === NULL || $record['target_id'] === '') {
-        throw new \InvalidArgumentException('Image field record must include a non-empty "target_id".');
+      // normalise() already enforced that 'target_id' is a key on every
+      // record; here we additionally reject NULL/empty values because the
+      // file resolver and uploader need a real path/URI/basename.
+      if ($record['target_id'] === NULL || $record['target_id'] === '') {
+        throw new \InvalidArgumentException('Image field "target_id" must not be NULL or empty.');
       }
 
       $file_path = (string) $record['target_id'];

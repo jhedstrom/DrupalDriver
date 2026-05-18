@@ -42,38 +42,39 @@ class ImageHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that records missing 'target_id' throw with a clear message.
+   * Tests that records with NULL or empty 'target_id' throw clearly.
+   *
+   * The "key missing entirely" case is caught one layer up by
+   * AbstractHandler::normalise(); this test covers the values that get
+   * past key validation but cannot drive file resolution.
    *
    * @param array<int|string, mixed> $input
-   *   The malformed input (a record with no 'target_id' or an empty one).
+   *   The malformed input.
    *
-   * @dataProvider dataProviderExpandThrowsWhenTargetIdMissing
+   * @dataProvider dataProviderExpandThrowsWhenTargetIdInvalid
    */
-  #[DataProvider('dataProviderExpandThrowsWhenTargetIdMissing')]
-  public function testExpandThrowsWhenTargetIdMissing(array $input): void {
+  #[DataProvider('dataProviderExpandThrowsWhenTargetIdInvalid')]
+  public function testExpandThrowsWhenTargetIdInvalid(array $input): void {
     $handler = $this->createHandler();
 
     $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Image field record must include a non-empty "target_id".');
+    $this->expectExceptionMessage('Image field "target_id" must not be NULL or empty.');
 
     $handler->expand($input);
   }
 
   /**
-   * Data provider for testExpandThrowsWhenTargetIdMissing().
+   * Data provider for testExpandThrowsWhenTargetIdInvalid().
    */
-  public static function dataProviderExpandThrowsWhenTargetIdMissing(): \Iterator {
-    yield 'record missing target_id key' => [
-      ['alt' => 'A', 'title' => 'B'],
-    ];
+  public static function dataProviderExpandThrowsWhenTargetIdInvalid(): \Iterator {
     yield 'record with NULL target_id' => [
       ['target_id' => NULL, 'alt' => 'A'],
     ];
     yield 'record with empty string target_id' => [
       ['target_id' => '', 'alt' => 'A'],
     ];
-    yield 'list with the bad record first' => [
-      [['alt' => 'orphan'], ['target_id' => 'foo.jpg']],
+    yield 'list with NULL target_id first' => [
+      [['target_id' => NULL, 'alt' => 'orphan'], ['target_id' => 'foo.jpg']],
     ];
   }
 

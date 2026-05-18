@@ -129,13 +129,28 @@ abstract class AbstractHandler implements FieldHandlerInterface {
     }
 
     if (!array_is_list($values)) {
-      return [$values];
+      $records = [$values];
+    }
+    else {
+      $records = [];
+
+      foreach ($values as $value) {
+        $records[] = is_array($value) ? $value : [$main_property => $value];
+      }
     }
 
-    $records = [];
-
-    foreach ($values as $value) {
-      $records[] = is_array($value) ? $value : [$main_property => $value];
+    // Every record must carry the main property key. A record without it
+    // is almost always a caller mistake (omitted the path/value/uri and
+    // left only the extras like 'alt' or 'format'); flag it here so the
+    // handler does not silently dispatch on missing data.
+    foreach ($records as $record) {
+      if (!array_key_exists($main_property, $record)) {
+        throw new \InvalidArgumentException(sprintf(
+          'Field record must include the main property "%s". Got keys: %s.',
+          $main_property,
+          implode(', ', array_keys($record)) ?: '(none)',
+        ));
+      }
     }
 
     return $records;

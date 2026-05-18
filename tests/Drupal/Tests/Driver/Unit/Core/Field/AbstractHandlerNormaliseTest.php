@@ -183,6 +183,27 @@ class AbstractHandlerNormaliseTest extends TestCase {
       \InvalidArgumentException::class,
       'Got keys: 2, alt.',
     ];
+    yield 'rejects single record missing main property' => [
+      ['alt' => 'A', 'title' => 'B'],
+      'target_id',
+      NULL,
+      \InvalidArgumentException::class,
+      'Field record must include the main property "target_id". Got keys: alt, title.',
+    ];
+    yield 'rejects record in list missing main property' => [
+      [['target_id' => 'a.jpg'], ['alt' => 'orphan']],
+      'target_id',
+      NULL,
+      \InvalidArgumentException::class,
+      'Field record must include the main property "target_id". Got keys: alt.',
+    ];
+    yield 'rejects empty record' => [
+      [[]],
+      'value',
+      NULL,
+      \InvalidArgumentException::class,
+      'Field record must include the main property "value". Got keys: (none).',
+    ];
   }
 
   /**
