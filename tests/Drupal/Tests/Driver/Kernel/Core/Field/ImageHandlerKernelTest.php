@@ -68,6 +68,27 @@ class ImageHandlerKernelTest extends FieldHandlerKernelTestBase {
   }
 
   /**
+   * Tests round-trip for the compound-parser shape ('[['target_id' => ...]]').
+   *
+   * @see \Drupal\DrupalExtension\Parser\EntityFieldParser
+   */
+  public function testImageRoundTripWithCompoundParserShape(): void {
+    $this->attachField('field_photo', 'image');
+
+    $fixture = dirname(__DIR__, 6) . '/fixtures/files/sample.jpg';
+
+    $this->assertFieldRoundTripViaDriver('field_photo', [
+      [
+        'target_id' => $fixture,
+        'alt' => 'Compound alt.',
+        'title' => 'Compound title.',
+      ],
+    ]);
+
+    $this->assertInstanceOf(File::class, File::load($this->latestFileId()));
+  }
+
+  /**
    * Returns the highest file id currently in storage.
    */
   protected function latestFileId(): int {

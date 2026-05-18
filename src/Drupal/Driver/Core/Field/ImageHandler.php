@@ -17,15 +17,27 @@ class ImageHandler extends FileHandler {
    * {@inheritdoc}
    */
   public function expand($values): array {
-    $file_path = $values[0];
+    // Normalise three accepted shapes into a list of records:
+    //   - ['foo.jpg'] (scalar mode)
+    //   - ['foo.jpg', 'alt' => 'A', 'title' => 'B'] (legacy flat positional)
+    //   - [['target_id' => 'foo.jpg', 'alt' => 'A', 'title' => 'B']] (compound
+    //     mode from EntityFieldParser row 16).
+    $records = (isset($values[0]) && is_array($values[0])) ? $values : [$values];
 
-    $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
+    $expanded = [];
 
-    return [
-      'target_id' => $file->id(),
-      'alt' => $values['alt'] ?? NULL,
-      'title' => $values['title'] ?? NULL,
-    ];
+    foreach ($records as $record) {
+      $file_path = (string) ($record['target_id'] ?? $record[0] ?? '');
+      $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
+
+      $expanded[] = [
+        'target_id' => $file->id(),
+        'alt' => $record['alt'] ?? NULL,
+        'title' => $record['title'] ?? NULL,
+      ];
+    }
+
+    return count($expanded) === 1 ? $expanded[0] : $expanded;
   }
 
 }
