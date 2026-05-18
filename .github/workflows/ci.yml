@@ -241,12 +241,16 @@ jobs:
 
       - name: Add path repository for DrupalDriver
         working-directory: drupalextension
-        # Expose the path repo as a high alpha version so DrupalExtension's
-        # '^3.0.0-alpha1' constraint (with 'minimum-stability: alpha') resolves
-        # to this PR's checkout. 'dev-master' is rejected because its dev
-        # stability falls below the consumer's alpha floor.
+        # Expose the path repo at a stable version so the constraint resolves
+        # regardless of what stability floor DrupalExtension currently sets.
+        # Earlier iterations of this step hard-coded an 'alpha' suffix to
+        # match DE's then-current 'minimum-stability'; every time DE bumped
+        # the floor (alpha -> beta -> RC -> stable) the workflow had to be
+        # bumped in lockstep. Declaring stable here satisfies any floor up
+        # to and including stable, breaking that coupling. 'dev-master' is
+        # still rejected when DE's floor is above 'dev'.
         run: |
-          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"3.0.99-alpha"}}}' --json
+          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"3.0.99"}}}' --json
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
