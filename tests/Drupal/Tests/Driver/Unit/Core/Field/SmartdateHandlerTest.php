@@ -54,14 +54,28 @@ class SmartdateHandlerTest extends TestCase {
     yield 'single positional pair' => [
       [1784106000, 1784134800],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'single named record' => [
       ['value' => 1784106000, 'end_value' => 1784134800],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
@@ -71,43 +85,92 @@ class SmartdateHandlerTest extends TestCase {
         ['value' => 1784790000, 'end_value' => 1784818800],
       ],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
-        ['value' => 1784790000, 'end_value' => 1784818800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
+        [
+          'value' => 1784790000,
+          'end_value' => 1784818800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'explicit duration overrides auto-computed' => [
       ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 999],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 999, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 999,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'duration defaults to zero when only start provided' => [
       ['value' => 1784106000],
       [
-        ['value' => 1784106000, 'end_value' => NULL, 'duration' => 0, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => NULL,
+          'duration' => 0,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'NULL endpoints preserved' => [
       ['value' => NULL, 'end_value' => NULL],
       [
-        ['value' => NULL, 'end_value' => NULL, 'duration' => 0, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => NULL,
+          'end_value' => NULL,
+          'duration' => 0,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'end before start clamps duration to zero' => [
       ['value' => 1784134800, 'end_value' => 1784106000],
       [
-        ['value' => 1784134800, 'end_value' => 1784106000, 'duration' => 0, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784134800,
+          'end_value' => 1784106000,
+          'duration' => 0,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'date string parsed via strtotime' => [
       ['value' => '2026-07-15T09:00:00 UTC', 'end_value' => '2026-07-15T17:00:00 UTC'],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
@@ -120,21 +183,42 @@ class SmartdateHandlerTest extends TestCase {
         'timezone' => 'Australia/Sydney',
       ],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => 42, 'rrule_index' => 3, 'timezone' => 'Australia/Sydney'],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => 42,
+          'rrule_index' => 3,
+          'timezone' => 'Australia/Sydney',
+        ],
       ],
     ];
 
     yield 'unparseable string becomes NULL' => [
       ['value' => 'not a date', 'end_value' => NULL],
       [
-        ['value' => NULL, 'end_value' => NULL, 'duration' => 0, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => NULL,
+          'end_value' => NULL,
+          'duration' => 0,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
     yield 'numeric string timestamp cast to int' => [
       ['value' => '1784106000', 'end_value' => '1784134800'],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
 
@@ -144,7 +228,14 @@ class SmartdateHandlerTest extends TestCase {
         'not-a-record',
       ],
       [
-        ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 480, 'rrule' => NULL, 'rrule_index' => NULL, 'timezone' => ''],
+        [
+          'value' => 1784106000,
+          'end_value' => 1784134800,
+          'duration' => 480,
+          'rrule' => NULL,
+          'rrule_index' => NULL,
+          'timezone' => '',
+        ],
       ],
     ];
   }
