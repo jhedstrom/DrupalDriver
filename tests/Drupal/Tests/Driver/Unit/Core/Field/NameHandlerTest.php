@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Core\Field\NameHandler;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests the NameHandler field handler.
@@ -16,7 +15,7 @@ use PHPUnit\Framework\TestCase;
  * @group fields
  */
 #[Group('fields')]
-class NameHandlerTest extends TestCase {
+class NameHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
    * All six name components, all enabled (the module's default).
@@ -33,43 +32,47 @@ class NameHandlerTest extends TestCase {
   ];
 
   /**
-   * Tests name field expansion with all components enabled.
-   *
-   * @param array<int, mixed> $input
-   *   The input values to expand.
-   * @param array<int, mixed> $expected
-   *   The expected expanded values.
-   *
-   * @dataProvider dataProviderExpand
+   * {@inheritdoc}
    */
-  #[DataProvider('dataProviderExpand')]
-  public function testExpand(array $input, array $expected): void {
-    $handler = $this->createHandler();
-    $result = $handler->expand($input);
-    $this->assertSame($expected, $result);
+  protected function createHandler(): FieldHandlerInterface {
+    return $this->createHandlerWithComponents(self::ALL_ENABLED);
   }
 
   /**
-   * Data provider for testExpand().
+   * {@inheritdoc}
    */
   public static function dataProviderExpand(): \Iterator {
-    yield 'string shorthand family, given' => [
+    yield 'family-only shorthand string' => [
+      'Doe',
+      [['family' => 'Doe', 'given' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'family-given shorthand string' => [
+      'Doe, John',
+      [['family' => 'Doe', 'given' => 'John']],
+      NULL,
+      NULL,
+    ];
+    yield 'list with shorthand string' => [
       ['Doe, John'],
       [['family' => 'Doe', 'given' => 'John']],
+      NULL,
+      NULL,
     ];
-    yield 'string shorthand family only' => [
-      ['Doe'],
-      [['family' => 'Doe', 'given' => NULL]],
-    ];
-    yield 'named keys' => [
+    yield 'list with single keyed record' => [
       [['given' => 'John', 'family' => 'Doe', 'middle' => 'Q']],
       [['given' => 'John', 'family' => 'Doe', 'middle' => 'Q']],
+      NULL,
+      NULL,
     ];
-    yield 'numeric indices' => [
+    yield 'list with positional array' => [
       [['Dr', 'John', 'Quincy', 'Doe']],
       [['title' => 'Dr', 'given' => 'John', 'middle' => 'Quincy', 'family' => 'Doe']],
+      NULL,
+      NULL,
     ];
-    yield 'multiple values' => [
+    yield 'multi-delta mixed shorthand and keyed' => [
       [
         'Doe, John',
         ['given' => 'Jane', 'family' => 'Smith'],
@@ -78,14 +81,29 @@ class NameHandlerTest extends TestCase {
         ['family' => 'Doe', 'given' => 'John'],
         ['given' => 'Jane', 'family' => 'Smith'],
       ],
+      NULL,
+      NULL,
+    ];
+
+    yield 'mixed numeric and named keys rejected' => [
+      [['John', 'family' => 'Smith']],
+      NULL,
+      \RuntimeException::class,
+      'Cannot mix numeric and named keys in the same name value',
+    ];
+    yield 'unknown sub-field key rejected' => [
+      [['nickname' => 'Johnny']],
+      NULL,
+      \RuntimeException::class,
+      'Invalid name sub-field key: nickname.',
     ];
   }
 
   /**
-   * Tests that numeric indices skip components disabled on the field.
+   * Tests that positional indices skip components disabled on the field.
    */
   public function testNumericIndicesSkipDisabledComponents(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithComponents([
       NameHandler::COMPONENT_TITLE => TRUE,
       NameHandler::COMPONENT_GIVEN => TRUE,
       NameHandler::COMPONENT_MIDDLE => FALSE,
@@ -94,18 +112,17 @@ class NameHandlerTest extends TestCase {
       NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
-    $result = $handler->expand([['Dr', 'John', 'Doe']]);
-
-    $this->assertSame([
-      ['title' => 'Dr', 'given' => 'John', 'family' => 'Doe'],
-    ], $result);
+    $this->assertSame(
+      [['title' => 'Dr', 'given' => 'John', 'family' => 'Doe']],
+      $handler->expand([['Dr', 'John', 'Doe']]),
+    );
   }
 
   /**
-   * Tests that excess numeric indices throw.
+   * Tests that excess positional indices throw.
    */
   public function testTooManyNumericIndicesThrows(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithComponents([
       NameHandler::COMPONENT_TITLE => FALSE,
       NameHandler::COMPONENT_GIVEN => TRUE,
       NameHandler::COMPONENT_MIDDLE => FALSE,
@@ -124,7 +141,7 @@ class NameHandlerTest extends TestCase {
    * Tests that a named key targeting a disabled component throws.
    */
   public function testNamedKeyForDisabledComponentThrows(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithComponents([
       NameHandler::COMPONENT_TITLE => FALSE,
       NameHandler::COMPONENT_GIVEN => TRUE,
       NameHandler::COMPONENT_MIDDLE => FALSE,
@@ -140,34 +157,10 @@ class NameHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that mixing numeric and named keys in one delta throws.
-   */
-  public function testMixedNumericAndNamedKeysThrows(): void {
-    $handler = $this->createHandler();
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('Cannot mix numeric and named keys in the same name value; use one shape consistently.');
-
-    $handler->expand([['John', 'family' => 'Smith']]);
-  }
-
-  /**
-   * Tests that an unknown sub-field key throws.
-   */
-  public function testUnknownKeyThrows(): void {
-    $handler = $this->createHandler();
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('Invalid name sub-field key: nickname.');
-
-    $handler->expand([['nickname' => 'Johnny']]);
-  }
-
-  /**
-   * Tests that the shorthand throws when family is disabled.
+   * Tests that the shorthand throws when 'family' is disabled.
    */
   public function testShorthandThrowsWhenFamilyDisabled(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithComponents([
       NameHandler::COMPONENT_TITLE => TRUE,
       NameHandler::COMPONENT_GIVEN => TRUE,
       NameHandler::COMPONENT_MIDDLE => FALSE,
@@ -179,14 +172,14 @@ class NameHandlerTest extends TestCase {
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('Cannot use the "Family, Given" shorthand because the "family" component is disabled on this field.');
 
-    $handler->expand(['Doe, John']);
+    $handler->expand('Doe, John');
   }
 
   /**
    * Tests that the shorthand throws when a given part is supplied but disabled.
    */
   public function testShorthandThrowsWhenGivenPartSuppliedButDisabled(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithComponents([
       NameHandler::COMPONENT_TITLE => FALSE,
       NameHandler::COMPONENT_GIVEN => FALSE,
       NameHandler::COMPONENT_MIDDLE => FALSE,
@@ -198,14 +191,14 @@ class NameHandlerTest extends TestCase {
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('Cannot use the "Family, Given" shorthand because the "given" component is disabled on this field.');
 
-    $handler->expand(['Doe, John']);
+    $handler->expand('Doe, John');
   }
 
   /**
    * Tests the family-only shorthand when 'given' is disabled.
    */
   public function testShorthandFamilyOnlyWhenGivenDisabled(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithComponents([
       NameHandler::COMPONENT_TITLE => FALSE,
       NameHandler::COMPONENT_GIVEN => FALSE,
       NameHandler::COMPONENT_MIDDLE => FALSE,
@@ -214,21 +207,16 @@ class NameHandlerTest extends TestCase {
       NameHandler::COMPONENT_CREDENTIALS => FALSE,
     ]);
 
-    $result = $handler->expand(['Doe']);
-
-    $this->assertSame([['family' => 'Doe']], $result);
+    $this->assertSame([['family' => 'Doe']], $handler->expand('Doe'));
   }
 
   /**
-   * Creates a NameHandler with an injected fieldConfig mock.
+   * Creates a NameHandler with the given components map injected.
    *
    * @param array<string, bool> $components
-   *   Map of component name to enabled flag. Defaults to all enabled.
-   *
-   * @return \Drupal\Driver\Core\Field\NameHandler
-   *   The handler instance.
+   *   Map of component name to enabled flag.
    */
-  protected function createHandler(array $components = self::ALL_ENABLED): NameHandler {
+  protected function createHandlerWithComponents(array $components): NameHandler {
     $field_config = $this->createMock(FieldDefinitionInterface::class);
     $field_config->method('getSettings')->willReturn(['components' => $components]);
 

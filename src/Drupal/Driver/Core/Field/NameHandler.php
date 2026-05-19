@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Name field handler for Drupal 8.
+ * Field handler for 'name' fields.
  *
- * Supports the Name module (https://www.drupal.org/project/name).
+ * @see https://www.drupal.org/project/name
  */
 class NameHandler extends AbstractHandler {
 
@@ -38,8 +38,21 @@ class NameHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
+  protected function normalise(mixed $values): array {
     $enabled = $this->getEnabledComponents();
+
+    if (is_string($values)) {
+      return [$this->normaliseString($values, $enabled)];
+    }
+
+    if (!is_array($values) || $values === []) {
+      return [];
+    }
+
+    if (!array_is_list($values)) {
+      return [$this->normaliseArray($values, $enabled)];
+    }
+
     $names = [];
 
     foreach ($values as $value) {
@@ -54,6 +67,13 @@ class NameHandler extends AbstractHandler {
     }
 
     return $names;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doExpand(array $records): array {
+    return $records;
   }
 
   /**

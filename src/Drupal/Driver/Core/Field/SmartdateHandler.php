@@ -5,43 +5,61 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Smartdate field handler for the smart_date contrib module.
- *
- * Smart date fields store six columns: 'value' and 'end_value' as Unix
- * integer timestamps, 'duration' in whole minutes, 'rrule' and
- * 'rrule_index' for recurring events, and 'timezone' as a string. Accepts
- * numeric timestamps straight through and falls back to 'strtotime()' for
- * human-readable date strings (matching 'TimeHandler' for parity). When the
- * caller supplies both endpoints but no duration, derives it from
- * '(end - start) / 60' clamped at zero.
+ * Field handler for 'smartdate' fields (smart_date contrib module).
  */
 class SmartdateHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
-   *
-   * Accepts: a single positional pair '[start, end]', a single keyed
-   * record '['value' => ..., 'end_value' => ..., ...]', or a list of
-   * either form for multi-delta fields. Returns one storage record per
-   * input delta.
    */
-  public function expand($values): array {
+  protected function normalise(mixed $values): array {
     if (!is_array($values) || $values === []) {
       return [];
     }
 
-    $records = (isset($values[0]) && is_array($values[0])) ? $values : [$values];
+    // A list whose first element is an array is treated as a list of
+    // records; anything else is a single delta wrapped in a list.
+    $is_list_of_records = array_is_list($values) && is_array($values[0]);
+
+    if (!$is_list_of_records) {
+      $values = [$values];
+    }
+
+    $records = [];
+
+    foreach ($values as $value) {
+      if (!is_array($value)) {
+        throw new \InvalidArgumentException(sprintf(
+          'Smartdate field delta must be an array (positional [start, end] or keyed value/end_value). Got %s.',
+          get_debug_type($value),
+        ));
+      }
+
+      $records[] = [
+        'value' => $value['value'] ?? $value[0] ?? NULL,
+        'end_value' => $value['end_value'] ?? $value[1] ?? NULL,
+        'duration' => $value['duration'] ?? NULL,
+        'rrule' => $value['rrule'] ?? NULL,
+        'rrule_index' => $value['rrule_index'] ?? NULL,
+        'timezone' => $value['timezone'] ?? NULL,
+      ];
+    }
+
+    return $records;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doExpand(array $records): array {
     $expanded = [];
 
     foreach ($records as $record) {
-      if (!is_array($record)) {
-        continue;
-      }
+      $start = $this->toTimestamp($record['value']);
+      $end = $this->toTimestamp($record['end_value']);
 
-      $start = $this->toTimestamp($record['value'] ?? $record[0] ?? NULL);
-      $end = $this->toTimestamp($record['end_value'] ?? $record[1] ?? NULL);
+      $duration = $record['duration'];
 
-      $duration = $record['duration'] ?? NULL;
       if ($duration === NULL && $start !== NULL && $end !== NULL) {
         $duration = (int) max(0, ($end - $start) / 60);
       }
@@ -50,8 +68,8 @@ class SmartdateHandler extends AbstractHandler {
         'value' => $start,
         'end_value' => $end,
         'duration' => $duration !== NULL ? (int) $duration : 0,
-        'rrule' => $record['rrule'] ?? NULL,
-        'rrule_index' => $record['rrule_index'] ?? NULL,
+        'rrule' => $record['rrule'],
+        'rrule_index' => $record['rrule_index'],
         'timezone' => $record['timezone'] ?? '',
       ];
     }
@@ -60,7 +78,7 @@ class SmartdateHandler extends AbstractHandler {
   }
 
   /**
-   * Normalises a start/end input into a Unix timestamp.
+   * Coerces a start/end value into a Unix timestamp.
    *
    * @param mixed $value
    *   A numeric Unix timestamp, a 'strtotime()'-parseable date string,

@@ -5,26 +5,32 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Time field handler for Drupal 8.
+ * Field handler for 'time' fields.
  */
 class TimeHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
+  protected function doExpand(array $records): array {
+    $midnight = strtotime('today midnight');
     $seconds = [];
 
-    foreach ($values as $value) {
-      // Numeric values are already in storage format (seconds past midnight).
+    foreach ($records as $record) {
+      $value = $record['value'];
+
       if (is_numeric($value)) {
         $seconds[] = $value;
         continue;
       }
 
-      // Support anything that can be passed to strtotime.
-      $midnight = strtotime('today midnight');
-      $seconds[] = strtotime((string) $value) - $midnight;
+      $timestamp = strtotime((string) $value);
+
+      if ($timestamp === FALSE) {
+        throw new \InvalidArgumentException(sprintf('Time field value "%s" is not parseable.', (string) $value));
+      }
+
+      $seconds[] = $timestamp - $midnight;
     }
 
     return $seconds;

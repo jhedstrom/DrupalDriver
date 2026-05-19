@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Embridge Asset Item field handler for Drupal 8.
+ * Field handler for 'embridge_asset_item' fields (Embridge contrib).
  */
 class EmbridgeAssetItemHandler extends EntityReferenceHandler {
 

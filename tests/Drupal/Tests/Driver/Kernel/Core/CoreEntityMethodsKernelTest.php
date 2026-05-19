@@ -101,7 +101,7 @@ class CoreEntityMethodsKernelTest extends KernelTestBase {
 
     $this->core->entityCreate($stub);
 
-    $this->assertSame(['uma'], $stub->getValue('name'), 'base field "name" was routed through the handler pipeline.');
+    $this->assertSame([['value' => 'uma']], $stub->getValue('name'), 'base field "name" was routed through the handler pipeline.');
   }
 
   /**

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Driver\Core\Field\AbstractHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Core\Field\SupportedImageHandler;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -15,7 +16,28 @@ use PHPUnit\Framework\Attributes\Group;
  * @group fields
  */
 #[Group('fields')]
-class SupportedImageHandlerTest extends TestCase {
+class SupportedImageHandlerTest extends FieldHandlerUnitTestBase {
+
+  /**
+   * Absolute path to the bundled fixture file.
+   */
+  protected const FIXTURE_PATH = __DIR__ . '/../../../../../../fixtures/files/fixture.bin';
+
+  /**
+   * File id 'file.repository::writeData()' returns from the stub.
+   */
+  protected const UPLOADED_FILE_ID = 3;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    $container = new ContainerBuilder();
+    $container->set('file.repository', $this->createFileRepository(self::UPLOADED_FILE_ID));
+    \Drupal::setContainer($container);
+  }
 
   /**
    * {@inheritdoc}
@@ -26,31 +48,26 @@ class SupportedImageHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that unreadable files throw a descriptive exception.
+   * {@inheritdoc}
    */
-  public function testExpandThrowsWhenFileCannotBeRead(): void {
-    $handler = $this->createHandler();
+  protected function createHandler(): FieldHandlerInterface {
+    $reflection = new \ReflectionClass(SupportedImageHandler::class);
+    $handler = $reflection->newInstanceWithoutConstructor();
 
-    $this->expectException(\Exception::class);
-    $this->expectExceptionMessage('Error reading file');
+    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_property->setValue($handler, 'target_id');
 
-    @$handler->expand('/tmp/drupal-driver-nonexistent-supported-image.jpg');
+    return $handler;
   }
 
   /**
-   * Tests that a string input is normalised into a single-item result.
+   * {@inheritdoc}
    */
-  public function testExpandNormalisesStringInputToSingleItem(): void {
-    $path = $this->createTempFile('jpg');
-    $this->setFileRepositoryWithReturnId(3);
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand($path);
-
-    $this->assertSame([
-      [
-        'target_id' => 3,
+  public static function dataProviderExpand(): \Iterator {
+    yield 'bare scalar path produces full record' => [
+      self::FIXTURE_PATH,
+      [[
+        'target_id' => self::UPLOADED_FILE_ID,
         'alt' => NULL,
         'title' => NULL,
         'caption_value' => NULL,
@@ -58,21 +75,13 @@ class SupportedImageHandlerTest extends TestCase {
         'attribution_value' => NULL,
         'attribution_format' => NULL,
       ],
-    ], $result);
-  }
-
-  /**
-   * Tests that caption and attribution metadata are preserved.
-   */
-  public function testExpandPreservesCaptionAndAttributionMetadata(): void {
-    $path = $this->createTempFile('png');
-    $this->setFileRepositoryWithReturnId(5);
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand([
-      [
-        'target_id' => $path,
+      ],
+      NULL,
+      NULL,
+    ];
+    yield 'record preserves caption and attribution metadata' => [
+      [[
+        'target_id' => self::FIXTURE_PATH,
         'alt' => 'Alt',
         'title' => 'Title',
         'caption_value' => 'Caption body',
@@ -80,11 +89,9 @@ class SupportedImageHandlerTest extends TestCase {
         'attribution_value' => 'Photographer',
         'attribution_format' => 'plain_text',
       ],
-    ]);
-
-    $this->assertSame([
-      [
-        'target_id' => 5,
+      ],
+      [[
+        'target_id' => self::UPLOADED_FILE_ID,
         'alt' => 'Alt',
         'title' => 'Title',
         'caption_value' => 'Caption body',
@@ -92,62 +99,38 @@ class SupportedImageHandlerTest extends TestCase {
         'attribution_value' => 'Photographer',
         'attribution_format' => 'plain_text',
       ],
-    ], $result);
+      ],
+      NULL,
+      NULL,
+    ];
+
+    yield 'NULL target_id rejected' => [
+      [['target_id' => NULL]],
+      NULL,
+      \InvalidArgumentException::class,
+      'Supported image field "target_id" must not be NULL or empty.',
+    ];
+    yield 'unreadable path bubbles up as Exception' => [
+      '/tmp/drupal-driver-nonexistent-supported-image.jpg',
+      NULL,
+      \Exception::class,
+      'Error reading file /tmp/drupal-driver-nonexistent-supported-image.jpg.',
+    ];
   }
 
   /**
-   * Tests that a single array with target_id is wrapped as a single item.
+   * Builds a fake File entity exposing 'id()'.
    */
-  public function testExpandWrapsSingleKeyedArrayInput(): void {
-    $path = $this->createTempFile('jpg');
-    $this->setFileRepositoryWithReturnId(8);
+  protected static function createFakeFile(int $id): object {
+    return new class($id) {
 
-    $handler = $this->createHandler();
-
-    $result = $handler->expand([
-      'target_id' => $path,
-      'alt' => 'An image',
-    ]);
-
-    $this->assertCount(1, $result);
-    $this->assertSame(8, $result[0]['target_id']);
-    $this->assertSame('An image', $result[0]['alt']);
-  }
-
-  /**
-   * Creates a SupportedImageHandler that bypasses the parent constructor.
-   */
-  protected function createHandler(): SupportedImageHandler {
-    $reflection = new \ReflectionClass(SupportedImageHandler::class);
-    return $reflection->newInstanceWithoutConstructor();
-  }
-
-  /**
-   * Creates a temporary file with the given extension.
-   */
-  protected function createTempFile(string $extension): string {
-    $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.' . $extension;
-    file_put_contents($path, 'fixture');
-    return $path;
-  }
-
-  /**
-   * Registers a mocked file.repository service returning a file with an ID.
-   *
-   * Uses inline anonymous classes because FileInterface and
-   * FileRepositoryInterface ship with the file module rather than drupal/core
-   * and are therefore not guaranteed to be autoloadable in isolation.
-   */
-  protected function setFileRepositoryWithReturnId(int $file_id): void {
-    $file = new class($file_id) {
-
-      public function __construct(private readonly int $file_id) {}
+      public function __construct(protected readonly int $id) {}
 
       /**
-       * Returns the stored file entity ID.
+       * Returns the configured file entity id.
        */
       public function id(): int {
-        return $this->file_id;
+        return $this->id;
       }
 
       /**
@@ -157,23 +140,26 @@ class SupportedImageHandlerTest extends TestCase {
       }
 
     };
+  }
 
-    $repository = new class($file) {
+  /**
+   * Builds a file.repository stub returning a fresh File on writeData().
+   */
+  protected function createFileRepository(int $upload_id): object {
+    $file = self::createFakeFile($upload_id);
 
-      public function __construct(private readonly mixed $file) {}
+    return new class($file) {
+
+      public function __construct(protected readonly object $file) {}
 
       /**
-       * Writes data to a destination and returns the stored file entity.
+       * Returns the configured file entity for any write.
        */
-      public function writeData(string $data, string $destination): mixed {
+      public function writeData(string $data, string $destination): object {
         return $this->file;
       }
 
     };
-
-    $container = new ContainerBuilder();
-    $container->set('file.repository', $repository);
-    \Drupal::setContainer($container);
   }
 
 }

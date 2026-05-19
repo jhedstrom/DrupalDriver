@@ -6,7 +6,7 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Driver\Core\Field\AddressHandler;
-use PHPUnit\Framework\TestCase;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -15,106 +15,104 @@ use PHPUnit\Framework\Attributes\Group;
  * @group fields
  */
 #[Group('fields')]
-class AddressHandlerTest extends TestCase {
+class AddressHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
-   * Tests that a string value uses the first visible field.
+   * {@inheritdoc}
    */
-  public function testStringValueUsesFirstVisibleField(): void {
-    $handler = $this->createHandler();
-
-    $result = $handler->expand(['Just a name']);
-
-    $this->assertSame([['given_name' => 'Just a name']], $result);
+  protected function createHandler(): FieldHandlerInterface {
+    return $this->createHandlerWithSettings();
   }
 
   /**
-   * Tests that keyed values are preserved and defaults filled in.
+   * {@inheritdoc}
    */
-  public function testKeyedValuesAreKeptAndDefaultCountryApplied(): void {
-    $handler = $this->createHandler();
-
-    $result = $handler->expand([
+  public static function dataProviderExpand(): \Iterator {
+    yield 'bare string maps to first visible field plus country fallback' => [
+      'Just a name',
+      [['given_name' => 'Just a name', 'country_code' => 'AU']],
+      NULL,
+      NULL,
+    ];
+    yield 'keyed record auto-wrapped with country backfill' => [
+      ['given_name' => 'John', 'family_name' => 'Doe'],
+      [['given_name' => 'John', 'family_name' => 'Doe', 'country_code' => 'AU']],
+      NULL,
+      NULL,
+    ];
+    yield 'list with keyed record' => [
+      [['given_name' => 'John', 'family_name' => 'Doe']],
+      [['given_name' => 'John', 'family_name' => 'Doe', 'country_code' => 'AU']],
+      NULL,
+      NULL,
+    ];
+    yield 'positional indices fill visible fields in order' => [
+      [['John', 'Doe']],
+      [['given_name' => 'John', 'additional_name' => 'Doe', 'country_code' => 'AU']],
+      NULL,
+      NULL,
+    ];
+    yield 'explicit country_code preserved' => [
+      [['country_code' => 'US']],
+      [['country_code' => 'US']],
+      NULL,
+      NULL,
+    ];
+    yield 'multi-delta backfills each record' => [
       [
-        'given_name' => 'John',
-        'family_name' => 'Doe',
+        ['given_name' => 'John'],
+        ['given_name' => 'Jane', 'country_code' => 'US'],
       ],
-    ]);
-
-    $this->assertSame([
       [
-        'given_name' => 'John',
-        'family_name' => 'Doe',
-        'country_code' => 'AU',
+        ['given_name' => 'John', 'country_code' => 'AU'],
+        ['given_name' => 'Jane', 'country_code' => 'US'],
       ],
-    ], $result);
-  }
+      NULL,
+      NULL,
+    ];
 
-  /**
-   * Tests that numeric indices are assigned in the order of visible fields.
-   */
-  public function testNumericIndicesMapToVisibleFieldOrder(): void {
-    $handler = $this->createHandler();
-
-    $result = $handler->expand([
-      ['John', 'Doe'],
-    ]);
-
-    $this->assertSame([
-      [
-        'given_name' => 'John',
-        'additional_name' => 'Doe',
-        'country_code' => 'AU',
-      ],
-    ], $result);
+    yield 'unknown sub-field key rejected' => [
+      [['unknown_key' => 'value']],
+      NULL,
+      \RuntimeException::class,
+      'Invalid address sub-field key: unknown_key.',
+    ];
   }
 
   /**
    * Tests that hidden fields are removed from the visible field list.
    */
   public function testHiddenFieldsAreSkippedForNumericIndices(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithSettings([
       'givenName' => ['override' => 'hidden'],
       'additionalName' => ['override' => 'hidden'],
     ]);
 
-    $result = $handler->expand([
-      ['Doe'],
-    ]);
-
-    $this->assertSame([
-      [
-        'family_name' => 'Doe',
-        'country_code' => 'AU',
-      ],
-    ], $result);
+    $this->assertSame(
+      [['family_name' => 'Doe', 'country_code' => 'AU']],
+      $handler->expand([['Doe']]),
+    );
   }
 
   /**
    * Tests that non-hidden overrides do not alter the visible field list.
    */
   public function testNonHiddenOverridesAreIgnored(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithSettings([
       'givenName' => ['override' => 'optional'],
     ]);
 
-    $result = $handler->expand([
-      ['John'],
-    ]);
-
-    $this->assertSame([
-      [
-        'given_name' => 'John',
-        'country_code' => 'AU',
-      ],
-    ], $result);
+    $this->assertSame(
+      [['given_name' => 'John', 'country_code' => 'AU']],
+      $handler->expand([['John']]),
+    );
   }
 
   /**
    * Tests that excess numeric indices trigger an exception.
    */
   public function testTooManyNumericIndicesThrows(): void {
-    $handler = $this->createHandler([
+    $handler = $this->createHandlerWithSettings([
       'additionalName' => ['override' => 'hidden'],
       'familyName' => ['override' => 'hidden'],
       'organization' => ['override' => 'hidden'],
@@ -130,36 +128,7 @@ class AddressHandlerTest extends TestCase {
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('Too many address sub-field values supplied; only 1 visible fields available.');
 
-    $handler->expand([
-      ['John', 'Extra'],
-    ]);
-  }
-
-  /**
-   * Tests that a non-numeric, unknown sub-field key throws an exception.
-   */
-  public function testUnknownKeyThrows(): void {
-    $handler = $this->createHandler();
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('Invalid address sub-field key: unknown_key.');
-
-    $handler->expand([
-      ['unknown_key' => 'value'],
-    ]);
-  }
-
-  /**
-   * Tests that an explicit country_code is not overridden by the default.
-   */
-  public function testExplicitCountryCodeIsPreserved(): void {
-    $handler = $this->createHandler();
-
-    $result = $handler->expand([
-      ['country_code' => 'US'],
-    ]);
-
-    $this->assertSame([['country_code' => 'US']], $result);
+    $handler->expand([['John', 'Extra']]);
   }
 
   /**
@@ -169,11 +138,8 @@ class AddressHandlerTest extends TestCase {
    *   Address field override settings.
    * @param array<string, string> $available_countries
    *   Available countries keyed by code.
-   *
-   * @return \Drupal\Driver\Core\Field\AddressHandler
-   *   Handler instance with fieldConfig populated.
    */
-  protected function createHandler(array $field_overrides = [], array $available_countries = ['AU' => 'AU']): AddressHandler {
+  protected function createHandlerWithSettings(array $field_overrides = [], array $available_countries = ['AU' => 'AU']): AddressHandler {
     $field_config = $this->createMock(FieldDefinitionInterface::class);
     $field_config->method('getSettings')->willReturn([
       'field_overrides' => $field_overrides,

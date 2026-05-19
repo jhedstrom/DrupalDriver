@@ -5,26 +5,18 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Interface for handling fields.
- *
- * Saving fields on entities is handled differently depending on the Drupal
- * version. This interface translates abstract field data into the format that
- * is expected by the different storage handlers.
+ * Field handler contract.
  */
 interface FieldHandlerInterface {
 
   /**
-   * Expand abstract field values so they can be saved on the entity.
-   *
-   * This method takes care of the different ways that field data is saved on
-   * entities in different versions of Drupal.
+   * Transforms loose field input into the storage shape.
    *
    * @param mixed $values
-   *   A single value or an array of field values to save on the entity.
+   *   Whatever shape the caller produced.
    *
    * @return array<int|string, mixed>
-   *   An array of field values in the format expected by the entity storage
-   *   handlers in the driver's version of Drupal.
+   *   Field values in the format expected by Drupal's entity storage.
    */
   public function expand(mixed $values): array;
 

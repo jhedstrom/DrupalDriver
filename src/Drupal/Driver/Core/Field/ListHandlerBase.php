@@ -5,30 +5,31 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Base class for List* field types.
- *
- * This allows use of allowed value labels rather than their storage value.
+ * Base class for 'list_*' field handlers.
  */
 abstract class ListHandlerBase extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand(mixed $values): array {
+  protected function doExpand(array $records): array {
+    $allowed_values = $this->fieldInfo->getSetting('allowed_values');
     $return = [];
 
-    // Load allowed values from field storage.
-    $allowed_values = $this->fieldInfo->getSetting('allowed_values');
-    foreach ((array) $values as $value) {
-      // Determine if a label matching the value is found.
+    foreach ($records as $record) {
+      $value = $record['value'];
       $key = array_search($value, $allowed_values, TRUE);
-      if ($key !== FALSE) {
-        // Set the return to use the key instead of the value.
-        $return[] = $key;
-      }
+      $return[] = $key !== FALSE ? $this->castStorageKey($key) : $value;
     }
 
-    return $return ?: $values;
+    return $return;
+  }
+
+  /**
+   * Casts a resolved storage key to the field type's expected PHP type.
+   */
+  protected function castStorageKey(mixed $key): mixed {
+    return $key;
   }
 
 }

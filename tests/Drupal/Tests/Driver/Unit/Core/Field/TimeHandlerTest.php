@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
+use Drupal\Driver\Core\Field\AbstractHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Core\Field\TimeHandler;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the TimeHandler field handler.
@@ -15,71 +15,82 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @group fields
  */
 #[Group('fields')]
-class TimeHandlerTest extends TestCase {
+class TimeHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
- * Tests time field expansion.
- *
- * @param array<int, mixed> $input
- *   The input values to expand.
- * @param array<int, mixed> $expected
- *   The expected expanded values.
- *
- * @dataProvider dataProviderExpand
- */
-  #[DataProvider('dataProviderExpand')]
-  public function testExpand(array $input, array $expected): void {
-    $handler = $this->createHandler();
-    $result = $handler->expand($input);
-    $this->assertSame($expected, $result);
+   * {@inheritdoc}
+   */
+  protected function createHandler(): FieldHandlerInterface {
+    $reflection = new \ReflectionClass(TimeHandler::class);
+    $handler = $reflection->newInstanceWithoutConstructor();
+
+    $property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $property->setValue($handler, 'value');
+
+    return $handler;
   }
 
   /**
-   * Data provider for testExpand().
+   * {@inheritdoc}
    */
   public static function dataProviderExpand(): \Iterator {
-    // Seconds past midnight for known times.
-    // 9:30 AM = 9*3600 + 30*60 = 34200.
-    // 2:15:30 PM = 14*3600 + 15*60 + 30 = 51330.
-    // Midnight = 0.
     $midnight = strtotime('today midnight');
-    yield 'numeric integer passthrough' => [
+
+    yield 'numeric integer passes through' => [
       [34200],
       [34200],
+      NULL,
+      NULL,
     ];
-    yield 'numeric string passthrough' => [
+    yield 'numeric string passes through' => [
       ['34200'],
       ['34200'],
+      NULL,
+      NULL,
     ];
-    yield 'time string 9:30 AM' => [
+    yield 'bare numeric integer' => [
+      34200,
+      [34200],
+      NULL,
+      NULL,
+    ];
+    yield 'strtotime string 9:30 AM' => [
       ['9:30 AM'],
       [strtotime('9:30 AM') - $midnight],
+      NULL,
+      NULL,
     ];
-    yield 'time string 14:15:30' => [
+    yield 'strtotime string 14:15:30' => [
       ['14:15:30'],
       [strtotime('14:15:30') - $midnight],
+      NULL,
+      NULL,
     ];
-    yield 'time string midnight' => [
+    yield 'midnight resolves to zero' => [
       ['midnight'],
       [0],
+      NULL,
+      NULL,
     ];
-    yield 'multiple mixed values' => [
+    yield 'mixed list of int and strings' => [
       [3600, '9:30 AM', '0'],
       [3600, strtotime('9:30 AM') - $midnight, '0'],
+      NULL,
+      NULL,
     ];
-  }
 
-  /**
-   * Creates a TimeHandler instance that bypasses the parent constructor.
-   *
-   * @return \Drupal\Driver\Core\Field\TimeHandler
-   *   The handler instance.
-   */
-  protected function createHandler(): TimeHandler {
-    // Use reflection to bypass AbstractHandler constructor which requires
-    // a full Drupal bootstrap.
-    $reflection = new \ReflectionClass(TimeHandler::class);
-    return $reflection->newInstanceWithoutConstructor();
+    yield 'mixed positional and named keys rejected' => [
+      [3600, 'extra' => 'unexpected'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Field value cannot mix positional and named keys',
+    ];
+    yield 'record missing main property rejected' => [
+      ['unexpected' => 'oops'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Field record must include the main property "value"',
+    ];
   }
 
 }

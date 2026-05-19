@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Core\Field\LinkHandler;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the LinkHandler field handler.
@@ -15,89 +14,85 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @group fields
  */
 #[Group('fields')]
-class LinkHandlerTest extends TestCase {
+class LinkHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
- * Tests link field expansion.
- *
- * @param array<int, mixed> $input
- *   The input values to expand.
- * @param array<int, mixed> $expected
- *   The expected expanded values.
- *
- * @dataProvider dataProviderExpand
- */
-  #[DataProvider('dataProviderExpand')]
-  public function testExpand(array $input, array $expected): void {
-    $handler = $this->createHandler();
-    $result = $handler->expand($input);
-    $this->assertSame($expected, $result);
+   * {@inheritdoc}
+   */
+  protected function createHandler(): FieldHandlerInterface {
+    return (new \ReflectionClass(LinkHandler::class))->newInstanceWithoutConstructor();
   }
 
   /**
-   * Data provider for testExpand().
+   * {@inheritdoc}
    */
   public static function dataProviderExpand(): \Iterator {
-    yield 'numeric indices' => [
-        [['My link', 'https://example.com']],
-        [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
+    yield 'uri only via list' => [
+      ['https://example.com'],
+      [['uri' => 'https://example.com', 'options' => []]],
+      NULL,
+      NULL,
     ];
-    yield 'named keys' => [
-        [['title' => 'My link', 'uri' => 'https://example.com']],
-        [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
+    yield 'positional title and uri' => [
+      [['My link', 'https://example.com']],
+      [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
+      NULL,
+      NULL,
     ];
-    yield 'numeric indices with options' => [
-        [['My link', 'https://example.com', 'target=_blank&rel=nofollow']],
-        [[
-          'title' => 'My link',
-          'uri' => 'https://example.com',
-          'options' => ['target' => '_blank', 'rel' => 'nofollow'],
-        ],
-        ],
+    yield 'positional with options query string' => [
+      [['My link', 'https://example.com', 'target=_blank&rel=nofollow']],
+      [[
+        'title' => 'My link',
+        'uri' => 'https://example.com',
+        'options' => ['target' => '_blank', 'rel' => 'nofollow'],
+      ],
+      ],
+      NULL,
+      NULL,
     ];
-    yield 'named keys with options' => [
-        [['title' => 'My link', 'uri' => 'https://example.com', 'options' => 'target=_blank']],
-        [['title' => 'My link', 'uri' => 'https://example.com', 'options' => ['target' => '_blank']]],
+    yield 'keyed record' => [
+      [['title' => 'My link', 'uri' => 'https://example.com']],
+      [['title' => 'My link', 'uri' => 'https://example.com', 'options' => []]],
+      NULL,
+      NULL,
     ];
-    yield 'multiple values' => [
-        [
-          ['First', 'https://first.com'],
-          ['title' => 'Second', 'uri' => 'https://second.com'],
-        ],
-        [
-          ['title' => 'First', 'uri' => 'https://first.com', 'options' => []],
-          ['title' => 'Second', 'uri' => 'https://second.com', 'options' => []],
-        ],
+    yield 'keyed record with options string' => [
+      [['title' => 'My link', 'uri' => 'https://example.com', 'options' => 'target=_blank']],
+      [['title' => 'My link', 'uri' => 'https://example.com', 'options' => ['target' => '_blank']]],
+      NULL,
+      NULL,
     ];
-    yield 'no options returns empty array' => [
-        [['title' => 'Link', 'uri' => 'https://example.com']],
-        [['title' => 'Link', 'uri' => 'https://example.com', 'options' => []]],
+    yield 'keyed record with options array' => [
+      [['title' => 'My link', 'uri' => 'https://example.com', 'options' => ['target' => '_blank']]],
+      [['title' => 'My link', 'uri' => 'https://example.com', 'options' => ['target' => '_blank']]],
+      NULL,
+      NULL,
     ];
-    yield 'uri-only string' => [
-        ['https://example.com'],
-        [['uri' => 'https://example.com', 'options' => []]],
+    yield 'multi-delta mixed shapes' => [
+      [
+        'https://first.com',
+        ['title' => 'Second', 'uri' => 'https://second.com'],
+      ],
+      [
+        ['uri' => 'https://first.com', 'options' => []],
+        ['title' => 'Second', 'uri' => 'https://second.com', 'options' => []],
+      ],
+      NULL,
+      NULL,
     ];
-    yield 'mixed uri-only and full' => [
-        [
-          'https://first.com',
-          ['title' => 'Second', 'uri' => 'https://second.com'],
-        ],
-        [
-          ['uri' => 'https://first.com', 'options' => []],
-          ['title' => 'Second', 'uri' => 'https://second.com', 'options' => []],
-        ],
-    ];
-  }
 
-  /**
-   * Creates a LinkHandler instance that bypasses the parent constructor.
-   *
-   * @return \Drupal\Driver\Core\Field\LinkHandler
-   *   The handler instance.
-   */
-  protected function createHandler(): LinkHandler {
-    $reflection = new \ReflectionClass(LinkHandler::class);
-    return $reflection->newInstanceWithoutConstructor();
+    yield 'top-level mixed positional and named keys rejected' => [
+      ['https://first.com', 'title' => 'Mixed'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Link field value cannot mix positional and named keys',
+    ];
+    yield 'record missing uri rejected' => [
+      [['title' => 'No URI']],
+      NULL,
+      \InvalidArgumentException::class,
+      'Link field record must include a uri',
+    ];
   }
 
 }

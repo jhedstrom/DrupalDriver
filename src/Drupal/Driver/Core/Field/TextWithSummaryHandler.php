@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Default field handler for Drupal 8.
+ * Field handler for 'text_with_summary' fields.
  */
 class TextWithSummaryHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand(mixed $values): array {
-    return $this->normalise($values);
+  protected function doExpand(array $records): array {
+    return $records;
   }
 
 }

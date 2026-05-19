@@ -5,30 +5,52 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * File field handler for Drupal 8.
+ * Field handler for 'file' fields.
  */
 class FileHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
+  protected function normalise(mixed $values): array {
+    $records = parent::normalise($values);
+
+    foreach ($records as &$record) {
+      if ($record[$this->mainProperty] === NULL || $record[$this->mainProperty] === '') {
+        throw new \InvalidArgumentException(sprintf('%s field "%s" must not be NULL or empty.', $this->getFieldLabel(), $this->mainProperty));
+      }
+
+      $record[$this->mainProperty] = (string) $record[$this->mainProperty];
+    }
+
+    return $records;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doExpand(array $records): array {
     $files = [];
 
-    foreach ((array) $values as $value) {
-      $is_array = is_array($value);
-      $file_path = (string) ($is_array ? $value['target_id'] ?? $value[0] : $value);
-
+    foreach ($records as $record) {
+      $file_path = $record[$this->mainProperty];
       $file = $this->resolveExistingFile($file_path) ?? $this->uploadAndSave($file_path);
 
       $files[] = [
-        'target_id' => $file->id(),
-        'display' => $is_array ? ($value['display'] ?? 1) : 1,
-        'description' => $is_array ? ($value['description'] ?? '') : '',
+        $this->mainProperty => $file->id(),
+        'display' => $record['display'] ?? 1,
+        'description' => $record['description'] ?? '',
       ];
     }
 
     return $files;
+  }
+
+  /**
+   * Human-readable label used in error messages.
+   */
+  protected function getFieldLabel(): string {
+    return 'File';
   }
 
   /**

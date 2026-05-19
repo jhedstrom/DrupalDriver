@@ -5,43 +5,50 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Entity Reference field handler for Drupal 8.
+ * Field handler for 'entity_reference' fields.
  */
 class EntityReferenceHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
+  protected function doExpand(array $records): array {
     $entity_type_id = $this->fieldInfo->getSetting('target_type');
     $entity_definition = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
     $id_key = $entity_definition->getKey('id');
 
     // User entities return FALSE for getKey('label'), so use 'name' directly.
     $label_key = $entity_type_id !== 'user' ? $entity_definition->getKey('label') : 'name';
-    $main_property = $this->fieldInfo->getMainPropertyName();
 
-    // Determine target bundle restrictions.
     $target_bundles = $this->getTargetBundles();
     $target_bundle_key = $target_bundles ? $entity_definition->getKey('bundle') : NULL;
 
     $resolved = [];
 
-    foreach ((array) $values as $value) {
-      // A delta may be a scalar (label or id) OR an associative array carrying
-      // the main property plus additional item columns (e.g. 'display' on file
-      // references or 'target_revision_id' on entity_reference_revisions).
-      // When the main property is present, use its value as the lookup label
-      // and preserve the rest of the array so those extras round-trip through
-      // to storage.
-      $has_extras = is_string($main_property) && is_array($value) && array_key_exists($main_property, $value);
-      $lookup = $has_extras ? $value[$main_property] : $value;
+    foreach ($records as $record) {
+      if (!array_key_exists($this->mainProperty, $record)) {
+        throw new \InvalidArgumentException(sprintf('Entity reference record is missing the main property "%s".', $this->mainProperty));
+      }
+
+      $lookup = $record[$this->mainProperty];
+
+      // Already-resolved integer ids (caller-supplied or alias-resolved)
+      // bypass the entity-storage round-trip; only string labels still
+      // need a lookup.
+      if (is_int($lookup)) {
+        $resolved[] = $record;
+        continue;
+      }
 
       $query = \Drupal::entityQuery($entity_type_id);
       $query->accessCheck(FALSE);
 
       if ($label_key) {
-        $is_numeric_id = is_int($lookup) || (is_string($lookup) && ctype_digit($lookup));
+        // A numeric-string lookup is ambiguous - the caller may be passing
+        // an entity id that Drupal serialised as a string, or a label that
+        // happens to be digits. Match either side with an OR-group so the
+        // entity layer's first hit wins.
+        $is_numeric_id = is_string($lookup) && ctype_digit($lookup);
         $or = $query->orConditionGroup();
 
         if ($is_numeric_id) {
@@ -65,27 +72,20 @@ class EntityReferenceHandler extends AbstractHandler {
         throw new \Exception(sprintf("No entity '%s' of type '%s' exists.", $lookup, $entity_type_id));
       }
 
-      $resolved_id = array_shift($entities);
-
-      if ($has_extras) {
-        $value[$main_property] = $resolved_id;
-        $resolved[] = $value;
-      }
-      else {
-        $resolved[] = $resolved_id;
-      }
+      $record[$this->mainProperty] = array_shift($entities);
+      $resolved[] = $record;
     }
 
     return $resolved;
   }
 
   /**
-   * Retrieves bundles for which the field is configured to reference.
+   * Returns bundle restrictions configured on the field, or NULL.
    *
-   * @return mixed
-   *   Array of bundle names, or NULL if not able to determine bundles.
+   * @return array<int|string, string>|null
+   *   Bundle names the field may target, or NULL when unrestricted.
    */
-  protected function getTargetBundles(): mixed {
+  protected function getTargetBundles(): ?array {
     $settings = $this->fieldConfig->getSettings();
 
     if (!empty($settings['handler_settings']['target_bundles'])) {

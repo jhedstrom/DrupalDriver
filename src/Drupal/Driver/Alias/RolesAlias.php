@@ -63,6 +63,13 @@ class RolesAlias implements PostCreateAliasInterface {
     }
 
     foreach ($roles as $role) {
+      // EntityReferenceHandler expands 'roles' into records like
+      // '['target_id' => 'editor']'. Unwrap that here so the alias can
+      // operate on the same role name the caller supplied originally.
+      if (is_array($role) && array_key_exists('target_id', $role)) {
+        $role = $role['target_id'];
+      }
+
       if (!is_scalar($role) && !$role instanceof \Stringable) {
         throw new CreationAliasResolutionException("Cannot assign role because one of the 'roles' entries is not a scalar or stringable value.");
       }
