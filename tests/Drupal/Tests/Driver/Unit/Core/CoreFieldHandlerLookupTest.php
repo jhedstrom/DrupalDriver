@@ -212,8 +212,8 @@ class CustomFieldHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
-    return (array) $values;
+  protected function doExpand(array $records): array {
+    return $records;
   }
 
 }

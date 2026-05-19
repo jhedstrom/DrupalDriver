@@ -6,9 +6,10 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests the DefaultHandler field handler.
@@ -16,15 +17,56 @@ use PHPUnit\Framework\TestCase;
  * @group fields
  */
 #[Group('fields')]
-class DefaultHandlerTest extends TestCase {
+class DefaultHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
-   * Tests that a single 'value' column passes through unchanged.
+   * {@inheritdoc}
    */
-  public function testExpandReturnsValuesForSingleValueColumn(): void {
-    $handler = $this->handlerWithColumns(['value' => []]);
+  protected function createHandler(): FieldHandlerInterface {
+    return $this->handlerWithColumns(['value' => []]);
+  }
 
-    $this->assertSame(['one', 'two'], $handler->expand(['one', 'two']));
+  /**
+   * {@inheritdoc}
+   */
+  public static function dataProviderExpand(): \Iterator {
+    yield 'bare scalar' => [
+      'hello',
+      [['value' => 'hello']],
+      NULL,
+      NULL,
+    ];
+    yield 'list of scalars' => [
+      ['one', 'two'],
+      [['value' => 'one'], ['value' => 'two']],
+      NULL,
+      NULL,
+    ];
+    yield 'records pass through unchanged' => [
+      [['value' => 'one'], ['value' => 'two']],
+      [['value' => 'one'], ['value' => 'two']],
+      NULL,
+      NULL,
+    ];
+    yield 'integer scalar' => [
+      42,
+      [['value' => 42]],
+      NULL,
+      NULL,
+    ];
+
+    yield 'mixed positional and named keys rejected' => [
+      ['hello', 'extra' => 'unexpected'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Field value cannot mix positional and named keys',
+    ];
+    yield 'record missing main property rejected' => [
+      ['unexpected' => 'oops'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Field record must include the main property "value"',
+    ];
   }
 
   /**
@@ -37,7 +79,7 @@ class DefaultHandlerTest extends TestCase {
     $this->expectExceptionMessage('No dedicated handler is registered');
     $this->expectExceptionMessage('2 column(s) (value, format)');
 
-    $handler->expand('hello');
+    $handler->expand([['value' => 'hello']]);
   }
 
   /**
@@ -49,15 +91,14 @@ class DefaultHandlerTest extends TestCase {
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('target_id');
 
-    $handler->expand(42);
+    $handler->expand([['value' => 42]]);
   }
 
   /**
    * Builds a DefaultHandler wired to a mocked field storage/config pair.
    *
    * @param array<string, array<string, mixed>> $columns
-   *   Column descriptors keyed by column name (the content is irrelevant;
-   *   only the array keys are inspected by DefaultHandler).
+   *   Column descriptors keyed by column name.
    */
   protected function handlerWithColumns(array $columns): DefaultHandler {
     $storage = $this->createMock(FieldStorageDefinitionInterface::class);
@@ -71,10 +112,15 @@ class DefaultHandlerTest extends TestCase {
 
     $reflection = new \ReflectionClass(DefaultHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
+
     $info_prop = $reflection->getParentClass()->getProperty('fieldInfo');
     $info_prop->setValue($handler, $storage);
+
     $config_prop = $reflection->getParentClass()->getProperty('fieldConfig');
     $config_prop->setValue($handler, $config);
+
+    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_property->setValue($handler, 'value');
 
     return $handler;
   }

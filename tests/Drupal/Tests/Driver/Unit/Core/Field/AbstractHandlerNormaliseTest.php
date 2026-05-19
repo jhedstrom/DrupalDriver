@@ -20,17 +20,13 @@ class AbstractHandlerNormaliseTest extends TestCase {
   /**
    * Tests every accepted and rejected input shape for normalise().
    *
-   * Each data row carries the input, the field's main property name, the
-   * expected output (or NULL when an exception is expected), the expected
-   * exception class (or NULL for the happy path), and the expected
-   * substring of the exception message (or NULL).
-   *
    * @param mixed $input
    *   The loose input to feed to normalise().
    * @param string $main_property
    *   The field's main property name (returned by the mocked fieldInfo).
    * @param array<int, array<string, mixed>>|null $expected
-   *   The expected canonical list of records, or NULL when expecting a throw.
+   *   The expected canonical list of records, or NULL when an exception is
+   *   expected.
    * @param string|null $exception
    *   The expected exception class, or NULL for the happy path.
    * @param string|null $exception_message
@@ -236,18 +232,14 @@ class AbstractHandlerNormaliseTest extends TestCase {
 
 /**
  * Concrete AbstractHandler subclass used only by the normalise() tests.
- *
- * Provides the abstract surface (expand()) without doing any real work,
- * so reflection-based tests can exercise the inherited normalise() helper
- * in isolation from any specific field handler's resolution behaviour.
  */
 final class NormaliseTestHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand(mixed $values): array {
-    return $this->normalise($values);
+  protected function doExpand(array $records): array {
+    return $records;
   }
 
 }

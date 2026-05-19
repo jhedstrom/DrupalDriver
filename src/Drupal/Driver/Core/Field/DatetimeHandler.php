@@ -9,26 +9,19 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 /**
- * Datetime field handler for Drupal 8.
+ * Field handler for 'datetime' fields.
  */
 class DatetimeHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
-   *
-   * Accepts whatever shape the caller naturally has: a bare date string,
-   * a list of date strings, a single record, or a list of records.
-   * 'normalise()' folds all of those into a canonical list of records
-   * before iteration. Returns a uniform list of records with 'value'
-   * formatted for storage.
    */
-  public function expand($values): array {
+  protected function doExpand(array $records): array {
     // Fresh Drupal installs leave system.date:timezone.default NULL until the
     // installer writes a value; fall back to UTC so the handler never passes
     // NULL to DateTimeZone.
     $site_timezone = new \DateTimeZone(\Drupal::config('system.date')->get('timezone.default') ?: 'UTC');
     $storage_timezone = new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE);
-    $records = $this->normalise($values);
     $formatted = [];
 
     foreach ($records as $record) {

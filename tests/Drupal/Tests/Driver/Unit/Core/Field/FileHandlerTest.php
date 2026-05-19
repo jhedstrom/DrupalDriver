@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Driver\Core\Field\AbstractHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Core\Field\FileHandler;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the FileHandler field handler.
@@ -16,10 +16,43 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @group fields
  */
 #[Group('fields')]
-class FileHandlerTest extends TestCase {
+class FileHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
-   * Restores the Drupal container after each test.
+   * Absolute path to the bundled fixture file.
+   */
+  protected const FIXTURE_PATH = __DIR__ . '/../../../../../../fixtures/files/fixture.bin';
+
+  /**
+   * File id 'file.repository::writeData()' returns from the upload-path stub.
+   */
+  protected const UPLOADED_FILE_ID = 42;
+
+  /**
+   * Storage stub maps these public-scheme URIs to file ids for the reuse path.
+   *
+   * @var array<string, int>
+   */
+  protected const REGISTERED_FILES = [
+    'public://logo.png' => 88,
+    'public://hero.jpg' => 99,
+    'private://secret.pdf' => 444,
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    $container = new ContainerBuilder();
+    $container->set('entity_type.manager', $this->createEntityTypeManager(self::REGISTERED_FILES));
+    $container->set('file.repository', $this->createFileRepository(self::UPLOADED_FILE_ID));
+    \Drupal::setContainer($container);
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function tearDown(): void {
     \Drupal::unsetContainer();
@@ -27,206 +60,101 @@ class FileHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that unreadable files throw a descriptive exception.
+   * {@inheritdoc}
    */
-  public function testExpandThrowsWhenFileCannotBeRead(): void {
-    $handler = $this->createHandler();
-    $this->setServicesWithNoMatchingFile();
+  protected function createHandler(): FieldHandlerInterface {
+    $reflection = new \ReflectionClass(FileHandler::class);
+    $handler = $reflection->newInstanceWithoutConstructor();
 
-    $this->expectException(\Exception::class);
-    $this->expectExceptionMessage('Error reading file /tmp/drupal-driver-nonexistent-file.bin.');
+    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_property->setValue($handler, 'target_id');
 
-    @$handler->expand(['/tmp/drupal-driver-nonexistent-file.bin']);
+    return $handler;
   }
 
   /**
-   * Tests every accepted input shape on the upload code path.
-   *
-   * Covers the parser shapes that 'EntityFieldParser' emits:
-   *   - Scalar single ('['foo.bin']') and scalar multi-value.
-   *   - Compound mode (['target_id' => 'foo.bin', 'display' => 1, ...]).
-   *
-   * @param \Closure(string): array<int|string, mixed> $build_input
-   *   Builds the input array given the temp file path.
-   * @param array<int, array<string, mixed>> $expected
-   *   The expected expand() output (always a list of records for FileHandler).
-   *
-   * @dataProvider dataProviderExpandUploadsFile
+   * {@inheritdoc}
    */
-  #[DataProvider('dataProviderExpandUploadsFile')]
-  public function testExpandUploadsFile(\Closure $build_input, array $expected): void {
-    $path = $this->createTempFile('pdf');
-    $this->setServicesWithUploadReturnId(42);
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand($build_input($path));
-
-    $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Data provider for testExpandUploadsFile().
-   */
-  public static function dataProviderExpandUploadsFile(): \Iterator {
-    yield 'scalar single' => [
-      static fn (string $path): array => [$path],
-      [['target_id' => 42, 'display' => 1, 'description' => '']],
+  public static function dataProviderExpand(): \Iterator {
+    yield 'bare scalar path triggers upload' => [
+      self::FIXTURE_PATH,
+      [['target_id' => self::UPLOADED_FILE_ID, 'display' => 1, 'description' => '']],
+      NULL,
+      NULL,
     ];
-    yield 'scalar multi-value' => [
-      static fn (string $path): array => [$path, $path],
+    yield 'list of paths triggers upload' => [
+      [self::FIXTURE_PATH, self::FIXTURE_PATH],
       [
-        ['target_id' => 42, 'display' => 1, 'description' => ''],
-        ['target_id' => 42, 'display' => 1, 'description' => ''],
+        ['target_id' => self::UPLOADED_FILE_ID, 'display' => 1, 'description' => ''],
+        ['target_id' => self::UPLOADED_FILE_ID, 'display' => 1, 'description' => ''],
       ],
+      NULL,
+      NULL,
     ];
-    yield 'compound single with display and description' => [
-      static fn (string $path): array => [
-        ['target_id' => $path, 'display' => 0, 'description' => 'Spec sheet'],
-      ],
-      [['target_id' => 42, 'display' => 0, 'description' => 'Spec sheet']],
+    yield 'record with display and description preserved' => [
+      [['target_id' => self::FIXTURE_PATH, 'display' => 0, 'description' => 'Spec sheet']],
+      [['target_id' => self::UPLOADED_FILE_ID, 'display' => 0, 'description' => 'Spec sheet']],
+      NULL,
+      NULL,
     ];
-    yield 'compound single, bare target_id' => [
-      static fn (string $path): array => [['target_id' => $path]],
-      [['target_id' => 42, 'display' => 1, 'description' => '']],
-    ];
-    yield 'compound multi-record' => [
-      static fn (string $path): array => [
-        ['target_id' => $path, 'display' => 1, 'description' => 'Public'],
-        ['target_id' => $path, 'display' => 0, 'description' => 'Hidden'],
-      ],
-      [
-        ['target_id' => 42, 'display' => 1, 'description' => 'Public'],
-        ['target_id' => 42, 'display' => 0, 'description' => 'Hidden'],
-      ],
-    ];
-  }
-
-  /**
-   * Tests every accepted input shape on the reuse-existing-managed-file path.
-   *
-   * @param string $managed_uri
-   *   URI of the pre-existing managed File the storage stub will return.
-   * @param int $file_id
-   *   ID of the pre-existing managed File.
-   * @param array<int|string, mixed> $input
-   *   The input passed to expand().
-   * @param array<int, array<string, mixed>> $expected
-   *   The expected expand() output.
-   *
-   * @dataProvider dataProviderExpandReusesManagedFile
-   */
-  #[DataProvider('dataProviderExpandReusesManagedFile')]
-  public function testExpandReusesManagedFile(string $managed_uri, int $file_id, array $input, array $expected): void {
-    $this->setServicesWithMatchingManagedFile(uri: $managed_uri, file_id: $file_id);
-
-    $handler = $this->createHandler();
-
-    $result = $handler->expand($input);
-
-    $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Data provider for testExpandReusesManagedFile().
-   */
-  public static function dataProviderExpandReusesManagedFile(): \Iterator {
-    yield 'scalar full uri reuse' => [
-      'public://logo.png',
-      77,
+    yield 'known public-scheme URI reuses managed file' => [
       ['public://logo.png'],
-      [['target_id' => 77, 'display' => 1, 'description' => '']],
+      [['target_id' => 88, 'display' => 1, 'description' => '']],
+      NULL,
+      NULL,
     ];
-    yield 'scalar bare basename, public scheme' => [
-      'public://report.pdf',
-      123,
-      ['report.pdf'],
-      [['target_id' => 123, 'display' => 1, 'description' => '']],
+    yield 'bare basename resolves under public://' => [
+      ['logo.png'],
+      [['target_id' => 88, 'display' => 1, 'description' => '']],
+      NULL,
+      NULL,
     ];
-    yield 'scalar bare basename, private scheme fallback' => [
-      'private://secret.pdf',
-      444,
+    yield 'bare basename falls through to private://' => [
       ['secret.pdf'],
       [['target_id' => 444, 'display' => 1, 'description' => '']],
+      NULL,
+      NULL,
     ];
-    yield 'compound parser shape, uri reuse' => [
-      'public://logo.png',
-      80,
+    yield 'record reusing managed file by URI' => [
       [['target_id' => 'public://logo.png', 'display' => 0, 'description' => 'Brand mark']],
-      [['target_id' => 80, 'display' => 0, 'description' => 'Brand mark']],
+      [['target_id' => 88, 'display' => 0, 'description' => 'Brand mark']],
+      NULL,
+      NULL,
     ];
-    yield 'compound parser shape, bare basename reuse' => [
-      'public://report.pdf',
-      90,
-      [['target_id' => 'report.pdf']],
-      [['target_id' => 90, 'display' => 1, 'description' => '']],
+
+    yield 'NULL target_id rejected by normalise' => [
+      [['target_id' => NULL]],
+      NULL,
+      \InvalidArgumentException::class,
+      'File field "target_id" must not be NULL or empty.',
+    ];
+    yield 'empty target_id rejected by normalise' => [
+      [['target_id' => '']],
+      NULL,
+      \InvalidArgumentException::class,
+      'File field "target_id" must not be NULL or empty.',
+    ];
+    yield 'unreadable path bubbles up as Exception' => [
+      ['/tmp/drupal-driver-nonexistent-file.bin'],
+      NULL,
+      \Exception::class,
+      'Error reading file /tmp/drupal-driver-nonexistent-file.bin.',
     ];
   }
 
   /**
-   * Creates a FileHandler that bypasses the parent constructor.
+   * Builds a fake File entity exposing 'id()'.
    */
-  protected function createHandler(): FileHandler {
-    $reflection = new \ReflectionClass(FileHandler::class);
-    return $reflection->newInstanceWithoutConstructor();
-  }
+  protected static function createFakeFile(int $id): object {
+    return new class($id) {
 
-  /**
-   * Creates a temporary file and returns its path.
-   */
-  protected function createTempFile(string $extension): string {
-    $path = tempnam(sys_get_temp_dir(), 'drupal-driver-') . '.' . $extension;
-    file_put_contents($path, 'fixture');
-    return $path;
-  }
-
-  /**
-   * Sets up services such that no existing managed file matches any lookup.
-   */
-  protected function setServicesWithNoMatchingFile(): void {
-    $container = new ContainerBuilder();
-    $container->set('entity_type.manager', $this->createEntityTypeManagerReturningNoMatches());
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Sets up services for the upload-path branch.
-   *
-   * No managed file matches the lookup; file.repository returns a new File
-   * with the given ID.
-   */
-  protected function setServicesWithUploadReturnId(int $file_id): void {
-    $container = new ContainerBuilder();
-    $container->set('entity_type.manager', $this->createEntityTypeManagerReturningNoMatches());
-    $container->set('file.repository', $this->createFileRepositoryReturning($this->createFakeFile($file_id)));
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Sets up services for the resolve-path branch: managed file matches at URI.
-   */
-  protected function setServicesWithMatchingManagedFile(string $uri, int $file_id): void {
-    $container = new ContainerBuilder();
-    $container->set(
-      'entity_type.manager',
-      $this->createEntityTypeManagerReturningFileAtUri($uri, $this->createFakeFile($file_id)),
-    );
-    \Drupal::setContainer($container);
-  }
-
-  /**
-   * Creates a stand-in File entity that exposes an id() method.
-   */
-  protected function createFakeFile(int $file_id): object {
-    return new class($file_id) {
-
-      public function __construct(protected readonly int $fileId) {}
+      public function __construct(protected readonly int $id) {}
 
       /**
-       * Returns the stored file entity ID.
+       * Returns the configured file entity id.
        */
       public function id(): int {
-        return $this->fileId;
+        return $this->id;
       }
 
       /**
@@ -239,15 +167,17 @@ class FileHandlerTest extends TestCase {
   }
 
   /**
-   * Creates a stand-in file.repository service returning the given file.
+   * Builds a file.repository stub returning a fresh File on writeData().
    */
-  protected function createFileRepositoryReturning(object $file): object {
+  protected function createFileRepository(int $upload_id): object {
+    $file = self::createFakeFile($upload_id);
+
     return new class($file) {
 
       public function __construct(protected readonly object $file) {}
 
       /**
-       * Returns the pre-configured stored file.
+       * Returns the configured file entity for any write.
        */
       public function writeData(string $data, string $destination): object {
         return $this->file;
@@ -257,66 +187,41 @@ class FileHandlerTest extends TestCase {
   }
 
   /**
-   * Creates a stand-in entity_type.manager whose file storage never matches.
-   */
-  protected function createEntityTypeManagerReturningNoMatches(): object {
-    $storage = new class {
-
-      /**
-       * Returns an empty match list for every lookup.
-       *
-       * @param array<string, string> $properties
-       *   The lookup properties (ignored in this stub).
-       *
-       * @return array<int, object>
-       *   Always an empty array.
-       */
-      public function loadByProperties(array $properties): array {
-        return [];
-      }
-
-    };
-
-    return new class($storage) {
-
-      public function __construct(protected readonly object $storage) {}
-
-      /**
-       * Returns the stub file storage.
-       */
-      public function getStorage(string $entity_type_id): object {
-        return $this->storage;
-      }
-
-    };
-  }
-
-  /**
-   * Creates an entity_type.manager stub whose file storage matches one URI.
+   * Builds an entity_type.manager stub for the file storage lookup branch.
    *
-   * The storage's loadByProperties() returns $file only when called with
-   * exactly ['uri' => $uri], and an empty array for every other lookup.
+   * @param array<string, int> $registered_files
+   *   Map of URI to file id; anything outside the map produces no match.
    */
-  protected function createEntityTypeManagerReturningFileAtUri(string $uri, object $file): object {
-    $storage = new class($uri, $file) {
+  protected function createEntityTypeManager(array $registered_files): object {
+    $files_by_uri = [];
 
-      public function __construct(protected readonly string $uri, protected readonly object $file) {}
+    foreach ($registered_files as $uri => $id) {
+      $files_by_uri[$uri] = self::createFakeFile($id);
+    }
+
+    $storage = new class($files_by_uri) {
 
       /**
-       * Returns the configured file only for lookups matching the stored URI.
+       * @param array<string, object> $files_by_uri
+       *   Files keyed by URI.
+       */
+      public function __construct(protected readonly array $files_by_uri) {}
+
+      /**
+       * Returns the file matching the given URI, or an empty list.
        *
        * @param array<string, string> $properties
-       *   The loadByProperties() input keyed by property name.
+       *   Lookup properties keyed by name.
        *
        * @return array<int, object>
-       *   Either a single-element list with the configured file, or empty.
+       *   Single-element list when matched, empty otherwise.
        */
       public function loadByProperties(array $properties): array {
-        if (($properties['uri'] ?? NULL) === $this->uri) {
-          return [$this->file];
-        }
+        $uri = $properties['uri'] ?? NULL;
 
-        return [];
+        return $uri !== NULL && isset($this->files_by_uri[$uri])
+          ? [$this->files_by_uri[$uri]]
+          : [];
       }
 
     };

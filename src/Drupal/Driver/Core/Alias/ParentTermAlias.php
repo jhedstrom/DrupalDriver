@@ -114,7 +114,9 @@ class ParentTermAlias implements PreCreateAliasInterface {
       throw new CreationAliasResolutionException(sprintf("Cannot create term because parent term '%s' does not exist in vocabulary '%s'.", $parent_name, $vid));
     }
 
-    $stub->setValue('parent', $tid);
+    // Cast to int so the downstream entity-reference handler treats the
+    // value as a pre-resolved tid and skips its own validation query.
+    $stub->setValue('parent', (int) $tid);
   }
 
 }

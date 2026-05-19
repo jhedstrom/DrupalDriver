@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use Drupal\Driver\Core\Field\SmartdateHandler;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the SmartdateHandler field handler.
@@ -15,71 +14,62 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @group fields
  */
 #[Group('fields')]
-class SmartdateHandlerTest extends TestCase {
+class SmartdateHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
-   * Tests smartdate field expansion.
-   *
-   * @param mixed $input
-   *   The input values to expand.
-   * @param array<int, array<string, mixed>> $expected
-   *   The expected expanded records.
-   *
-   * @dataProvider dataProviderExpand
+   * {@inheritdoc}
    */
-  #[DataProvider('dataProviderExpand')]
-  public function testExpand(mixed $input, array $expected): void {
-    $handler = $this->createHandler();
-    $result = $handler->expand($input);
-    $this->assertSame($expected, $result);
+  protected function createHandler(): FieldHandlerInterface {
+    return (new \ReflectionClass(SmartdateHandler::class))->newInstanceWithoutConstructor();
   }
 
   /**
-   * Data provider for testExpand().
+   * {@inheritdoc}
    */
   public static function dataProviderExpand(): \Iterator {
     // 2026-07-15T09:00:00 UTC = 1784106000.
-    // 2026-07-15T17:00:00 UTC = 1784134800.
-    // Duration: (1784134800 - 1784106000) / 60 = 480 minutes.
+    // 2026-07-15T17:00:00 UTC = 1784134800. Duration: 480 minutes.
     yield 'empty array returns empty list' => [
       [],
       [],
+      NULL,
+      NULL,
     ];
-
-    yield 'non-array input returns empty list' => [
+    yield 'non-array returns empty list' => [
       'not-an-array',
       [],
+      NULL,
+      NULL,
     ];
-
     yield 'single positional pair' => [
       [1784106000, 1784134800],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 480,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => 1784134800,
+        'duration' => 480,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
-    yield 'single named record' => [
+    yield 'single keyed record' => [
       ['value' => 1784106000, 'end_value' => 1784134800],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 480,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => 1784134800,
+        'duration' => 480,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
-    yield 'list of named records (multi-delta)' => [
+    yield 'list of keyed records' => [
       [
         ['value' => 1784106000, 'end_value' => 1784134800],
         ['value' => 1784790000, 'end_value' => 1784818800],
@@ -102,78 +92,79 @@ class SmartdateHandlerTest extends TestCase {
           'timezone' => '',
         ],
       ],
+      NULL,
+      NULL,
     ];
-
-    yield 'explicit duration overrides auto-computed' => [
+    yield 'explicit duration overrides derived' => [
       ['value' => 1784106000, 'end_value' => 1784134800, 'duration' => 999],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 999,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => 1784134800,
+        'duration' => 999,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
-    yield 'duration defaults to zero when only start provided' => [
+    yield 'NULL end yields zero duration' => [
       ['value' => 1784106000],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => NULL,
-          'duration' => 0,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => NULL,
+        'duration' => 0,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
     yield 'NULL endpoints preserved' => [
       ['value' => NULL, 'end_value' => NULL],
-      [
-        [
-          'value' => NULL,
-          'end_value' => NULL,
-          'duration' => 0,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => NULL,
+        'end_value' => NULL,
+        'duration' => 0,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
     yield 'end before start clamps duration to zero' => [
       ['value' => 1784134800, 'end_value' => 1784106000],
-      [
-        [
-          'value' => 1784134800,
-          'end_value' => 1784106000,
-          'duration' => 0,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784134800,
+        'end_value' => 1784106000,
+        'duration' => 0,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
     yield 'date string parsed via strtotime' => [
       ['value' => '2026-07-15T09:00:00 UTC', 'end_value' => '2026-07-15T17:00:00 UTC'],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 480,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => 1784134800,
+        'duration' => 480,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
     yield 'rrule, rrule_index and timezone passed through' => [
       [
         'value' => 1784106000,
@@ -182,71 +173,56 @@ class SmartdateHandlerTest extends TestCase {
         'rrule_index' => 3,
         'timezone' => 'Australia/Sydney',
       ],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 480,
-          'rrule' => 42,
-          'rrule_index' => 3,
-          'timezone' => 'Australia/Sydney',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => 1784134800,
+        'duration' => 480,
+        'rrule' => 42,
+        'rrule_index' => 3,
+        'timezone' => 'Australia/Sydney',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
     yield 'unparseable string becomes NULL' => [
       ['value' => 'not a date', 'end_value' => NULL],
-      [
-        [
-          'value' => NULL,
-          'end_value' => NULL,
-          'duration' => 0,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => NULL,
+        'end_value' => NULL,
+        'duration' => 0,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
-
     yield 'numeric string timestamp cast to int' => [
       ['value' => '1784106000', 'end_value' => '1784134800'],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 480,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
+      [[
+        'value' => 1784106000,
+        'end_value' => 1784134800,
+        'duration' => 480,
+        'rrule' => NULL,
+        'rrule_index' => NULL,
+        'timezone' => '',
       ],
+      ],
+      NULL,
+      NULL,
     ];
 
-    yield 'non-array record in list is skipped' => [
+    yield 'non-array delta in list rejected' => [
       [
         ['value' => 1784106000, 'end_value' => 1784134800],
         'not-a-record',
       ],
-      [
-        [
-          'value' => 1784106000,
-          'end_value' => 1784134800,
-          'duration' => 480,
-          'rrule' => NULL,
-          'rrule_index' => NULL,
-          'timezone' => '',
-        ],
-      ],
+      NULL,
+      \InvalidArgumentException::class,
+      'Smartdate field delta must be an array',
     ];
-  }
-
-  /**
-   * Creates a SmartdateHandler instance that bypasses the parent constructor.
-   */
-  protected function createHandler(): SmartdateHandler {
-    $reflection = new \ReflectionClass(SmartdateHandler::class);
-
-    return $reflection->newInstanceWithoutConstructor();
   }
 
 }

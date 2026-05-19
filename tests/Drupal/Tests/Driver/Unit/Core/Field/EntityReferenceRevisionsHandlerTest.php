@@ -4,30 +4,52 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\EntityReferenceRevisionsHandler;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\TestCase;
 
 /**
- * Unit tests for EntityReferenceRevisionsHandler.
- *
- * The handler mirrors EntityReferenceHandler's label-to-id resolution and
- * additionally populates 'target_revision_id' with the current revision id.
- * These tests exercise both the scalar input branch and the extras-array
- * input branch against a mocked entity query + storage.
+ * Tests the EntityReferenceRevisionsHandler field handler.
  *
  * @group fields
  */
 #[Group('fields')]
-class EntityReferenceRevisionsHandlerTest extends TestCase {
+class EntityReferenceRevisionsHandlerTest extends FieldHandlerUnitTestBase {
+
+  /**
+   * Label -> id index for the entity query stub.
+   *
+   * @var array<string, int>
+   */
+  protected const KNOWN_LABELS = [
+    'Paragraph A' => 42,
+  ];
+
+  /**
+   * Revision id every loaded target reports.
+   */
+  protected const REVISION_ID = 7;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    $container = new ContainerBuilder();
+    $container->set('entity_type.manager', $this->createEntityTypeManager(self::KNOWN_LABELS, self::REVISION_ID));
+    \Drupal::setContainer($container);
+  }
 
   /**
    * {@inheritdoc}
@@ -38,112 +60,72 @@ class EntityReferenceRevisionsHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that a scalar label resolves to target_id plus target_revision_id.
+   * {@inheritdoc}
    */
-  public function testScalarLabelResolvesToTargetAndRevisionIds(): void {
-    $this->setUpDrupalContainer(resolved_id: 42, revision_id: 7);
+  protected function createHandler(): FieldHandlerInterface {
+    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
+    $field_info->method('getSetting')
+      ->with('target_type')
+      ->willReturn('paragraph');
 
-    $handler = $this->handlerUnderTest();
-    $result = $handler->expand(['Paragraph A']);
-
-    $this->assertSame([['target_id' => 42, 'target_revision_id' => 7]], $result);
-  }
-
-  /**
-   * Tests that an extras-array input preserves extras and resolves the target.
-   */
-  public function testExtrasArrayInputPreservesExtras(): void {
-    $this->setUpDrupalContainer(resolved_id: 42, revision_id: 7);
-
-    $handler = $this->handlerUnderTest();
-    $result = $handler->expand([
-      ['target_id' => 'Paragraph A', 'extra' => 'keep-me'],
-    ]);
-
-    $this->assertSame([
-      ['target_id' => 42, 'extra' => 'keep-me', 'target_revision_id' => 7],
-    ], $result);
-  }
-
-  /**
-   * Tests that the handler throws when the target label does not resolve.
-   */
-  public function testUnknownTargetThrows(): void {
-    $this->setUpDrupalContainer(resolved_id: NULL, revision_id: NULL);
-
-    $handler = $this->handlerUnderTest();
-
-    $this->expectException(\Exception::class);
-    $this->expectExceptionMessage("No entity 'Paragraph A' of type 'paragraph' exists.");
-
-    $handler->expand(['Paragraph A']);
-  }
-
-  /**
-   * Tests that a non-revisionable target yields a NULL revision id.
-   */
-  public function testNonRevisionableTargetYieldsNullRevisionId(): void {
-    $this->setUpDrupalContainer(resolved_id: 42, revision_id: NULL, revisionable: FALSE);
-
-    $handler = $this->handlerUnderTest();
-    $result = $handler->expand(['Paragraph A']);
-
-    $this->assertSame([['target_id' => 42, 'target_revision_id' => NULL]], $result);
-  }
-
-  /**
-   * Instantiates the handler without invoking its parent constructor.
-   *
-   * Direct construction would bootstrap the field-storage validation in
-   * AbstractHandler, which this test replaces with injected fakes via
-   * reflection. Using reflection keeps the test focused on expand() output.
-   */
-  protected function handlerUnderTest(): EntityReferenceRevisionsHandler {
-    $storage = $this->createMock(FieldStorageDefinitionInterface::class);
-    $storage->method('getSetting')->with('target_type')->willReturn('paragraph');
-    $storage->method('getMainPropertyName')->willReturn('target_id');
-
-    $config = $this->createMock(FieldDefinitionInterface::class);
-    $config->method('getSettings')->willReturn([]);
+    $field_config = $this->createMock(FieldDefinitionInterface::class);
+    $field_config->method('getSettings')->willReturn([]);
 
     $reflection = new \ReflectionClass(EntityReferenceRevisionsHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
-    $info_prop = $reflection->getParentClass()->getProperty('fieldInfo');
-    $info_prop->setValue($handler, $storage);
-    $config_prop = $reflection->getParentClass()->getProperty('fieldConfig');
-    $config_prop->setValue($handler, $config);
+
+    $info_property = new \ReflectionProperty(EntityReferenceRevisionsHandler::class, 'fieldInfo');
+    $info_property->setValue($handler, $field_info);
+
+    $config_property = new \ReflectionProperty(EntityReferenceRevisionsHandler::class, 'fieldConfig');
+    $config_property->setValue($handler, $field_config);
+
+    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_property->setValue($handler, 'target_id');
 
     return $handler;
   }
 
   /**
-   * Sets up the Drupal container with stubs the handler consults.
-   *
-   * The handler calls '\Drupal::entityTypeManager()' and
-   * '\Drupal::entityQuery()', both resolved through '\Drupal::getContainer()'.
-   * Wire the container so the query returns a deterministic id (or an empty
-   * array to force the "not found" branch) and storage returns an optionally
-   * revisionable target.
+   * {@inheritdoc}
    */
-  protected function setUpDrupalContainer(?int $resolved_id, ?int $revision_id, bool $revisionable = TRUE): void {
-    $query = $this->createMock(QueryInterface::class);
-    $query->method('accessCheck')->willReturnSelf();
-    $query->method('condition')->willReturnSelf();
-    $query->method('orConditionGroup')->willReturn($query);
-    $query->method('execute')->willReturn($resolved_id === NULL ? [] : [$resolved_id => $resolved_id]);
+  public static function dataProviderExpand(): \Iterator {
+    yield 'bare label resolves to id and revision id' => [
+      'Paragraph A',
+      [['target_id' => 42, 'target_revision_id' => self::REVISION_ID]],
+      NULL,
+      NULL,
+    ];
+    yield 'record preserves extras and resolves target' => [
+      [['target_id' => 'Paragraph A', 'extra' => 'keep-me']],
+      [['target_id' => 42, 'extra' => 'keep-me', 'target_revision_id' => self::REVISION_ID]],
+      NULL,
+      NULL,
+    ];
+    yield 'integer id bypasses validation query' => [
+      [99],
+      [['target_id' => 99, 'target_revision_id' => self::REVISION_ID]],
+      NULL,
+      NULL,
+    ];
 
-    if ($revisionable) {
-      $target = $this->createMock(RevisionableInterface::class);
-      $target->method('getRevisionId')->willReturn($revision_id);
-    }
-    else {
-      $target = $this->createMock(EntityTypeInterface::class);
-    }
+    yield 'unknown label throws' => [
+      ['Paragraph X'],
+      NULL,
+      \Exception::class,
+      "No entity 'Paragraph X' of type 'paragraph' exists.",
+    ];
+  }
 
-    $entity_storage = $this->createMock(EntityStorageInterface::class);
-    $entity_storage->method('load')->willReturn($target);
-    $entity_storage->method('getQuery')->willReturn($query);
-
+  /**
+   * Builds the entity_type.manager + query + storage stubs.
+   *
+   * @param array<string, int> $known_labels
+   *   Label-to-id index.
+   * @param int $revision_id
+   *   Revision id every loaded target reports.
+   */
+  protected function createEntityTypeManager(array $known_labels, int $revision_id): object {
     $entity_type = $this->createMock(EntityTypeInterface::class);
     $entity_type->method('getKey')->willReturnMap([
       ['id', 'id'],
@@ -151,13 +133,51 @@ class EntityReferenceRevisionsHandlerTest extends TestCase {
       ['bundle', 'type'],
     ]);
 
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_manager->method('getDefinition')->with('paragraph')->willReturn($entity_type);
-    $entity_type_manager->method('getStorage')->with('paragraph')->willReturn($entity_storage);
+    $target = $this->createMock(RevisionableInterface::class);
+    $target->method('getRevisionId')->willReturn($revision_id);
 
-    $container = new ContainerBuilder();
-    $container->set('entity_type.manager', $entity_type_manager);
-    \Drupal::setContainer($container);
+    $query = $this->createQueryStub($known_labels);
+
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('getQuery')->willReturn($query);
+    $storage->method('load')->willReturn($target);
+
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $entity_type_manager->method('getDefinition')->willReturn($entity_type);
+    $entity_type_manager->method('getStorage')->willReturn($storage);
+
+    return $entity_type_manager;
+  }
+
+  /**
+   * Builds an entity query mock backed by the label-to-id index.
+   *
+   * @param array<string, int> $known_labels
+   *   Label-to-id index.
+   */
+  protected function createQueryStub(array $known_labels): QueryInterface {
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('accessCheck')->willReturnSelf();
+    $query->method('orConditionGroup')->willReturnSelf();
+
+    $captured_label = NULL;
+    $query->method('condition')
+      ->willReturnCallback(function (mixed $field, mixed $value = NULL) use ($query, &$captured_label): MockObject {
+        if (is_string($field) && in_array($field, ['name', 'title', 'label'], TRUE) && $value !== NULL) {
+          $captured_label = (string) $value;
+        }
+
+        return $query;
+      });
+
+    $query->method('execute')
+      ->willReturnCallback(function () use (&$captured_label, $known_labels): array {
+        return $captured_label !== NULL && isset($known_labels[$captured_label])
+          ? [$known_labels[$captured_label]]
+          : [];
+      });
+
+    return $query;
   }
 
 }

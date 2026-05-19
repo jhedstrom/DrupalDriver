@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
@@ -13,20 +12,20 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DatetimeHandler;
-use PHPUnit\Framework\TestCase;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DatetimeHandler field handler.
  *
- * Full date-parsing behaviour exercises DrupalDateTime, which in turn requires
- * the language_manager service and a full Drupal container, so only the
- * early-return paths (empty values) are asserted here.
+ * Full date parsing exercises 'DrupalDateTime' which needs the
+ * 'language_manager' service and a real Drupal container, so only the
+ * empty/NULL early-return cases are asserted here.
  *
  * @group fields
  */
 #[Group('fields')]
-class DatetimeHandlerTest extends TestCase {
+class DatetimeHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
    * {@inheritdoc}
@@ -58,67 +57,13 @@ class DatetimeHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that empty values are accepted in every input shape.
-   *
-   * @param mixed $input
-   *   Any of the loose shapes 'normalise()' accepts.
-   * @param array<int, array<string, mixed>> $expected
-   *   The expected expand() output: a list of records keyed by 'value'.
-   *
-   * @dataProvider dataProviderExpandPreservesEmptyValuesAsNull
+   * {@inheritdoc}
    */
-  #[DataProvider('dataProviderExpandPreservesEmptyValuesAsNull')]
-  public function testExpandPreservesEmptyValuesAsNull(mixed $input, array $expected): void {
-    $handler = $this->createHandler('datetime');
-
-    $result = $handler->expand($input);
-
-    $this->assertSame($expected, $result);
-  }
-
-  /**
-   * Data provider for testExpandPreservesEmptyValuesAsNull().
-   *
-   * Non-empty dates exercise DrupalDateTime, which needs the language_manager
-   * service and a full container; those cases live in the kernel test. The
-   * shape coverage here uses empty values so that 'formatDateValue()' early
-   * returns and the only assertion is on the normalised record shape.
-   */
-  public static function dataProviderExpandPreservesEmptyValuesAsNull(): \Iterator {
-    yield 'bare empty string scalar' => [
-      '',
-      [['value' => NULL]],
-    ];
-    yield 'bare NULL scalar' => [
-      NULL,
-      [['value' => NULL]],
-    ];
-    yield 'list of empty scalars' => [
-      ['', NULL],
-      [['value' => NULL], ['value' => NULL]],
-    ];
-    yield 'single record with empty value' => [
-      ['value' => ''],
-      [['value' => NULL]],
-    ];
-    yield 'list of records with empty values' => [
-      [['value' => ''], ['value' => NULL]],
-      [['value' => NULL], ['value' => NULL]],
-    ];
-  }
-
-  /**
-   * Creates a DatetimeHandler with fieldInfo and main property injected.
-   *
-   * The fieldInfo mock is still needed for getSetting('datetime_type')
-   * (used by formatDateValue); mainProperty is injected separately because
-   * normalise() reads it as a property, not via fieldInfo.
-   */
-  protected function createHandler(string $datetime_type): DatetimeHandler {
+  protected function createHandler(): FieldHandlerInterface {
     $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
     $field_info->method('getSetting')
       ->with('datetime_type')
-      ->willReturn($datetime_type);
+      ->willReturn('datetime');
 
     $reflection = new \ReflectionClass(DatetimeHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
@@ -130,6 +75,55 @@ class DatetimeHandlerTest extends TestCase {
     $main_property->setValue($handler, 'value');
 
     return $handler;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function dataProviderExpand(): \Iterator {
+    yield 'bare empty string becomes NULL' => [
+      '',
+      [['value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'bare NULL becomes NULL' => [
+      NULL,
+      [['value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'list of empty scalars' => [
+      ['', NULL],
+      [['value' => NULL], ['value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'single record with empty value' => [
+      ['value' => ''],
+      [['value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'list of records with empty values' => [
+      [['value' => ''], ['value' => NULL]],
+      [['value' => NULL], ['value' => NULL]],
+      NULL,
+      NULL,
+    ];
+
+    yield 'mixed positional and named keys rejected' => [
+      ['2026-07-15T09:00:00', 'extra' => 'oops'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Field value cannot mix positional and named keys',
+    ];
+    yield 'record missing main property rejected' => [
+      ['format' => 'datetime'],
+      NULL,
+      \InvalidArgumentException::class,
+      'Field record must include the main property "value"',
+    ];
   }
 
   /**

@@ -5,22 +5,63 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Address field handler for Drupal 8.
+ * Field handler for 'address' fields.
  */
 class AddressHandler extends AbstractHandler {
 
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
-    $visible_fields = $this->getVisibleAddressFields();
-    $result = [];
-
-    foreach ($values as $value) {
-      $result[] = $this->normaliseDelta($value, $visible_fields);
+  protected function normalise(mixed $values): array {
+    if ($values === []) {
+      return [];
     }
 
-    return $result;
+    $visible_fields = $this->getVisibleAddressFields();
+
+    if (is_string($values)) {
+      return [$this->normaliseDelta($values, $visible_fields)];
+    }
+
+    if (!is_array($values)) {
+      throw new \InvalidArgumentException(sprintf('Address field value must be a string or array. Got %s.', get_debug_type($values)));
+    }
+
+    // A top-level list of scalars is a single positional address (the
+    // visible-field positions), not a multi-delta list. Only a list whose
+    // first element is an array iterates as multi-delta.
+    $is_list_of_records = array_is_list($values) && is_array($values[0] ?? NULL);
+
+    if (!$is_list_of_records) {
+      return [$this->normaliseDelta($values, $visible_fields)];
+    }
+
+    $records = [];
+
+    foreach ($values as $value) {
+      $records[] = $this->normaliseDelta($value, $visible_fields);
+    }
+
+    return $records;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doExpand(array $records): array {
+    // 'available_countries' is empty when the field accepts every country;
+    // 'reset([])' returns FALSE, which would land a boolean in storage.
+    // Leave 'country_code' unset in that case so the field's own default
+    // wins instead.
+    $available = $this->fieldConfig->getSettings()['available_countries'] ?? [];
+
+    foreach ($records as &$record) {
+      if (!isset($record['country_code']) && $available !== []) {
+        $record['country_code'] = reset($available);
+      }
+    }
+
+    return $records;
   }
 
   /**
@@ -64,7 +105,7 @@ class AddressHandler extends AbstractHandler {
   }
 
   /**
-   * Normalises a single address delta into a keyed array.
+   * Folds one address value into a keyed sub-field array.
    *
    * @param mixed $value
    *   A single address value (string or array).
@@ -98,10 +139,6 @@ class AddressHandler extends AbstractHandler {
 
       $normalised[$visible_fields[$position]] = $field_value;
       $position++;
-    }
-
-    if (!isset($normalised['country_code'])) {
-      $normalised['country_code'] = reset($this->fieldConfig->getSettings()['available_countries']);
     }
 
     return $normalised;

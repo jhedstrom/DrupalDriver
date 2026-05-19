@@ -25,13 +25,12 @@ class StringLongHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
+  protected function doExpand(array $records): array {
     $emitted = [];
 
-    foreach ((array) $values as $delta) {
-      $delta = is_array($delta) ? $delta : ['value' => $delta];
-      $delta['value'] = self::MARKER;
-      $emitted[] = $delta;
+    foreach ($records as $record) {
+      $record['value'] = self::MARKER;
+      $emitted[] = $record;
     }
 
     return $emitted;

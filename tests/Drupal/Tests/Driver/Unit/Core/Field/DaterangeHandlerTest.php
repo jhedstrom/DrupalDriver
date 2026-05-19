@@ -8,21 +8,19 @@ use Composer\InstalledVersions;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Driver\Core\Field\DaterangeHandler;
-use PHPUnit\Framework\TestCase;
+use Drupal\Driver\Core\Field\FieldHandlerInterface;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DaterangeHandler field handler.
  *
- * Only empty/null ranges are exercised - full date parsing exercises
- * DrupalDateTime and requires the full Drupal container.
- *
  * @group fields
  */
 #[Group('fields')]
-class DaterangeHandlerTest extends TestCase {
+class DaterangeHandlerTest extends FieldHandlerUnitTestBase {
 
   /**
    * {@inheritdoc}
@@ -54,21 +52,73 @@ class DaterangeHandlerTest extends TestCase {
   }
 
   /**
-   * Tests that empty start/end values produce NULL entries.
+   * {@inheritdoc}
    */
-  public function testExpandHandlesEmptyValuesAsNull(): void {
+  protected function createHandler(): FieldHandlerInterface {
+    $field_info = $this->createMock(FieldStorageDefinitionInterface::class);
+    $field_info->method('getSetting')
+      ->with('datetime_type')
+      ->willReturn('datetime');
+
     $reflection = new \ReflectionClass(DaterangeHandler::class);
     $handler = $reflection->newInstanceWithoutConstructor();
 
-    $result = $handler->expand([
-      ['value' => NULL, 'end_value' => NULL],
-      [NULL, NULL],
-    ]);
+    $info_property = new \ReflectionProperty(DaterangeHandler::class, 'fieldInfo');
+    $info_property->setValue($handler, $field_info);
 
-    $this->assertSame([
+    return $handler;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function dataProviderExpand(): \Iterator {
+    yield 'empty array returns empty list' => [
+      [],
+      [],
+      NULL,
+      NULL,
+    ];
+    yield 'NULL endpoints stay NULL' => [
+      [['value' => NULL, 'end_value' => NULL]],
+      [['value' => NULL, 'end_value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'positional NULL pair stays NULL' => [
+      [[NULL, NULL]],
+      [['value' => NULL, 'end_value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'single keyed record auto-wrapped' => [
       ['value' => NULL, 'end_value' => NULL],
-      ['value' => NULL, 'end_value' => NULL],
-    ], $result);
+      [['value' => NULL, 'end_value' => NULL]],
+      NULL,
+      NULL,
+    ];
+    yield 'multi-delta NULL endpoints' => [
+      [
+        ['value' => NULL, 'end_value' => NULL],
+        ['value' => NULL, 'end_value' => NULL],
+      ],
+      [
+        ['value' => NULL, 'end_value' => NULL],
+        ['value' => NULL, 'end_value' => NULL],
+      ],
+      NULL,
+      NULL,
+    ];
+
+    yield 'non-array element in list rejected' => [
+      [
+        ['value' => '2026-07-15T09:00:00', 'end_value' => '2026-07-15T17:00:00'],
+        'not-a-record',
+      ],
+      NULL,
+      \InvalidArgumentException::class,
+      'Daterange field record must be an array',
+    ];
   }
 
   /**

@@ -12,6 +12,7 @@ use Drupal\Driver\Entity\EntityStubInterface;
  * Base class for field handlers.
  */
 abstract class AbstractHandler implements FieldHandlerInterface {
+
   /**
    * Field storage definition.
    */
@@ -25,13 +26,9 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   /**
    * Main property name of the field's storage definition.
    *
-   * Cached once at construction so 'normalise()' and subclass 'expand()'
-   * methods do not have to look it up on every call. Resolves to the
-   * column key that a bare scalar maps to ('target_id' for image/file/
-   * entity_reference, 'value' for datetime/boolean/list/text, 'uri' for
-   * link, etc.). NULL for field types without a single main column (e.g.
-   * 'address', 'name'); those handlers must override 'normalise()' or
-   * 'expand()' to interpret records themselves.
+   * NULL for field types without a single main column (e.g. 'address',
+   * 'name'); those handlers must override 'normalise()' to interpret
+   * records themselves.
    */
   protected ?string $mainProperty = NULL;
 
@@ -81,12 +78,14 @@ abstract class AbstractHandler implements FieldHandlerInterface {
   }
 
   /**
-   * Normalises loose handler input into a canonical list of records.
-   *
-   * Consumers should not have to know whether a field is single- or
-   * multi-column; this method accepts any of the natural shapes a caller
-   * is likely to produce and returns a uniform 'array<int, array<string,
-   * mixed>>' that 'expand()' implementations can iterate without sniffing.
+   * {@inheritdoc}
+   */
+  final public function expand(mixed $values): array {
+    return $this->doExpand($this->normalise($values));
+  }
+
+  /**
+   * Folds loose input into a canonical list of records.
    *
    * Recognised input shapes:
    *   - Bare scalar -> wrapped as a single record using the main property.
@@ -95,19 +94,15 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    *   - List of records -> returned unchanged.
    *   - Mixed list of scalars and records -> scalars wrapped, records kept.
    *
-   * The main property name (the column a bare scalar maps to) is pulled
-   * from the field's storage definition - 'target_id' for image/file/
-   * entity_reference, 'value' for datetime/boolean/list/text, 'uri' for
-   * link, etc. Subclasses with custom shorthand (e.g. 'NameHandler's
-   * 'Family, Given' string, 'AddressHandler's first-visible-field
-   * shorthand) should override this method and call 'parent::normalise()'
-   * for the residual cases they do not handle themselves.
+   * Subclasses with custom shorthand override this method and may call
+   * 'parent::normalise()' for the residual shapes they do not handle
+   * themselves.
    *
    * @param mixed $values
    *   Whatever shape the caller produced.
    *
    * @return array<int, array<string, mixed>>
-   *   A canonical list of records.
+   *   Canonical list of records.
    */
   protected function normalise(mixed $values): array {
     if ($this->mainProperty === NULL) {
@@ -171,5 +166,16 @@ abstract class AbstractHandler implements FieldHandlerInterface {
 
     return $records;
   }
+
+  /**
+   * Transforms canonical records into the storage shape.
+   *
+   * @param array<int, array<string, mixed>> $records
+   *   Canonical list of records.
+   *
+   * @return array<int|string, mixed>
+   *   Field values in the format expected by Drupal's entity storage.
+   */
+  abstract protected function doExpand(array $records): array;
 
 }

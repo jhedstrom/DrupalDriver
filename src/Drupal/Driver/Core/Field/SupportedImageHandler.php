@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Supported Image field handler for Drupal 8+.
+ * Field handler for 'supported_image' fields (supported_image contrib module).
  *
- * Adapted from ImageHandler.
- *
- * @see \Drupal\Driver\Core\Field\ImageHandler
  * @see https://www.drupal.org/project/supported_image
  */
 class SupportedImageHandler extends AbstractHandler {
@@ -17,21 +14,33 @@ class SupportedImageHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand($values): array {
-    // Standardize single/multi-value input.
-    if (is_string($values) || isset($values['target_id'])) {
-      $values = [$values];
+  protected function normalise(mixed $values): array {
+    $records = parent::normalise($values);
+
+    foreach ($records as &$record) {
+      if ($record[$this->mainProperty] === NULL || $record[$this->mainProperty] === '') {
+        throw new \InvalidArgumentException(sprintf('Supported image field "%s" must not be NULL or empty.', $this->mainProperty));
+      }
+
+      $record[$this->mainProperty] = (string) $record[$this->mainProperty];
     }
 
+    return $records;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doExpand(array $records): array {
     $images = [];
 
-    foreach ($values as $value) {
-      $file_path = (string) ($value['target_id'] ?? $value);
-      $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
+    foreach ($records as $record) {
+      $file_path = $record[$this->mainProperty];
+      $file_extension = pathinfo((string) $file_path, PATHINFO_EXTENSION);
       $data = file_get_contents($file_path);
 
       if ($data === FALSE) {
-        throw new \Exception("Error reading file");
+        throw new \Exception(sprintf('Error reading file %s.', $file_path));
       }
 
       /** @var \Drupal\file\FileInterface $file */
@@ -40,13 +49,13 @@ class SupportedImageHandler extends AbstractHandler {
       $file->save();
 
       $images[] = [
-        'target_id' => $file->id(),
-        'alt' => $value['alt'] ?? NULL,
-        'title' => $value['title'] ?? NULL,
-        'caption_value' => $value['caption_value'] ?? NULL,
-        'caption_format' => $value['caption_format'] ?? NULL,
-        'attribution_value' => $value['attribution_value'] ?? NULL,
-        'attribution_format' => $value['attribution_format'] ?? NULL,
+        $this->mainProperty => $file->id(),
+        'alt' => $record['alt'] ?? NULL,
+        'title' => $record['title'] ?? NULL,
+        'caption_value' => $record['caption_value'] ?? NULL,
+        'caption_format' => $record['caption_format'] ?? NULL,
+        'attribution_value' => $record['attribution_value'] ?? NULL,
+        'attribution_format' => $record['attribution_format'] ?? NULL,
       ];
     }
 

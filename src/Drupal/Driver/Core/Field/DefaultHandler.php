@@ -16,7 +16,7 @@ class DefaultHandler extends AbstractHandler {
   /**
    * {@inheritdoc}
    */
-  public function expand(mixed $values): array {
+  protected function doExpand(array $records): array {
     $columns = $this->fieldInfo->getColumns();
 
     if (count($columns) !== 1 || !array_key_exists('value', $columns)) {
@@ -31,7 +31,7 @@ class DefaultHandler extends AbstractHandler {
       ));
     }
 
-    return (array) $values;
+    return $records;
   }
 
 }
