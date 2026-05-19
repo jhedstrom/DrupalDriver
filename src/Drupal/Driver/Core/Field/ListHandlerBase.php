@@ -19,10 +19,17 @@ abstract class ListHandlerBase extends AbstractHandler {
     foreach ($records as $record) {
       $value = $record['value'];
       $key = array_search($value, $allowed_values, TRUE);
-      $return[] = $key !== FALSE ? $key : $value;
+      $return[] = $key !== FALSE ? $this->castStorageKey($key) : $value;
     }
 
     return $return;
+  }
+
+  /**
+   * Casts a resolved storage key to the field type's expected PHP type.
+   */
+  protected function castStorageKey(mixed $key): mixed {
+    return $key;
   }
 
 }

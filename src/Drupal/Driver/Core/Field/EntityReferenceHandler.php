@@ -26,6 +26,10 @@ class EntityReferenceHandler extends AbstractHandler {
     $resolved = [];
 
     foreach ($records as $record) {
+      if (!array_key_exists($this->mainProperty, $record)) {
+        throw new \InvalidArgumentException(sprintf('Entity reference record is missing the main property "%s".', $this->mainProperty));
+      }
+
       $lookup = $record[$this->mainProperty];
 
       // Already-resolved integer ids (caller-supplied or alias-resolved)

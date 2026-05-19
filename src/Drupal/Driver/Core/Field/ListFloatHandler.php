@@ -5,6 +5,15 @@ declare(strict_types=1);
 namespace Drupal\Driver\Core\Field;
 
 /**
- * Handler for ListFloat fields.
+ * Field handler for 'list_float' fields.
  */
-class ListFloatHandler extends ListHandlerBase {}
+class ListFloatHandler extends ListHandlerBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function castStorageKey(mixed $key): float {
+    return (float) $key;
+  }
+
+}

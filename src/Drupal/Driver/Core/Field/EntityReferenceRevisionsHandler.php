@@ -28,6 +28,10 @@ class EntityReferenceRevisionsHandler extends AbstractHandler {
     $resolved = [];
 
     foreach ($records as $record) {
+      if (!array_key_exists($this->mainProperty, $record)) {
+        throw new \InvalidArgumentException(sprintf('Entity reference revisions record is missing the main property "%s".', $this->mainProperty));
+      }
+
       $lookup = $record[$this->mainProperty];
 
       if (is_int($lookup)) {
@@ -66,6 +70,11 @@ class EntityReferenceRevisionsHandler extends AbstractHandler {
       }
 
       $target = $storage->load($resolved_id);
+
+      if ($target === NULL) {
+        throw new \Exception(sprintf("Entity '%s' of type '%s' no longer exists.", $resolved_id, $entity_type_id));
+      }
+
       $record[$this->mainProperty] = $resolved_id;
 
       if (!array_key_exists('target_revision_id', $record)) {

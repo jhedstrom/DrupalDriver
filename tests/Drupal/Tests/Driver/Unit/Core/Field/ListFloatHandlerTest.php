@@ -48,7 +48,7 @@ class ListFloatHandlerTest extends FieldHandlerUnitTestBase {
   public static function dataProviderExpand(): \Iterator {
     yield 'label resolves to float key' => [
       ['One and a half'],
-      ['1.5'],
+      [1.5],
       NULL,
       NULL,
     ];
