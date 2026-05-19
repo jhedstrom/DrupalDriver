@@ -82,9 +82,15 @@ class AuthorAlias implements PreCreateAliasInterface {
       throw new CreationAliasResolutionException(sprintf("Cannot create node because the 'author' lookup returned an object without an 'id()' method while resolving '%s'.", $name));
     }
 
+    $resolved_uid = $user->id();
+
+    if (!is_numeric($resolved_uid) || (int) $resolved_uid <= 0) {
+      throw new CreationAliasResolutionException(sprintf("Cannot create node because the user resolved from 'author' = '%s' has an invalid id.", $name));
+    }
+
     // Cast to int so the downstream entity-reference handler treats the
     // value as a pre-resolved id and skips its own validation query.
-    $stub->setValue('uid', (int) $user->id());
+    $stub->setValue('uid', (int) $resolved_uid);
     $stub->removeValue('author');
   }
 

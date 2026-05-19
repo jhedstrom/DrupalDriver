@@ -56,10 +56,12 @@ abstract class FieldHandlerUnitTestBase extends TestCase {
       }
     }
 
-    // The '@' suppresses PHP warnings raised inside the handler (e.g.
-    // 'file_get_contents()' on a missing path) so the test output is not
-    // polluted; the exception the handler throws is still asserted.
-    $result = @$handler->expand($input);
+    // Only suppress PHP warnings on rows that expect an exception (e.g.
+    // 'file_get_contents()' raises a warning before the handler throws);
+    // success-path rows must not silently swallow unexpected warnings.
+    $result = $exception !== NULL
+      ? @$handler->expand($input)
+      : $handler->expand($input);
 
     if ($exception === NULL) {
       $this->assertSame($expected, $result);

@@ -39,6 +39,10 @@ class AddressHandler extends AbstractHandler {
     $records = [];
 
     foreach ($values as $value) {
+      if (!is_array($value) && !is_string($value)) {
+        throw new \InvalidArgumentException(sprintf('Address field delta must be a string or array. Got %s.', get_debug_type($value)));
+      }
+
       $records[] = $this->normaliseDelta($value, $visible_fields);
     }
 
