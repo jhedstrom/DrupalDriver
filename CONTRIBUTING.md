@@ -62,9 +62,6 @@ This repository tests the drivers and field handlers:
   bootstrap a real Drupal kernel against SQLite and exercise the
   Core driver and field handlers end-to-end.
 
-- **PhpSpec specs** (legacy) cover the base driver and exception
-  classes.
-
 ## Setting up the local environment
 
 Testing is performed automatically in GitHub Actions when a PR is
