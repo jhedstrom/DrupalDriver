@@ -17,13 +17,11 @@ A collection of lightweight drivers with a common interface for
 interacting with [Drupal](https://www.drupal.org). These are generally
 intended for testing and are not meant to be API-complete.
 
-> **Note:** This `master` branch is under heavy development for
-> version 3.x. Drupal 6 and 7 support has been dropped. For the
-> 2.x maintenance line, use the
+> **Note:** v3 supports Drupal 10 and 11 on PHP 8.2+. Sites that
+> need Drupal 7 or PHP 8.1 should pin to the
 > [`2.x` branch](https://github.com/jhedstrom/DrupalDriver/tree/2.x).
-> See the
-> [3.x epic](https://github.com/jhedstrom/DrupalDriver/issues/312)
-> for details and progress.
+> See [UPGRADING.md](UPGRADING.md) for the v2 to v3 migration
+> guide.
 
 ## Drivers
 
@@ -43,6 +41,7 @@ composer require drupal/drupal-driver
 
 ```php
 use Drupal\Driver\DrupalDriver;
+use Drupal\Driver\Entity\EntityStub;
 
 require 'vendor/autoload.php';
 
@@ -56,12 +55,12 @@ $driver->setCoreFromVersion();
 $driver->bootstrap();
 
 // Create a node.
-$node = (object) [
-  'type' => 'article',
+$node = new EntityStub('node', 'article', [
   'uid' => 1,
   'title' => $driver->getRandom()->name(),
-];
-$driver->nodeCreate($node);
+]);
+$saved = $driver->nodeCreate($node);
+$nid = $saved->getId();
 ```
 
 ## Extending

@@ -3,12 +3,6 @@
 Features and bug fixes are welcome! First-time contributors can
 jump in with the issues tagged [good first issue](https://github.com/jhedstrom/DrupalDriver/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
-> **Note:** We are actively working on version 3.x which will
-> overhaul the test infrastructure, drop Drupal 6/7 support, and
-> introduce SQLite-based kernel tests. See the
-> [3.x epic](https://github.com/jhedstrom/DrupalDriver/issues/312)
-> for details.
-
 ## How this project works
 
 Drupal Driver is a PHP library that provides a common interface
@@ -57,19 +51,16 @@ Handlers that perform real transformation include:
 
 ### What are we testing?
 
-This repository tests the drivers and field handlers. The current
-test suite includes:
+This repository tests the drivers and field handlers:
 
-- **PHPUnit tests** for field handlers that can be tested without
-  a Drupal bootstrap (TimeHandler, LinkHandler, NameHandler) and
-  for driver logic (DrushDriver version detection, user ID
-  parsing).
+- **PHPUnit unit tests** (`tests/Drupal/Tests/Driver/Unit/`) cover
+  field handlers and driver logic that does not require a Drupal
+  bootstrap (TimeHandler, LinkHandler, NameHandler, DrushDriver
+  version detection, etc.).
 
-- **PhpSpec specs** (legacy) for core driver and exception classes.
-
-The test suite does **not** currently test handlers against a real
-Drupal installation. Integration testing with SQLite-based kernel
-tests is planned for v3.x.
+- **PHPUnit kernel tests** (`tests/Drupal/Tests/Driver/Kernel/`)
+  bootstrap a real Drupal kernel against SQLite and exercise the
+  Core driver and field handlers end-to-end.
 
 ## Setting up the local environment
 
@@ -85,16 +76,17 @@ composer test
 Run a specific test:
 
 ```shell
-XDEBUG_MODE=off vendor/bin/phpunit --filter TimeHandlerTest
+vendor/bin/phpunit --filter TimeHandlerTest
 ```
 
 ### Commands
 
 | Command | Description |
 | --- | --- |
-| `composer lint` | PHP syntax check, PHPCS coding standards, Rector dry-run |
-| `composer lint-fix` | Auto-fix: Rector + PHPCBF |
-| `composer test` | PHPUnit + PhpSpec |
+| `composer lint` | parallel-lint, PHPCS, PHPStan, Rector dry-run |
+| `composer lint-fix` | Rector, PHPCBF |
+| `composer test` | PHPUnit (unit + kernel) |
+| `composer test-coverage` | PHPUnit with code coverage |
 
 ## Before submitting a change
 
