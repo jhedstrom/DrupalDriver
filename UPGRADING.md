@@ -86,11 +86,9 @@ old two-predicate API was insufficient to distinguish F1-F9 correctly and
 caused downstream bugs (notably with computed writable base fields like
 `moderation_state`).
 
-The accessor on `CoreInterface` is `getFieldClassifier()`. An earlier 3.x
-prerelease named it `classifier()`; that name was renamed before
-3.0.0-alpha1 for consistency with the other `getX()` accessors
-(`getRandom()`, `getModuleList()`, `getFieldHandler()`,
-`getEntityFieldTypes()`).
+The accessor on `CoreInterface` is `getFieldClassifier()`, matching
+the other `getX()` accessors (`getRandom()`, `getModuleList()`,
+`getFieldHandler()`, `getEntityFieldTypes()`).
 
 ### Field-expansion pipeline signature changes
 
