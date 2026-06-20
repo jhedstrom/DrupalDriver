@@ -61,8 +61,6 @@ class CoreMailMethodsKernelTest extends KernelTestBase {
     $this->assertCount(1, $mail);
     $this->assertSame('to@example.com', $mail[0]['to']);
     $this->assertSame('Subject line', $mail[0]['subject'] ?? $mail[0]['params']['context']['subject'] ?? NULL);
-    // A send without attachments must not inject an 'attachments' param.
-    $this->assertArrayNotHasKey('attachments', $mail[0]['params']);
 
     $this->core->mailClear();
     $this->assertSame([], $this->core->mailGet());
@@ -93,6 +91,20 @@ class CoreMailMethodsKernelTest extends KernelTestBase {
     $mail = $this->core->mailGet();
     $this->assertCount(1, $mail);
     $this->assertSame($attachments, $mail[0]['params']['attachments']);
+  }
+
+  /**
+   * Tests that an explicit empty attachments array omits the params key.
+   */
+  public function testMailSendWithEmptyAttachmentsOmitsKey(): void {
+    $this->core->mailStartCollecting();
+
+    $sent = $this->core->mailSend('Body text', 'Subject line', 'to@example.com', 'en', []);
+    $this->assertTrue($sent);
+
+    $mail = $this->core->mailGet();
+    $this->assertCount(1, $mail);
+    $this->assertArrayNotHasKey('attachments', $mail[0]['params']);
   }
 
   /**
