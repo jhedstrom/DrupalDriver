@@ -16,7 +16,7 @@ env:
   # DRUPALEXTENSION_REF to target a branch with pending API compatibility changes.
   DRUPALEXTENSION_REPO: jhedstrom/drupalextension
   DRUPALEXTENSION_REF: main
-  COMPOSER_NO_AUDIT: '1'
+  COMPOSER_POLICY_ADVISORIES_BLOCK: 'false'
 
 jobs:
   lint:
