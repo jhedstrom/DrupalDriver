@@ -43,10 +43,15 @@ interface MailCapabilityInterface {
    *   The recipient email address.
    * @param string $langcode
    *   The language code for subject and body.
+   * @param array<int, array<string, mixed>> $attachments
+   *   Optional attachments. Each is an associative array carrying at least a
+   *   'filename', following Drupal's standard attachment structure. When
+   *   provided, they are recorded on the sent message's 'params' under the
+   *   'attachments' key.
    *
    * @return bool
    *   TRUE if the message was accepted for delivery.
    */
-  public function mailSend(string $body, string $subject, string $to, string $langcode): bool;
+  public function mailSend(string $body, string $subject, string $to, string $langcode, array $attachments = []): bool;
 
 }

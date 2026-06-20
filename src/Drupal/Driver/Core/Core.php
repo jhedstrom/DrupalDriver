@@ -1154,10 +1154,15 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
   /**
    * {@inheritdoc}
    */
-  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
+  public function mailSend(string $body, string $subject, string $to, string $langcode, array $attachments = []): bool {
     // Send the mail, via the system module's hook_mail.
     $params['context']['message'] = $body;
     $params['context']['subject'] = $subject;
+
+    if ($attachments !== []) {
+      $params['attachments'] = $attachments;
+    }
+
     $mail_manager = \Drupal::service('plugin.manager.mail');
     $result = $mail_manager->mail('system', '', $to, $langcode, $params, NULL, TRUE);
     return !empty($result['result']);

@@ -73,6 +73,41 @@ class CoreMailMethodsKernelTest extends KernelTestBase {
   }
 
   /**
+   * Tests that 'mailSend()' carries attachments through to the collected mail.
+   */
+  public function testMailSendCarriesAttachments(): void {
+    $this->core->mailStartCollecting();
+
+    $attachments = [
+      [
+        'filecontent' => 'PDF bytes',
+        'filename' => 'document.pdf',
+        'filemime' => 'application/pdf',
+      ],
+    ];
+    $sent = $this->core->mailSend('Body text', 'Subject line', 'to@example.com', 'en', $attachments);
+    $this->assertTrue($sent);
+
+    $mail = $this->core->mailGet();
+    $this->assertCount(1, $mail);
+    $this->assertSame($attachments, $mail[0]['params']['attachments']);
+  }
+
+  /**
+   * Tests that an explicit empty attachments array omits the params key.
+   */
+  public function testMailSendWithEmptyAttachmentsOmitsKey(): void {
+    $this->core->mailStartCollecting();
+
+    $sent = $this->core->mailSend('Body text', 'Subject line', 'to@example.com', 'en', []);
+    $this->assertTrue($sent);
+
+    $mail = $this->core->mailGet();
+    $this->assertCount(1, $mail);
+    $this->assertArrayNotHasKey('attachments', $mail[0]['params']);
+  }
+
+  /**
    * Tests mail collection swaps mailsystem senders when the module is on.
    *
    * Exercises 'replaceMailSenders()', 'mailStartCollectingSystemMail()', and

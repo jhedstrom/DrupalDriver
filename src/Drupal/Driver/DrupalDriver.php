@@ -354,8 +354,8 @@ class DrupalDriver implements DrupalDriverInterface, CreationAliasCapabilityInte
   /**
    * {@inheritdoc}
    */
-  public function mailSend(string $body, string $subject, string $to, string $langcode): bool {
-    return $this->getCore()->mailSend($body, $subject, $to, $langcode);
+  public function mailSend(string $body, string $subject, string $to, string $langcode, array $attachments = []): bool {
+    return $this->getCore()->mailSend($body, $subject, $to, $langcode, $attachments);
   }
 
   /**
