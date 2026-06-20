@@ -6,6 +6,7 @@ namespace Drupal\Driver;
 
 use Drupal\Component\Utility\Random;
 use Drupal\Driver\Capability\CreationAliasCapabilityInterface;
+use Drupal\Driver\Drush\DrushResult;
 use Drupal\Driver\Entity\EntityStubInterface;
 use Drupal\Driver\Exception\BootstrapException;
 use Drupal\Driver\Alias\CreationAliasRegistryTrait;
@@ -340,7 +341,7 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
   }
 
   /**
-   * Execute a drush command.
+   * Execute a drush command, returning its result without throwing on failure.
    *
    * @param string $command
    *   The Drush command to execute.
@@ -348,8 +349,11 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
    *   Positional arguments to pass to Drush.
    * @param array<string, string|bool|null> $options
    *   Options to pass to Drush.
+   *
+   * @return \Drupal\Driver\Drush\DrushResult
+   *   The exit code together with the captured stdout and stderr.
    */
-  public function drush(string $command, array $arguments = [], array $options = []): string {
+  public function drushResult(string $command, array $arguments = [], array $options = []): DrushResult {
     $argument_string = implode(' ', $arguments);
 
     if (isset(static::$isLegacyDrush) && static::$isLegacyDrush) {
@@ -364,20 +368,42 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
     $global = $this->getArguments();
 
     $cmd = sprintf('%s %s %s %s %s %s', $this->binary, $alias, $option_string, $global, $command, $argument_string);
-    $process = method_exists(Process::class, 'fromShellCommandline') ? Process::fromShellCommandline($cmd) : new Process($cmd);
-    $process->setTimeout(3600);
-    $process->run();
+    $process = $this->runProcess($cmd);
 
-    if (!$process->isSuccessful()) {
-      throw new \RuntimeException($process->getErrorOutput());
+    // A signalled process yields a NULL exit code; classify that as a failure
+    // rather than letting it read as success.
+    return new DrushResult($process->getExitCode() ?? 1, $process->getOutput(), $process->getErrorOutput());
+  }
+
+  /**
+   * Execute a drush command.
+   *
+   * @param string $command
+   *   The Drush command to execute.
+   * @param array<int, string> $arguments
+   *   Positional arguments to pass to Drush.
+   * @param array<string, string|bool|null> $options
+   *   Options to pass to Drush.
+   *
+   * @return string
+   *   The command's stdout, or its stderr when stdout is empty.
+   *
+   * @throws \RuntimeException
+   *   When the command exits with a non-zero status.
+   */
+  public function drush(string $command, array $arguments = [], array $options = []): string {
+    $result = $this->drushResult($command, $arguments, $options);
+
+    if ($result->exitCode !== 0) {
+      throw new \RuntimeException($result->errorOutput);
     }
 
     // Some Drush commands write to stderr instead of stdout.
-    if ($process->getOutput() === '' || $process->getOutput() === '0') {
-      return $process->getErrorOutput();
+    if ($result->output === '' || $result->output === '0') {
+      return $result->errorOutput;
     }
 
-    return $process->getOutput();
+    return $result->output;
   }
 
   /**
@@ -393,6 +419,23 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
    */
   public function __call(string $name, array $arguments): string {
     return $this->drush($name, $arguments);
+  }
+
+  /**
+   * Builds, runs, and returns a process for the given shell command line.
+   *
+   * @param string $cmd
+   *   The full shell command line to execute.
+   *
+   * @return \Symfony\Component\Process\Process
+   *   The process after it has finished running.
+   */
+  protected function runProcess(string $cmd): Process {
+    $process = method_exists(Process::class, 'fromShellCommandline') ? Process::fromShellCommandline($cmd) : new Process($cmd);
+    $process->setTimeout(3600);
+    $process->run();
+
+    return $process;
   }
 
   /**
