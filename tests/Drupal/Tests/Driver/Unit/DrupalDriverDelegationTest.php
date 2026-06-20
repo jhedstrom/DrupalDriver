@@ -182,7 +182,11 @@ class DrupalDriverDelegationTest extends TestCase {
     yield 'mailGet' => ['mailGet', [], 'mailGet'];
     yield 'mailClear' => ['mailClear', [], 'mailClear'];
     yield 'mailSend' => ['mailSend', ['body', 'subject', 'to@ex.co', 'en'], 'mailSend'];
-    yield 'mailSend with attachments' => ['mailSend', ['body', 'subject', 'to@ex.co', 'en', [['filename' => 'doc.pdf']]], 'mailSend'];
+    yield 'mailSend with attachments' => [
+      'mailSend',
+      ['body', 'subject', 'to@ex.co', 'en', [['filename' => 'doc.pdf']]],
+      'mailSend',
+    ];
     yield 'moduleInstall' => ['moduleInstall', ['node'], 'moduleInstall'];
     yield 'moduleUninstall' => ['moduleUninstall', ['node'], 'moduleUninstall'];
   }
