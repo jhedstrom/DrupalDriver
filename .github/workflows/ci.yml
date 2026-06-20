@@ -16,6 +16,8 @@ env:
   # DRUPALEXTENSION_REF to target a branch with pending API compatibility changes.
   DRUPALEXTENSION_REPO: jhedstrom/drupalextension
   DRUPALEXTENSION_REF: main
+  COMPOSER_POLICY_ADVISORIES_BLOCK: 'false'
+  SYMFONY_DEPRECATIONS_HELPER: 'disabled'
 
 jobs:
   lint:
@@ -250,7 +252,7 @@ jobs:
         # to and including stable, breaking that coupling. 'dev-master' is
         # still rejected when DE's floor is above 'dev'.
         run: |
-          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"3.0.99"}}}' --json
+          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"3.99.99"}}}' --json
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
