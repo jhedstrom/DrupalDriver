@@ -61,6 +61,8 @@ class CoreMailMethodsKernelTest extends KernelTestBase {
     $this->assertCount(1, $mail);
     $this->assertSame('to@example.com', $mail[0]['to']);
     $this->assertSame('Subject line', $mail[0]['subject'] ?? $mail[0]['params']['context']['subject'] ?? NULL);
+    // A send without attachments must not inject an 'attachments' param.
+    $this->assertArrayNotHasKey('attachments', $mail[0]['params']);
 
     $this->core->mailClear();
     $this->assertSame([], $this->core->mailGet());
@@ -70,6 +72,27 @@ class CoreMailMethodsKernelTest extends KernelTestBase {
     // kernel test because KernelTestBase pre-seeds the mail system.
     $this->core->mailStopCollecting();
     $this->assertSame([], $this->core->mailGet());
+  }
+
+  /**
+   * Tests that 'mailSend()' carries attachments through to the collected mail.
+   */
+  public function testMailSendCarriesAttachments(): void {
+    $this->core->mailStartCollecting();
+
+    $attachments = [
+      [
+        'filecontent' => 'PDF bytes',
+        'filename' => 'document.pdf',
+        'filemime' => 'application/pdf',
+      ],
+    ];
+    $sent = $this->core->mailSend('Body text', 'Subject line', 'to@example.com', 'en', $attachments);
+    $this->assertTrue($sent);
+
+    $mail = $this->core->mailGet();
+    $this->assertCount(1, $mail);
+    $this->assertSame($attachments, $mail[0]['params']['attachments']);
   }
 
   /**
