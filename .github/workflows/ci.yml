@@ -216,7 +216,7 @@ jobs:
           # Check out the branch by name (not the merge SHA) so the path
           # repo composer adds below has a real branch to work with. The
           # version exposed to composer is overridden in the 'Add path
-          # repository' step so DrupalExtension's 'dev-master' constraint
+          # repository' step to match DrupalExtension's constraint, so it
           # resolves regardless of the actual branch name.
           ref: ${{ github.head_ref || github.ref_name }}
           path: drupaldriver
@@ -243,16 +243,28 @@ jobs:
 
       - name: Add path repository for DrupalDriver
         working-directory: drupalextension
-        # Expose the path repo at a stable version so the constraint resolves
-        # regardless of what stability floor DrupalExtension currently sets.
-        # Earlier iterations of this step hard-coded an 'alpha' suffix to
-        # match DE's then-current 'minimum-stability'; every time DE bumped
-        # the floor (alpha -> beta -> RC -> stable) the workflow had to be
-        # bumped in lockstep. Declaring stable here satisfies any floor up
-        # to and including stable, breaking that coupling. 'dev-master' is
-        # still rejected when DE's floor is above 'dev'.
+        # The version of 'drupal/drupal-driver' that DrupalExtension requires
+        # depends on the branch under test: its development branch consumes this
+        # repo's unreleased HEAD via 'dev-master as <v>', while release branches
+        # pin a stable '^<major>' range against a tagged DrupalDriver. A path
+        # repo is canonical, so the local copy must expose whichever version
+        # shape DE actually declares - no single value satisfies both (a numeric
+        # version never matches a 'dev-master' require, and a dev version never
+        # matches a stable range). Read DE's constraint and mirror its shape:
+        # a 'dev-master' source for the dev-ref case, or '<major>.99.99' (major
+        # taken from this repo's own branch-alias) for the stable-range case.
         run: |
-          composer config repositories.drupaldriver '{"type":"path","url":"../drupaldriver","options":{"versions":{"drupal/drupal-driver":"3.99.99"}}}' --json
+          constraint=$(jq -r '.require["drupal/drupal-driver"] // ""' composer.json)
+          echo "DrupalExtension requires drupal/drupal-driver: ${constraint:-<none>}"
+          if [[ "$constraint" == dev-* ]]; then
+            version='dev-master'
+          else
+            major=$(jq -r '(.extra["branch-alias"]["dev-master"] // "0") | split(".")[0]' ../drupaldriver/composer.json)
+            version="${major}.99.99"
+          fi
+          echo "Exposing DrupalDriver path repo as: $version"
+          repo=$(jq -nc --arg v "$version" '{type:"path",url:"../drupaldriver",options:{versions:{"drupal/drupal-driver":$v}}}')
+          composer config repositories.drupaldriver "$repo" --json
 
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
