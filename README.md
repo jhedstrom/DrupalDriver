@@ -131,10 +131,10 @@ $driver->setCore(new \MyProject\Driver\Core($root, $uri));
 
 ## Credits
 
- * Originally developed by [Jonathan Hedstrom](https://github.com/jhedstrom)
- * Maintainers
-   * [Alex Skrypnyk](https://github.com/AlexSkrypnyk)
-   * [All contributors](https://github.com/jhedstrom/DrupalDriver/graphs/contributors)
+* Originally developed by [Jonathan Hedstrom](https://github.com/jhedstrom)
+* Maintainers
+  * [Alex Skrypnyk](https://github.com/AlexSkrypnyk)
+* [All contributors](https://github.com/jhedstrom/DrupalDriver/graphs/contributors)
 
 ## Release notes
 
