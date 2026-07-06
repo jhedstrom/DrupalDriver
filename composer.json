@@ -36,6 +36,7 @@
         "drupal/commerce": "^3.0",
         "drupal/core-composer-scaffold": "^11.2",
         "drupal/core-recommended": "^11.2",
+        "drupal/date_recur": "^3.6",
         "drupal/mailsystem": "^4.4",
         "drupal/name": "^1.2",
         "drupal/smart_date": "^4.2",
