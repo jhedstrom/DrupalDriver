@@ -266,6 +266,14 @@ jobs:
           repo=$(jq -nc --arg v "$version" '{type:"path",url:"../drupaldriver",options:{versions:{"drupal/drupal-driver":$v}}}')
           composer config repositories.drupaldriver "$repo" --json
 
+      - name: Allow the symfony/runtime plugin for DrupalExtension
+        working-directory: drupalextension
+        # symfony/runtime ships a Composer plugin absent from DrupalExtension's
+        # allow-plugins list, which aborts the update below until it is
+        # explicitly allow-listed (disabled: Drupal does not use the Symfony
+        # runtime bootstrap).
+        run: composer config --no-plugins allow-plugins.symfony/runtime false
+
       - name: Install DrupalExtension dependencies
         working-directory: drupalextension
         run: composer update --no-interaction --no-progress --with-all-dependencies

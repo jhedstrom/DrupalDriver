@@ -81,6 +81,7 @@
             "ergebnis/composer-normalize": true,
             "php-http/discovery": true,
             "phpstan/extension-installer": true,
+            "symfony/runtime": false,
             "tbachert/spi": true
         }
     },
