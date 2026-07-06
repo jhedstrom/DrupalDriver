@@ -31,11 +31,12 @@ class AuthorAlias implements PreCreateAliasInterface {
    * Constructs the alias.
    *
    * @param \Closure(string): ?object|null $user_lookup
-   *   Lookup callable. NULL uses 'user_load_by_name()' from the Drupal API.
+   *   Lookup callable. NULL loads the user by name via the entity storage.
    */
   public function __construct(?\Closure $user_lookup = NULL) {
     $this->userLookup = $user_lookup ?? static function (string $name): ?object {
-      $user = user_load_by_name($name);
+      $users = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['name' => $name]);
+      $user = reset($users);
 
       return $user ?: NULL;
     };
