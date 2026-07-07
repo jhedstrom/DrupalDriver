@@ -16,9 +16,9 @@ use PHPUnit\Framework\Attributes\Group;
  * that each one is either:
  *   (a) backed by a dedicated handler registered with Core (the registry map
  *       has an entry for this type), or
- *   (b) safe for DefaultHandler - its storage schema declares exactly one
- *       column named 'value', which is the only shape DefaultHandler can
- *       marshal, or
+ *   (b) safe for DefaultHandler per the field shape classifier - every stored
+ *       property is a plain scalar it can relay verbatim (no entity-reference
+ *       target or complex/nested value), or
  *   (c) documented in the SKIP map with a reason (computed, write-only, or
  *       otherwise not stub-expansion-compatible).
  *
@@ -119,29 +119,28 @@ class FieldTypeCoverageKernelTest extends FieldHandlerKernelTestBase {
   }
 
   /**
-   * Returns TRUE when the field type's schema matches DefaultHandler's shape.
+   * Returns TRUE when the field type can ride DefaultHandler's pass-through.
    *
-   * DefaultHandler only marshals fields whose storage schema declares exactly
-   * one column named 'value'. Any other shape triggers a loud throw at
-   * expand() time, meaning the type needs a dedicated handler.
+   * DefaultHandler relays a field verbatim only when every stored property is
+   * a plain scalar. The field shape classifier flags an entity-reference target
+   * or a complex/nested value, and Core throws for those when it would
+   * otherwise fall back to the default.
    */
   private function isDefaultHandlerSafe(string $type): bool {
     try {
       $storage = BaseFieldDefinition::create($type);
-      $plugin_class = \Drupal::service('plugin.manager.field.field_type')->getPluginClass($type);
-      $schema = $plugin_class::schema($storage);
+      $shape = $this->core->getFieldShapeClassifier();
+      $unsafe = $shape->fieldIsEntityReference($storage) || $shape->fieldIsComplexValue($storage);
     }
     catch (\Throwable) {
-      // Schema construction fails for types that require settings we haven't
+      // Property construction fails for types that require settings we haven't
       // supplied (e.g. entity_reference without target_type). Treat those as
-      // unsafe: if DefaultHandler cannot reason about the schema, neither
+      // unsafe: if the classifier cannot reason about the properties, neither
       // can this coverage test, and a dedicated handler is the right answer.
       return FALSE;
     }
 
-    $columns = $schema['columns'] ?? [];
-
-    return count($columns) === 1 && array_key_exists('value', $columns);
+    return !$unsafe;
   }
 
   /**

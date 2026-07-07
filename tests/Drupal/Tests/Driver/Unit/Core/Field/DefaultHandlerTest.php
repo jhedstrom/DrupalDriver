@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
@@ -13,6 +11,11 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DefaultHandler field handler.
+ *
+ * DefaultHandler is a pure pass-through: it relays the normalised records to
+ * storage unchanged. 'Core' rejects fields the default cannot marshal before it
+ * resolves this handler, so that classification is exercised in FieldClassifier
+ * and Core, not here.
  *
  * @group fields
  */
@@ -23,7 +26,7 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
    * {@inheritdoc}
    */
   protected function createHandler(): FieldHandlerInterface {
-    return $this->handlerWithColumns(['value' => []]);
+    return $this->handlerWithMainProperty('value');
   }
 
   /**
@@ -45,6 +48,12 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
     yield 'records pass through unchanged' => [
       [['value' => 'one'], ['value' => 'two']],
       [['value' => 'one'], ['value' => 'two']],
+      NULL,
+      NULL,
+    ];
+    yield 'multi-column scalar record passes through unchanged' => [
+      [['value' => 'label', 'format' => 'plain_text']],
+      [['value' => 'label', 'format' => 'plain_text']],
       NULL,
       NULL,
     ];
@@ -70,57 +79,16 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
   }
 
   /**
-   * Tests that a multi-column field triggers the loud-failure policy.
-   */
-  public function testExpandThrowsForMultipleColumns(): void {
-    $handler = $this->handlerWithColumns(['value' => [], 'format' => []]);
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('No dedicated handler is registered');
-    $this->expectExceptionMessage('2 column(s) (value, format)');
-
-    $handler->expand([['value' => 'hello']]);
-  }
-
-  /**
-   * Tests that a single-column field not keyed by 'value' triggers failure.
-   */
-  public function testExpandThrowsForSingleColumnNotNamedValue(): void {
-    $handler = $this->handlerWithColumns(['target_id' => []]);
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('target_id');
-
-    $handler->expand([['value' => 42]]);
-  }
-
-  /**
-   * Builds a DefaultHandler wired to a mocked field storage/config pair.
+   * Builds a DefaultHandler with only its main property set.
    *
-   * @param array<string, array<string, mixed>> $columns
-   *   Column descriptors keyed by column name.
+   * DefaultHandler's pass-through 'doExpand()' touches no field metadata, so
+   * the handler needs only the main property the base 'normalise()' reads.
    */
-  protected function handlerWithColumns(array $columns): DefaultHandler {
-    $storage = $this->createMock(FieldStorageDefinitionInterface::class);
-    $storage->method('getColumns')->willReturn($columns);
-    $storage->method('getName')->willReturn('field_example');
-    $storage->method('getType')->willReturn('example_type');
-    $storage->method('getTargetEntityTypeId')->willReturn('node');
+  protected function handlerWithMainProperty(string $main_property): DefaultHandler {
+    $handler = (new \ReflectionClass(DefaultHandler::class))->newInstanceWithoutConstructor();
 
-    $config = $this->createMock(FieldDefinitionInterface::class);
-    $config->method('getTargetBundle')->willReturn('article');
-
-    $reflection = new \ReflectionClass(DefaultHandler::class);
-    $handler = $reflection->newInstanceWithoutConstructor();
-
-    $info_prop = $reflection->getParentClass()->getProperty('fieldInfo');
-    $info_prop->setValue($handler, $storage);
-
-    $config_prop = $reflection->getParentClass()->getProperty('fieldConfig');
-    $config_prop->setValue($handler, $config);
-
-    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
-    $main_property->setValue($handler, 'value');
+    $main_prop = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_prop->setValue($handler, $main_property);
 
     return $handler;
   }

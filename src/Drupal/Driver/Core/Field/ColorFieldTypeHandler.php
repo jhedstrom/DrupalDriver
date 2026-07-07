@@ -12,6 +12,13 @@ namespace Drupal\Driver\Core\Field;
  * formatting and the opacity-disabled case, so the handler only relays the
  * multi-column records through.
  *
+ * @deprecated in drupal-driver:3.x and is removed from drupal-driver:4.0.0.
+ *   The 'color'/'opacity' columns are plain scalars the generic DefaultHandler
+ *   now relays, so this pass-through handler is redundant. It is retained for
+ *   consumers that extend or reference it. Register a dedicated handler only
+ *   for a field type whose author-facing input differs from its stored value.
+ *
+ * @see \Drupal\Driver\Core\Field\DefaultHandler
  * @see https://www.drupal.org/project/color_field
  */
 class ColorFieldTypeHandler extends AbstractHandler {

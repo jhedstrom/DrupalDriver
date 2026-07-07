@@ -19,6 +19,7 @@ use Drupal\Driver\Capability\UserCapabilityInterface;
 use Drupal\Driver\Capability\WatchdogCapabilityInterface;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
+use Drupal\Driver\Core\Field\FieldShapeClassifierInterface;
 use Drupal\Driver\Entity\EntityStubInterface;
 
 /**
@@ -149,5 +150,17 @@ interface CoreInterface extends
    *   The field classifier instance.
    */
   public function getFieldClassifier(): FieldClassifierInterface;
+
+  /**
+   * Returns the field shape classifier, lazily instantiating on first access.
+   *
+   * Consumers call into the field shape classifier to ask a field's stored
+   * value shape - whether it is an entity reference or a complex/nested value -
+   * during handler selection. See 'src/Drupal/Driver/Core/Field/README.md'.
+   *
+   * @return \Drupal\Driver\Core\Field\FieldShapeClassifierInterface
+   *   The field shape classifier instance.
+   */
+  public function getFieldShapeClassifier(): FieldShapeClassifierInterface;
 
 }
