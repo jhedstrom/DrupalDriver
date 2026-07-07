@@ -62,35 +62,37 @@ shape. No category in the primary table changes behavior based on cardinality.
 `DefaultHandler` is the fallback when no typed handler matches a field's type
 string. It is a pure pass-through: it relays the normalised records to storage
 verbatim. Deciding whether that is safe is not its job - `Core` consults the
-field classifier first.
+field shape classifier first.
 
-Before `getFieldHandler()` falls back to `DefaultHandler`, it calls
-`FieldClassifierInterface::fieldDefaultExpandReason()` on the field's storage
-definition. The classifier inspects the stored (non-computed) property
-definitions and stays deliberately generic - it enumerates no field types or
-data-type strings. It reports a reason, and `Core` throws, for the two shapes
-the generic type system says cannot be authored as a plain scalar:
+Value shape (scalar vs entity-reference vs complex) is orthogonal to the F-row
+(origin/storage) axis `FieldClassifier` owns, so it has its own classifier.
+Before `getFieldHandler()` falls back to `DefaultHandler`, `Core` calls
+`FieldShapeClassifierInterface` on the field's storage definition. It reads only
+the stored (non-computed) property definitions and stays deliberately generic -
+it enumerates no field types or data-type strings. `Core` throws when either
+predicate reports one of the two shapes the generic type system says cannot be
+authored as a plain scalar:
 
-- **Entity-reference target** (a `DataReferenceTargetDefinition`, e.g.
-  `target_id`): the caller supplies a label, path, or name that must be resolved
-  to an id the author cannot know.
-- **Complex or nested value** (a `ComplexDataDefinitionInterface` such as a
-  `map`, or a `ListDataDefinitionInterface`): there is no single scalar shape to
-  relay.
+- **Entity-reference target** (`fieldIsEntityReference()` - a
+  `DataReferenceTargetDefinition`, e.g. `target_id`): the caller supplies a
+  label, path, or name that must be resolved to an id the author cannot know.
+- **Complex or nested value** (`fieldIsComplexValue()` - a
+  `ComplexDataDefinitionInterface` such as a `map`, or a
+  `ListDataDefinitionInterface`): there is no single scalar shape to relay.
 
 Everything else - including datetime strings, booleans, and list keys - is a
 scalar the default relays as-is. A field whose author-facing input differs from
 its stored scalar (a timezone-relative date, a boolean label, an allowed-value
 label, split name/address components) is served by a dedicated handler that
 performs the translation; that knowledge lives in the handlers, never in the
-default or the classifier.
+default or either classifier.
 
 The check is proactive, not try/catch. Both rejected shapes fail silently - a
 label persisted as a bogus id, a nested value flattened - so `Core` refuses the
 field at handler resolution with an exception identifying the field name, type,
-entity type, bundle, and the offending property, rather than after a corrupt
-save. The error is a direct call to action: register a dedicated handler, then
-re-run.
+entity type, bundle, and why the default cannot relay it, rather than after a
+corrupt save. The error is a direct call to action: register a dedicated
+handler, then re-run.
 
 ### Deprecated pass-through handlers
 
@@ -106,9 +108,9 @@ behaviour.
 
 `FieldTypeCoverageKernelTest` enumerates every field-type plugin the loaded
 Drupal install exposes and asserts that each one is either (a) backed by a
-registered handler, (b) default-safe per
-`FieldClassifierInterface::fieldDefaultExpandReason()` (every stored property is
-a plain scalar), or (c) listed in the test's `SKIP` map with a documented reason
+registered handler, (b) default-safe per the field shape classifier
+(`FieldShapeClassifierInterface` - no entity-reference target or complex/nested
+property), or (c) listed in the test's `SKIP` map with a documented reason
 (computed, write-only, composite-lifecycle, etc.). Adding a new core field type
 that needs translation without a handler or a SKIP entry fails that test,
 preventing the type from silently falling through to `DefaultHandler`.
@@ -178,9 +180,11 @@ protected function createFieldClassifier(): FieldClassifierInterface {
 }
 ```
 
-The default implementation returns the base `FieldClassifier`. The pattern
-mirrors `registerDefaultFieldHandlers()`, which likewise allows subclasses to
-extend handler registration per version.
+The default implementation returns the base `FieldClassifier`. The value-shape
+classifier follows the identical pattern - `Core::createFieldShapeClassifier()`
+returns the base `FieldShapeClassifier`, overridable by a
+`Core{N}\Field\FieldShapeClassifier`. Both mirror `registerDefaultFieldHandlers()`,
+which likewise allows subclasses to extend registration per version.
 
 ## Pipeline walk-through
 

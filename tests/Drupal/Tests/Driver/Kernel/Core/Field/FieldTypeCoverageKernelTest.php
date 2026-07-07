@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\Group;
  * that each one is either:
  *   (a) backed by a dedicated handler registered with Core (the registry map
  *       has an entry for this type), or
- *   (b) safe for DefaultHandler per the field classifier - every stored
+ *   (b) safe for DefaultHandler per the field shape classifier - every stored
  *       property is a plain scalar it can relay verbatim (no entity-reference
  *       target or complex/nested value), or
  *   (c) documented in the SKIP map with a reason (computed, write-only, or
@@ -122,14 +122,15 @@ class FieldTypeCoverageKernelTest extends FieldHandlerKernelTestBase {
    * Returns TRUE when the field type can ride DefaultHandler's pass-through.
    *
    * DefaultHandler relays a field verbatim only when every stored property is
-   * a plain scalar. The field classifier reports a reason when a property needs
-   * translation (an entity-reference target or a complex/nested value), and
-   * Core throws that reason when it would otherwise fall back to the default.
+   * a plain scalar. The field shape classifier flags an entity-reference target
+   * or a complex/nested value, and Core throws for those when it would
+   * otherwise fall back to the default.
    */
   private function isDefaultHandlerSafe(string $type): bool {
     try {
       $storage = BaseFieldDefinition::create($type);
-      $reason = $this->core->getFieldClassifier()->fieldDefaultExpandReason($storage);
+      $shape = $this->core->getFieldShapeClassifier();
+      $unsafe = $shape->fieldIsEntityReference($storage) || $shape->fieldIsComplexValue($storage);
     }
     catch (\Throwable) {
       // Property construction fails for types that require settings we haven't
@@ -139,7 +140,7 @@ class FieldTypeCoverageKernelTest extends FieldHandlerKernelTestBase {
       return FALSE;
     }
 
-    return $reason === NULL;
+    return !$unsafe;
   }
 
   /**

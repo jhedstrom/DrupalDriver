@@ -15,6 +15,8 @@ use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldClassifier;
 use Drupal\Driver\Core\Field\FieldClassifierInterface;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
+use Drupal\Driver\Core\Field\FieldShapeClassifier;
+use Drupal\Driver\Core\Field\FieldShapeClassifierInterface;
 use Drupal\Driver\Core\Alias\AuthorAlias;
 use Drupal\Driver\Core\Alias\ParentTermAlias;
 use Drupal\Driver\Core\Alias\VocabularyMachineNameAlias;
@@ -83,6 +85,11 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
    * Lazily created field classifier instance.
    */
   protected ?FieldClassifierInterface $fieldClassifier = NULL;
+
+  /**
+   * Lazily created field shape classifier instance.
+   */
+  protected ?FieldShapeClassifierInterface $fieldShapeClassifier = NULL;
 
   /**
    * Set up the Core implementation.
@@ -233,6 +240,28 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
   }
 
   /**
+   * Creates the field shape classifier instance for this Core.
+   *
+   * Subclasses override this method when they ship a version-specific value
+   * shape classifier. The default returns the base 'FieldShapeClassifier' which
+   * covers Drupal 10 and 11.
+   */
+  protected function createFieldShapeClassifier(): FieldShapeClassifierInterface {
+    return new FieldShapeClassifier();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldShapeClassifier(): FieldShapeClassifierInterface {
+    if (!$this->fieldShapeClassifier instanceof FieldShapeClassifierInterface) {
+      $this->fieldShapeClassifier = $this->createFieldShapeClassifier();
+    }
+
+    return $this->fieldShapeClassifier;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getFieldHandler(EntityStubInterface $stub, string $entity_type, string $field_name): FieldHandlerInterface {
@@ -257,9 +286,10 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
    * Rejects a field the DefaultHandler fallback cannot marshal.
    *
    * Consulted only when no dedicated handler is registered for the field type.
-   * Delegates the shape decision to the field classifier and, when it reports
-   * the field is not default-expandable, throws an actionable exception naming
-   * the field and the offending property.
+   * Delegates the value-shape decision to the field shape classifier and, when
+   * it reports the field is an entity reference or a complex/nested value,
+   * throws an actionable exception naming the field and why the default cannot
+   * relay it.
    *
    * @param string $entity_type
    *   The entity type ID.
@@ -280,7 +310,15 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
       return;
     }
 
-    $reason = $this->getFieldClassifier()->fieldDefaultExpandReason($storage);
+    $shape = $this->getFieldShapeClassifier();
+    $reason = NULL;
+
+    if ($shape->fieldIsEntityReference($storage)) {
+      $reason = 'it is an entity-reference value a dedicated handler must resolve to an id';
+    }
+    elseif ($shape->fieldIsComplexValue($storage)) {
+      $reason = 'it holds a complex or nested value with no single scalar shape';
+    }
 
     if ($reason !== NULL) {
       throw new \RuntimeException(sprintf(

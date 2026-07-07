@@ -9,11 +9,11 @@ namespace Drupal\Driver\Core\Field;
  *
  * Relays the normalised records to storage verbatim. It is the resolved
  * handler for any field type without a registered handler class. 'Core' asks
- * the field classifier whether the field is default-expandable before it falls
- * back here (see 'FieldClassifierInterface::fieldDefaultExpandReason()') and
- * rejects a field this handler cannot marshal - an entity-reference target or a
- * complex/nested value - so by the time this handler runs the field is known to
- * be a plain-scalar shape safe to pass through.
+ * the field shape classifier whether the field is a plain scalar before it
+ * falls back here (see 'FieldShapeClassifierInterface') and rejects a field
+ * this handler cannot marshal - an entity-reference target or a complex/nested
+ * value - so by the time this handler runs the field is known to be a
+ * plain-scalar shape safe to pass through.
  *
  * See 'src/Drupal/Driver/Core/Field/README.md' for the full handler-selection
  * table.

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Core\Field;
 
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
-
 /**
  * Classifies Drupal fields into the nine mutually exclusive F-row categories.
  *
@@ -155,27 +153,5 @@ interface FieldClassifierInterface {
    *   and is present in the bundle's field definitions.
    */
   public function fieldIsBundleStorageBacked(string $entity_type, string $field_name, string $bundle): bool;
-
-  /**
-   * Explains why the default handler cannot marshal a field, or NULL if it can.
-   *
-   * The default handler relays a field's records to storage verbatim, which is
-   * correct only when every stored property is a plain scalar the caller
-   * authors as-is. Two shapes the generic type system exposes are not: an
-   * entity-reference target, whose id the caller cannot know, and a complex or
-   * nested value, which has no single scalar to relay. Either makes the field
-   * ineligible for the default and names itself in the returned reason. No
-   * field-type or data-type string is enumerated, so a datetime, boolean, or
-   * list column is treated as the scalar it stores - value translation for
-   * those belongs in a dedicated handler.
-   *
-   * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $storage
-   *   The field storage definition to classify.
-   *
-   * @return string|null
-   *   A human-readable reason the field needs a dedicated handler, or NULL when
-   *   the default pass-through is safe.
-   */
-  public function fieldDefaultExpandReason(FieldStorageDefinitionInterface $storage): ?string;
 
 }

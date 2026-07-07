@@ -55,7 +55,7 @@ class DefaultHandlerEnforcementKernelTest extends FieldHandlerKernelTestBase {
     ]);
 
     $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessageMatches('/No dedicated handler is registered.*entity-reference target/s');
+    $this->expectExceptionMessageMatches('/No dedicated handler is registered.*entity-reference/s');
 
     $core->entityCreate($stub);
   }
