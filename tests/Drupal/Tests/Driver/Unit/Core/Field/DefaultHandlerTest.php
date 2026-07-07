@@ -107,8 +107,7 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
     ], 'target_id');
 
     $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('No dedicated handler is registered');
-    $this->expectExceptionMessage('property "target_id" is an entity-reference target');
+    $this->expectExceptionMessageMatches('/No dedicated handler is registered.*property "target_id" is an entity-reference target/s');
 
     $handler->expand([['target_id' => 42]]);
   }
