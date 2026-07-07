@@ -1,0 +1,5 @@
+name: 'Driver field test'
+type: module
+description: 'Provides custom field types with no driver handler, for kernel tests.'
+package: Testing
+core_version_requirement: ^10 || ^11

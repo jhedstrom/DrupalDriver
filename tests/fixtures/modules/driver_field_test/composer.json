@@ -1,0 +1,7 @@
+{
+    "name": "drupal/driver_field_test",
+    "description": "Test fixture: custom field types with no driver handler.",
+    "license": "GPL-2.0-or-later",
+    "type": "drupal-module",
+    "version": "1.0.0"
+}
