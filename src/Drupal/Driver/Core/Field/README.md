@@ -38,7 +38,7 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 | ID  | Field-type shape                   | Representative types                                                                                               | Handler                                                                                                | Rationale                                                                                                                  |
 |-----|------------------------------------|--------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | H1  | Plain-scalar columns (single or multi) | `string`, `integer`, `boolean`, `float`, `decimal`, `email`, `telephone`, `uri`, `timestamp`, `created`, `changed`, `text`, `text_long`, `text_with_summary`, `color_field_type` | `DefaultHandler` | Every stored column is a plain scalar the caller authors verbatim, so the normalised records relay to storage unchanged. No dedicated handler needed - a future contrib field of the same shape is absorbed automatically. |
-| H2  | Multi-column compound              | `link`, `address`, `daterange`                                           | Typed handler required (`LinkHandler`, `AddressHandler`, `DaterangeHandler`) | A dedicated handler marshals the compound value. `DefaultHandler` proactively rejects the structurally-translating shapes here (`link`'s `map` column, `daterange`'s `datetime_iso8601` columns). See "DefaultHandler classification policy" below. |
+| H2  | Multi-column compound              | `link`, `address`, `daterange`                                           | Typed handler required (`LinkHandler`, `AddressHandler`, `DaterangeHandler`) | A dedicated handler marshals the compound value. `DefaultHandler` structurally rejects only `link`'s `map` column; `address` and `daterange` store plain scalars it would relay, so their handlers exist to transform values (address components, timezone-aware dates). See "DefaultHandler classification policy" below. |
 | H3  | Simple datetime                    | `datetime`                                                                                                         | `DatetimeHandler`                                                                                      | Parses human date strings to ISO 8601 storage shape.                                                                       |
 | H4  | Entity reference (single target)   | `entity_reference`, `file`, `image`                                                                                | `EntityReferenceHandler`, `FileHandler`, `ImageHandler`                                                | Resolve human-readable label/path/filename to `target_id`. `FileHandler`/`ImageHandler` first try to reuse an existing managed file at the given URI or bare basename (searching `public://` and `private://`) before falling back to uploading a new file under `public://<uniqid>.<ext>`. |
 | H5  | Entity reference with revision     | `entity_reference_revisions` (paragraphs)                                                                          | `EntityReferenceRevisionsHandler`                                                                      | Composite `target_id` + `target_revision_id`. Resolves target and auto-populates the current revision id.                  |
@@ -48,7 +48,7 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 | H9  | Organic Groups reference (contrib) | `og_standard_reference`                                                                                            | `OgStandardReferenceHandler`                                                                           | OG-specific lookup.                                                                                                        |
 | H10 | Embedded asset reference (contrib) | `embridge_asset_item`                                                                                              | `EmbridgeAssetItemHandler`                                                                             | Embridge-specific shape.                                                                                                   |
 | H11 | Smart date range (contrib)         | `smartdate`                                                                                                        | `SmartdateHandler`                                                                                     | Six-column timestamp range with auto-derived duration; accepts numeric Unix timestamps or `strtotime()` strings.            |
-| H12 | Recurring date (contrib)           | `date_recur`                                                                                                       | `DateRecurHandler`                                                                                     | `value`/`end_value` are `datetime_iso8601` (inherited from `daterange`) but stored verbatim in the record's own timezone rather than converted, so the handler relays records unchanged. The datetime typing is what makes the default reject it, so this verbatim pass-through must be declared by a handler. |
+| H12 | Recurring date (contrib)           | `date_recur`                                                                                                       | `DateRecurHandler`                                                                                     | `value`/`end_value` are `datetime_iso8601` stored verbatim in the record's own timezone (not converted); `preSave()` derives `infinite`, so the handler relays records unchanged. Registered as the explicit handler for the type so datetime-family fields resolve to a named handler rather than the generic default. |
 
 ## Cardinality
 
@@ -59,37 +59,37 @@ shape. No category in the primary table changes behavior based on cardinality.
 ## DefaultHandler classification policy
 
 `DefaultHandler` is the fallback when no typed handler matches a field's type
-string. It inspects the field's stored (non-computed) property definitions and
-relays the normalised records verbatim **only when every stored property is a
-plain scalar the caller authors as-is** - the shape of `string`, `text`,
-`color_field_type`, and any future contrib field whose columns hold literal
-values. Such fields need no dedicated handler.
+string. It stays deliberately generic - it enumerates no field types or
+data-type strings. It inspects the field's stored (non-computed) property
+definitions and relays the normalised records verbatim **only when every stored
+property is a plain scalar the caller authors as-is** - the shape of `string`,
+`text`, `color_field_type`, and any future contrib field whose columns hold
+literal values. Such fields need no dedicated handler.
 
-A stored property that needs a translation the default cannot perform makes the
-field ineligible, and `DefaultHandler::expand()` throws a clearly-worded
+Only the two shapes the generic type system says cannot be authored as a plain
+scalar are rejected, and `DefaultHandler::expand()` throws a clearly-worded
 exception naming the field, its type, entity type, bundle, and the offending
-property. Three shapes are rejected:
+property:
 
 - **Entity-reference target** (a `DataReferenceTargetDefinition`, e.g.
   `target_id`): the caller supplies a label, path, or name that must be
   resolved to an id the author cannot know.
-- **Datetime/duration string** (`datetime_iso8601`, `duration_iso8601`): the
-  stored ISO 8601 form differs from the friendlier, timezone-relative input a
-  caller writes.
 - **Complex or nested value** (a `ComplexDataDefinitionInterface` such as a
   `map`, or a `ListDataDefinitionInterface`): there is no single scalar shape
   to relay.
 
-Detection is **proactive, not try/catch**. These translations fail silently - a
-label persisted as a bogus id, a date shifted by the timezone offset - so the
-field is rejected before expansion rather than after a corrupt save. The error
-is a direct call to action: register a dedicated handler, then re-run.
+Detection is **proactive, not try/catch**. Both shapes fail silently - a label
+persisted as a bogus id, a nested value flattened - so the field is rejected
+before expansion rather than after a corrupt save. The error is a direct call
+to action: register a dedicated handler, then re-run.
 
-The one class the property types cannot reveal is value-aliasing: `boolean`
-("yes" -> 1), `list_*` (label -> key), and component fields like `name` store
-plain scalars yet ship a handler for author-friendliness. The default relays
-those verbatim, so they keep their registered handlers; the classifier neither
-detects nor removes that need.
+The default deliberately never rejects a field for being a datetime, a boolean,
+or a list: those are scalars it relays as-is. When such a field's author-facing
+input differs from its stored scalar - a timezone-relative date (`datetime`,
+`daterange`, `date_recur`), a boolean label (`boolean`), an allowed-value label
+(`list_*`), or split components (`name`, `address`) - a dedicated handler
+performs the translation. Keeping that knowledge in the handlers, not the
+default, is what keeps the default generic.
 
 The classification lives in `DefaultHandler::unsupportedPropertyReason()`, a
 static method the coverage safety net below reuses so the driver and the test

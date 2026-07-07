@@ -113,17 +113,18 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
   }
 
   /**
-   * Tests that a datetime property triggers the loud-failure policy.
+   * Tests that a datetime scalar property rides the pass-through unchanged.
+   *
+   * The default enumerates no data-type strings, so a datetime column is just
+   * a scalar it relays - conversion is a dedicated handler's job, not the
+   * default's.
    */
-  public function testExpandThrowsForDatetimeProperty(): void {
+  public function testExpandPassesDatetimeScalarProperty(): void {
     $handler = $this->handlerWithProperties([
       'value' => DataDefinition::create('datetime_iso8601'),
     ]);
 
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('property "value" is a "datetime_iso8601" value');
-
-    $handler->expand('2025-01-01');
+    $this->assertSame([['value' => '2025-01-01T00:00:00']], $handler->expand('2025-01-01T00:00:00'));
   }
 
   /**

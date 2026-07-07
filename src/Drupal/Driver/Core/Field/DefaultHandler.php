@@ -12,38 +12,26 @@ use Drupal\Core\TypedData\ListDataDefinitionInterface;
 /**
  * Self-classifying fallback handler for field types with no dedicated handler.
  *
- * Classifies a field by its stored property definitions. When every stored
- * property is a plain scalar the caller can author verbatim, the normalised
- * records are relayed to storage unchanged - so any field whose columns hold
- * literal values (text, formatted text, colours, and future contrib fields of
- * the same shape) needs no dedicated handler at all.
+ * Stays deliberately generic: it knows nothing about specific field types or
+ * data-type strings. It relays the normalised records to storage verbatim
+ * unless a stored property is one the generic type system says cannot be
+ * authored as a plain scalar - an entity-reference target (whose id is
+ * system-assigned) or a complex/nested value (which has no single scalar
+ * shape). Everything else, including datetime strings, booleans, and list
+ * keys, is a scalar the default relays as-is.
  *
- * When a stored property needs a translation the default cannot perform
- * generically - an entity-reference target that must be resolved from a label
- * to an id, a datetime string that needs timezone-aware formatting, or a
- * complex/nested value - it throws with a message naming the field and the
- * offending property, directing the contributor to register a dedicated
- * handler. Detection is proactive: these translations fail silently (a label
- * persisted as a bogus id, a timezone-shifted date), so the field is rejected
- * before expansion rather than after a corrupt save.
+ * A field whose author-facing input differs from its stored scalar - a
+ * timezone-relative date, a boolean label, an allowed-value label - is served
+ * by a dedicated handler that performs the translation, not by teaching the
+ * default about that type. Rejection is proactive: the two structural cases
+ * fail silently (a label persisted as a bogus id, a nested value flattened),
+ * so the field is refused before expansion rather than after a corrupt save,
+ * with a message naming the field and the offending property.
  *
  * See 'src/Drupal/Driver/Core/Field/README.md' for the full handler-selection
  * table.
  */
 class DefaultHandler extends AbstractHandler {
-
-  /**
-   * Typed-data types whose stored form differs from natural author input.
-   *
-   * These hold ISO 8601 strings the author expresses in a friendlier shape (a
-   * human date, a site-timezone time), so relaying a record verbatim would
-   * persist malformed or timezone-shifted data. A dedicated handler owns the
-   * conversion.
-   */
-  protected const TRANSLATED_DATA_TYPES = [
-    'datetime_iso8601',
-    'duration_iso8601',
-  ];
 
   /**
    * {@inheritdoc}
@@ -70,10 +58,13 @@ class DefaultHandler extends AbstractHandler {
    *
    * Inspects the storage definition's stored (non-computed) properties. The
    * default relays records verbatim, which is only correct when every stored
-   * property is a plain scalar the caller authors as-is. A property that needs
-   * a translation the default cannot perform - an entity-reference target, a
-   * datetime/duration string, or a complex/nested value - makes the field
-   * ineligible and names itself in the returned reason.
+   * property is a plain scalar the caller authors as-is. The generic type
+   * system exposes two shapes that are not: an entity-reference target, whose
+   * id the caller cannot know, and a complex or nested value, which has no
+   * single scalar to relay. Either makes the field ineligible and names itself
+   * in the returned reason. No field-type or data-type string is enumerated
+   * here, so the default never rejects a field merely for being a datetime, a
+   * boolean, or a list - those are scalars a dedicated handler translates.
    *
    * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $storage
    *   The field storage definition to classify.
@@ -94,10 +85,6 @@ class DefaultHandler extends AbstractHandler {
 
       if ($definition instanceof ComplexDataDefinitionInterface || $definition instanceof ListDataDefinitionInterface) {
         return sprintf('property "%s" holds a complex or nested value', $name);
-      }
-
-      if (in_array($definition->getDataType(), static::TRANSLATED_DATA_TYPES, TRUE)) {
-        return sprintf('property "%s" is a "%s" value that needs timezone-aware formatting', $name, $definition->getDataType());
       }
     }
 
