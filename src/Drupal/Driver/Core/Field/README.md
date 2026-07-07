@@ -20,7 +20,7 @@ handler-selection sub-table below.
 
 | ID | Origin                                                          | Storage profile | Writable?              | Example field                                                                        | Resolution         | Notes                                                                                                                                                                                                                                                                                                             |
 |----|-----------------------------------------------------------------|-----------------|------------------------|--------------------------------------------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| F1 | `baseFieldDefinitions()`                                        | standard        | yes                    | `node.title`, `node.uid`, `node.status`, `commerce_product.variations`, `user.roles` | Expand via handler | Identified by `fieldIsBaseStandard()`. Iterated by `getEntityFieldTypes()`, routed through `getFieldHandler()`. Handler chosen by field type (see sub-table); `DefaultHandler` used for plain-scalar fields (H1). |
+| F1 | `baseFieldDefinitions()`                                        | standard        | yes                    | `node.title`, `node.uid`, `node.status`, `commerce_product.variations`, `user.roles` | Expand via handler | Identified by `fieldIsBaseStandard()`. Iterated by `getEntityFieldTypes()`, routed through `getFieldHandler()`. Handler chosen by field type (see sub-table); `DefaultHandler` relays plain-scalar fields, and `Core` rejects an unhandled reference/complex field via the classifier first. |
 | F2 | `baseFieldDefinitions()`                                        | computed        | read-only              | TBD (pure derived accessors; examples sought)                                        | Skip entirely      | Identified by `fieldIsBaseComputedReadOnly()`. Rejected by `getEntityFieldTypes()`. Stub property, if set, flows untouched to the entity constructor; Drupal discards it on save because the field has no storage. |
 | F3 | `baseFieldDefinitions()`                                        | computed        | writable (side-effect) | `node.moderation_state`                                                              | Skip entirely      | Identified by `fieldIsBaseComputedWritable()`. Rejected by `getEntityFieldTypes()`. Stub property flows untouched into `Node::create((array) $stub)`; the field class's item-list captures the raw value and performs its side-effect at save (e.g. `moderation_state` writes a `ContentModerationState` revision). |
 | F4 | `baseFieldDefinitions()`                                        | custom storage  | yes                    | TBD (examples sought)                                                                | Skip entirely      | Identified by `fieldIsBaseCustomStorage()`. Rejected by `getEntityFieldTypes()`. Stub property flows untouched to the entity constructor; the declaring module's custom storage layer owns whatever happens next. |
@@ -37,8 +37,8 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 
 | ID  | Field-type shape                   | Representative types                                                                                               | Handler                                                                                                | Rationale                                                                                                                  |
 |-----|------------------------------------|--------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| H1  | Plain-scalar columns (single or multi) | `string`, `integer`, `boolean`, `float`, `decimal`, `email`, `telephone`, `uri`, `timestamp`, `created`, `changed`, `text`, `text_long`, `text_with_summary`, `color_field_type` | `DefaultHandler` | Every stored column is a plain scalar the caller authors verbatim, so the normalised records relay to storage unchanged. No dedicated handler needed - a future contrib field of the same shape is absorbed automatically. |
-| H2  | Multi-column compound              | `link`, `address`, `daterange`                                           | Typed handler required (`LinkHandler`, `AddressHandler`, `DaterangeHandler`) | A dedicated handler marshals the compound value. `DefaultHandler` structurally rejects only `link`'s `map` column; `address` and `daterange` store plain scalars it would relay, so their handlers exist to transform values (address components, timezone-aware dates). See "DefaultHandler classification policy" below. |
+| H1  | Plain-scalar columns               | `string`, `integer`, `boolean`, `float`, `decimal`, `email`, `telephone`, `uri`, `timestamp`, `created`, `changed` | `DefaultHandler`                                                                                       | Relayed verbatim by `DefaultHandler`. `Core` gates the fallback on the classifier, so an unhandled reference or complex field throws instead.                              |
+| H2  | Multi-column compound              | `text`, `text_long`, `text_with_summary`, `link`, `address`, `daterange`                                           | `LinkHandler`, `AddressHandler`, `DaterangeHandler`; `TextHandler`/`TextLongHandler`/`TextWithSummaryHandler` (deprecated) | `link`/`address`/`daterange` transform the compound value. The `text*` columns are plain scalars the `DefaultHandler` now relays, so their handlers are deprecated for 4.0.0. See "DefaultHandler classification policy" below.   |
 | H3  | Simple datetime                    | `datetime`                                                                                                         | `DatetimeHandler`                                                                                      | Parses human date strings to ISO 8601 storage shape.                                                                       |
 | H4  | Entity reference (single target)   | `entity_reference`, `file`, `image`                                                                                | `EntityReferenceHandler`, `FileHandler`, `ImageHandler`                                                | Resolve human-readable label/path/filename to `target_id`. `FileHandler`/`ImageHandler` first try to reuse an existing managed file at the given URI or bare basename (searching `public://` and `private://`) before falling back to uploading a new file under `public://<uniqid>.<ext>`. |
 | H5  | Entity reference with revision     | `entity_reference_revisions` (paragraphs)                                                                          | `EntityReferenceRevisionsHandler`                                                                      | Composite `target_id` + `target_revision_id`. Resolves target and auto-populates the current revision id.                  |
@@ -48,7 +48,8 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 | H9  | Organic Groups reference (contrib) | `og_standard_reference`                                                                                            | `OgStandardReferenceHandler`                                                                           | OG-specific lookup.                                                                                                        |
 | H10 | Embedded asset reference (contrib) | `embridge_asset_item`                                                                                              | `EmbridgeAssetItemHandler`                                                                             | Embridge-specific shape.                                                                                                   |
 | H11 | Smart date range (contrib)         | `smartdate`                                                                                                        | `SmartdateHandler`                                                                                     | Six-column timestamp range with auto-derived duration; accepts numeric Unix timestamps or `strtotime()` strings.            |
-| H12 | Recurring date (contrib)           | `date_recur`                                                                                                       | `DateRecurHandler`                                                                                     | `value`/`end_value` are `datetime_iso8601` stored verbatim in the record's own timezone (not converted); `preSave()` derives `infinite`, so the handler relays records unchanged. Registered as the explicit handler for the type so datetime-family fields resolve to a named handler rather than the generic default. |
+| H12 | Color with opacity (contrib)       | `color_field_type`                                                                                                 | `ColorFieldTypeHandler` (deprecated)                                                                   | Two plain-scalar columns (`color` hex + optional `opacity` float) the `DefaultHandler` now relays; `preSave()` owns hex formatting. Handler deprecated for 4.0.0. |
+| H13 | Recurring date (contrib)           | `date_recur`                                                                                                       | `DateRecurHandler`                                                                                     | Five columns (`value`/`end_value`/`rrule`/`timezone`/`infinite`); dates stored verbatim in the record's own timezone and `preSave()` derives `infinite`, so the handler relays records unchanged. |
 
 ## Cardinality
 
@@ -59,49 +60,55 @@ shape. No category in the primary table changes behavior based on cardinality.
 ## DefaultHandler classification policy
 
 `DefaultHandler` is the fallback when no typed handler matches a field's type
-string. It stays deliberately generic - it enumerates no field types or
-data-type strings. It inspects the field's stored (non-computed) property
-definitions and relays the normalised records verbatim **only when every stored
-property is a plain scalar the caller authors as-is** - the shape of `string`,
-`text`, `color_field_type`, and any future contrib field whose columns hold
-literal values. Such fields need no dedicated handler.
+string. It is a pure pass-through: it relays the normalised records to storage
+verbatim. Deciding whether that is safe is not its job - `Core` consults the
+field classifier first.
 
-Only the two shapes the generic type system says cannot be authored as a plain
-scalar are rejected, and `DefaultHandler::expand()` throws a clearly-worded
-exception naming the field, its type, entity type, bundle, and the offending
-property:
+Before `getFieldHandler()` falls back to `DefaultHandler`, it calls
+`FieldClassifierInterface::fieldDefaultExpandReason()` on the field's storage
+definition. The classifier inspects the stored (non-computed) property
+definitions and stays deliberately generic - it enumerates no field types or
+data-type strings. It reports a reason, and `Core` throws, for the two shapes
+the generic type system says cannot be authored as a plain scalar:
 
 - **Entity-reference target** (a `DataReferenceTargetDefinition`, e.g.
-  `target_id`): the caller supplies a label, path, or name that must be
-  resolved to an id the author cannot know.
+  `target_id`): the caller supplies a label, path, or name that must be resolved
+  to an id the author cannot know.
 - **Complex or nested value** (a `ComplexDataDefinitionInterface` such as a
-  `map`, or a `ListDataDefinitionInterface`): there is no single scalar shape
-  to relay.
+  `map`, or a `ListDataDefinitionInterface`): there is no single scalar shape to
+  relay.
 
-Detection is **proactive, not try/catch**. Both shapes fail silently - a label
-persisted as a bogus id, a nested value flattened - so the field is rejected
-before expansion rather than after a corrupt save. The error is a direct call
-to action: register a dedicated handler, then re-run.
+Everything else - including datetime strings, booleans, and list keys - is a
+scalar the default relays as-is. A field whose author-facing input differs from
+its stored scalar (a timezone-relative date, a boolean label, an allowed-value
+label, split name/address components) is served by a dedicated handler that
+performs the translation; that knowledge lives in the handlers, never in the
+default or the classifier.
 
-The default deliberately never rejects a field for being a datetime, a boolean,
-or a list: those are scalars it relays as-is. When such a field's author-facing
-input differs from its stored scalar - a timezone-relative date (`datetime`,
-`daterange`, `date_recur`), a boolean label (`boolean`), an allowed-value label
-(`list_*`), or split components (`name`, `address`) - a dedicated handler
-performs the translation. Keeping that knowledge in the handlers, not the
-default, is what keeps the default generic.
+The check is proactive, not try/catch. Both rejected shapes fail silently - a
+label persisted as a bogus id, a nested value flattened - so `Core` refuses the
+field at handler resolution with an exception identifying the field name, type,
+entity type, bundle, and the offending property, rather than after a corrupt
+save. The error is a direct call to action: register a dedicated handler, then
+re-run.
 
-The classification lives in `DefaultHandler::unsupportedPropertyReason()`, a
-static method the coverage safety net below reuses so the driver and the test
-share one definition of "default-safe".
+### Deprecated pass-through handlers
+
+`TextHandler`, `TextLongHandler`, `TextWithSummaryHandler`, and
+`ColorFieldTypeHandler` handle field types whose columns are plain scalars the
+generic `DefaultHandler` now relays, so they are redundant. They remain
+registered and functional but are `@deprecated` for removal in
+`drupal-driver:4.0.0`, kept only for consumers that extend or reference them. On
+removal, their field types fall through to `DefaultHandler` with no change in
+behaviour.
 
 ## Handler-coverage safety net
 
 `FieldTypeCoverageKernelTest` enumerates every field-type plugin the loaded
 Drupal install exposes and asserts that each one is either (a) backed by a
 registered handler, (b) default-safe per
-`DefaultHandler::unsupportedPropertyReason()` (every stored property is a plain
-scalar), or (c) listed in the test's `SKIP` map with a documented reason
+`FieldClassifierInterface::fieldDefaultExpandReason()` (every stored property is
+a plain scalar), or (c) listed in the test's `SKIP` map with a documented reason
 (computed, write-only, composite-lifecycle, etc.). Adding a new core field type
 that needs translation without a handler or a SKIP entry fails that test,
 preventing the type from silently falling through to `DefaultHandler`.

@@ -8,6 +8,9 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\TypedData\DataDefinition;
+use Drupal\Core\TypedData\DataReferenceTargetDefinition;
+use Drupal\Core\TypedData\MapDataDefinition;
 use Drupal\Driver\Core\Field\FieldClassifier;
 use Drupal\field\Entity\FieldStorageConfig;
 use PHPUnit\Framework\Attributes\Group;
@@ -128,6 +131,64 @@ class FieldClassifierTest extends TestCase {
     $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'field_tags', 'article'));
     $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'nonexistent', 'article'));
     $this->assertFalse($classifier->fieldIsBundleStorageBacked('node', 'bundle_computed_rw', 'article'));
+  }
+
+  /**
+   * Tests default-expand classification by stored property shape.
+   */
+  public function testFieldDefaultExpandReason(): void {
+    $classifier = new FieldClassifier($this->createMock(EntityFieldManagerInterface::class));
+
+    // Plain scalars - single and multi-column - are default-expandable.
+    $this->assertNull($classifier->fieldDefaultExpandReason($this->storageWithProperties([
+      'value' => DataDefinition::create('string'),
+    ])));
+    $this->assertNull($classifier->fieldDefaultExpandReason($this->storageWithProperties([
+      'value' => DataDefinition::create('string'),
+      'format' => DataDefinition::create('string'),
+    ])));
+
+    // A datetime column is a scalar the default relays; no data-type string is
+    // enumerated, so it is not rejected.
+    $this->assertNull($classifier->fieldDefaultExpandReason($this->storageWithProperties([
+      'value' => DataDefinition::create('datetime_iso8601'),
+    ])));
+
+    // A computed reference property does not block the pass-through.
+    $this->assertNull($classifier->fieldDefaultExpandReason($this->storageWithProperties([
+      'value' => DataDefinition::create('string'),
+      'entity' => DataReferenceTargetDefinition::create('integer')->setComputed(TRUE),
+    ])));
+
+    // An entity-reference target is rejected.
+    $this->assertStringContainsString(
+      'property "target_id" is an entity-reference target',
+      (string) $classifier->fieldDefaultExpandReason($this->storageWithProperties([
+        'target_id' => DataReferenceTargetDefinition::create('integer'),
+      ])),
+    );
+
+    // A complex or nested value is rejected.
+    $this->assertStringContainsString(
+      'property "options" holds a complex or nested value',
+      (string) $classifier->fieldDefaultExpandReason($this->storageWithProperties([
+        'value' => DataDefinition::create('string'),
+        'options' => MapDataDefinition::create(),
+      ])),
+    );
+  }
+
+  /**
+   * Builds a storage definition mock exposing the given property definitions.
+   *
+   * @param array<string, \Drupal\Core\TypedData\DataDefinitionInterface> $properties
+   *   Property definitions keyed by property name.
+   */
+  protected function storageWithProperties(array $properties): FieldStorageDefinitionInterface {
+    $storage = $this->createMock(FieldStorageDefinitionInterface::class);
+    $storage->method('getPropertyDefinitions')->willReturn($properties);
+
+    return $storage;
   }
 
   /**

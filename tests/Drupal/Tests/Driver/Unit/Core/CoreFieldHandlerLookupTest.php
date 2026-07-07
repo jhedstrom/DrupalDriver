@@ -144,6 +144,10 @@ class CoreFieldHandlerLookupTest extends TestCase {
 
     $storage_definition = $this->createMock(FieldStorageDefinitionInterface::class);
     $storage_definition->method('getType')->willReturn('string');
+    // Consulted by Core's classifier gate when a field type falls back to
+    // DefaultHandler; a plain scalar (no properties) keeps the field
+    // default-expandable.
+    $storage_definition->method('getPropertyDefinitions')->willReturn([]);
 
     $entity_field_manager = $this->createMock(EntityFieldManagerInterface::class);
     $entity_field_manager->method('getFieldStorageDefinitions')

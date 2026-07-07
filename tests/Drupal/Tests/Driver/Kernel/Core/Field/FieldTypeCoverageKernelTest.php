@@ -16,9 +16,9 @@ use PHPUnit\Framework\Attributes\Group;
  * that each one is either:
  *   (a) backed by a dedicated handler registered with Core (the registry map
  *       has an entry for this type), or
- *   (b) safe for DefaultHandler - every stored property is a plain scalar the
- *       default can relay verbatim (no entity-reference target, datetime
- *       string, or complex/nested value), or
+ *   (b) safe for DefaultHandler per the field classifier - every stored
+ *       property is a plain scalar it can relay verbatim (no entity-reference
+ *       target or complex/nested value), or
  *   (c) documented in the SKIP map with a reason (computed, write-only, or
  *       otherwise not stub-expansion-compatible).
  *
@@ -122,19 +122,19 @@ class FieldTypeCoverageKernelTest extends FieldHandlerKernelTestBase {
    * Returns TRUE when the field type can ride DefaultHandler's pass-through.
    *
    * DefaultHandler relays a field verbatim only when every stored property is
-   * a plain scalar. A property that needs translation (an entity-reference
-   * target, a datetime string, a complex/nested value) triggers a loud throw
-   * at expand() time, meaning the type needs a dedicated handler.
+   * a plain scalar. The field classifier reports a reason when a property needs
+   * translation (an entity-reference target or a complex/nested value), and
+   * Core throws that reason when it would otherwise fall back to the default.
    */
   private function isDefaultHandlerSafe(string $type): bool {
     try {
       $storage = BaseFieldDefinition::create($type);
-      $reason = DefaultHandler::unsupportedPropertyReason($storage);
+      $reason = $this->core->getFieldClassifier()->fieldDefaultExpandReason($storage);
     }
     catch (\Throwable) {
       // Property construction fails for types that require settings we haven't
       // supplied (e.g. entity_reference without target_type). Treat those as
-      // unsafe: if DefaultHandler cannot reason about the properties, neither
+      // unsafe: if the classifier cannot reason about the properties, neither
       // can this coverage test, and a dedicated handler is the right answer.
       return FALSE;
     }

@@ -243,9 +243,55 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
       throw new \RuntimeException(sprintf('Field "%s" not found on entity type "%s".', $field_name, $entity_type));
     }
 
-    $class = $this->fieldHandlers[$field_types[$field_name]] ?? DefaultHandler::class;
+    $field_type = $field_types[$field_name];
+    $class = $this->fieldHandlers[$field_type] ?? DefaultHandler::class;
+
+    if ($class === DefaultHandler::class) {
+      $this->assertDefaultHandlerCanMarshal($entity_type, $field_name, $field_type, $bundle);
+    }
 
     return new $class($stub, $entity_type, $field_name);
+  }
+
+  /**
+   * Rejects a field the DefaultHandler fallback cannot marshal.
+   *
+   * Consulted only when no dedicated handler is registered for the field type.
+   * Delegates the shape decision to the field classifier and, when it reports
+   * the field is not default-expandable, throws an actionable exception naming
+   * the field and the offending property.
+   *
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param string $field_name
+   *   The field name.
+   * @param string $field_type
+   *   The field type ID, for the exception message.
+   * @param string $bundle
+   *   The bundle name, for the exception message.
+   *
+   * @throws \RuntimeException
+   *   When the field's stored shape is not one the default handler can relay.
+   */
+  protected function assertDefaultHandlerCanMarshal(string $entity_type, string $field_name, string $field_type, string $bundle): void {
+    $storage = $this->getEntityFieldManager()->getFieldStorageDefinitions($entity_type)[$field_name] ?? NULL;
+
+    if ($storage === NULL) {
+      return;
+    }
+
+    $reason = $this->getFieldClassifier()->fieldDefaultExpandReason($storage);
+
+    if ($reason !== NULL) {
+      throw new \RuntimeException(sprintf(
+        'No dedicated handler is registered for field "%s" (type "%s") on entity type "%s" bundle "%s", and DefaultHandler cannot marshal it: %s. Register a dedicated handler via Core::registerFieldHandler().',
+        $field_name,
+        $field_type,
+        $entity_type,
+        $bundle,
+        $reason,
+      ));
+    }
   }
 
   /**

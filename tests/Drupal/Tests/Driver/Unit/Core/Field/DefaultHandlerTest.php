@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\Driver\Unit\Core\Field;
 
-use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\TypedData\DataDefinition;
-use Drupal\Core\TypedData\DataReferenceTargetDefinition;
-use Drupal\Core\TypedData\MapDataDefinition;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
@@ -16,6 +11,11 @@ use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the DefaultHandler field handler.
+ *
+ * DefaultHandler is a pure pass-through: it relays the normalised records to
+ * storage unchanged. 'Core' rejects fields the default cannot marshal before it
+ * resolves this handler, so that classification is exercised in FieldClassifier
+ * and Core, not here.
  *
  * @group fields
  */
@@ -26,7 +26,7 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
    * {@inheritdoc}
    */
   protected function createHandler(): FieldHandlerInterface {
-    return $this->handlerWithProperties(['value' => DataDefinition::create('string')]);
+    return $this->handlerWithMainProperty('value');
   }
 
   /**
@@ -48,6 +48,12 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
     yield 'records pass through unchanged' => [
       [['value' => 'one'], ['value' => 'two']],
       [['value' => 'one'], ['value' => 'two']],
+      NULL,
+      NULL,
+    ];
+    yield 'multi-column scalar record passes through unchanged' => [
+      [['value' => 'label', 'format' => 'plain_text']],
+      [['value' => 'label', 'format' => 'plain_text']],
       NULL,
       NULL,
     ];
@@ -73,101 +79,13 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
   }
 
   /**
-   * Tests that a multi-column field of plain scalars relays records verbatim.
-   */
-  public function testExpandPassesMultiColumnScalars(): void {
-    $handler = $this->handlerWithProperties([
-      'color' => DataDefinition::create('string'),
-      'opacity' => DataDefinition::create('float'),
-    ], 'color');
-
-    $records = [['color' => '#1A2B3C', 'opacity' => 0.5]];
-
-    $this->assertSame($records, $handler->expand($records));
-  }
-
-  /**
-   * Tests that a computed reference property does not block the pass-through.
-   */
-  public function testExpandIgnoresComputedProperties(): void {
-    $handler = $this->handlerWithProperties([
-      'value' => DataDefinition::create('string'),
-      'entity' => DataReferenceTargetDefinition::create('integer')->setComputed(TRUE),
-    ]);
-
-    $this->assertSame([['value' => 'hello']], $handler->expand('hello'));
-  }
-
-  /**
-   * Tests that an entity-reference target triggers the loud-failure policy.
-   */
-  public function testExpandThrowsForEntityReferenceTarget(): void {
-    $handler = $this->handlerWithProperties([
-      'target_id' => DataReferenceTargetDefinition::create('integer'),
-    ], 'target_id');
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessageMatches('/No dedicated handler is registered.*property "target_id" is an entity-reference target/s');
-
-    $handler->expand([['target_id' => 42]]);
-  }
-
-  /**
-   * Tests that a datetime scalar property rides the pass-through unchanged.
+   * Builds a DefaultHandler with only its main property set.
    *
-   * The default enumerates no data-type strings, so a datetime column is just
-   * a scalar it relays - conversion is a dedicated handler's job, not the
-   * default's.
+   * DefaultHandler's pass-through 'doExpand()' touches no field metadata, so
+   * the handler needs only the main property the base 'normalise()' reads.
    */
-  public function testExpandPassesDatetimeScalarProperty(): void {
-    $handler = $this->handlerWithProperties([
-      'value' => DataDefinition::create('datetime_iso8601'),
-    ]);
-
-    $this->assertSame([['value' => '2025-01-01T00:00:00']], $handler->expand('2025-01-01T00:00:00'));
-  }
-
-  /**
-   * Tests that a complex property triggers the loud-failure policy.
-   */
-  public function testExpandThrowsForComplexProperty(): void {
-    $handler = $this->handlerWithProperties([
-      'value' => DataDefinition::create('string'),
-      'options' => MapDataDefinition::create(),
-    ]);
-
-    $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('property "options" holds a complex or nested value');
-
-    $handler->expand('hello');
-  }
-
-  /**
-   * Builds a DefaultHandler wired to a mocked storage/config pair.
-   *
-   * @param array<string, \Drupal\Core\TypedData\DataDefinitionInterface> $properties
-   *   Property definitions keyed by property name.
-   * @param string $main_property
-   *   The field's main property name.
-   */
-  protected function handlerWithProperties(array $properties, string $main_property = 'value'): DefaultHandler {
-    $storage = $this->createMock(FieldStorageDefinitionInterface::class);
-    $storage->method('getPropertyDefinitions')->willReturn($properties);
-    $storage->method('getName')->willReturn('field_example');
-    $storage->method('getType')->willReturn('example_type');
-    $storage->method('getTargetEntityTypeId')->willReturn('node');
-
-    $config = $this->createMock(FieldDefinitionInterface::class);
-    $config->method('getTargetBundle')->willReturn('article');
-
-    $reflection = new \ReflectionClass(DefaultHandler::class);
-    $handler = $reflection->newInstanceWithoutConstructor();
-
-    $info_prop = $reflection->getParentClass()->getProperty('fieldInfo');
-    $info_prop->setValue($handler, $storage);
-
-    $config_prop = $reflection->getParentClass()->getProperty('fieldConfig');
-    $config_prop->setValue($handler, $config);
+  protected function handlerWithMainProperty(string $main_property): DefaultHandler {
+    $handler = (new \ReflectionClass(DefaultHandler::class))->newInstanceWithoutConstructor();
 
     $main_prop = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
     $main_prop->setValue($handler, $main_property);

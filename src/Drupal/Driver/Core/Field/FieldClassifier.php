@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\Driver\Core\Field;
 
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\TypedData\ComplexDataDefinitionInterface;
+use Drupal\Core\TypedData\DataReferenceTargetDefinition;
+use Drupal\Core\TypedData\ListDataDefinitionInterface;
 use Drupal\field\Entity\FieldStorageConfig;
 
 /**
@@ -165,6 +169,27 @@ class FieldClassifier implements FieldClassifierInterface {
     $bundle_fields = $this->entityFieldManager->getFieldDefinitions($entity_type, $bundle);
 
     return isset($bundle_fields[$field_name]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fieldDefaultExpandReason(FieldStorageDefinitionInterface $storage): ?string {
+    foreach ($storage->getPropertyDefinitions() as $name => $definition) {
+      if ($definition->isComputed()) {
+        continue;
+      }
+
+      if ($definition instanceof DataReferenceTargetDefinition) {
+        return sprintf('property "%s" is an entity-reference target that must be resolved to an id', $name);
+      }
+
+      if ($definition instanceof ComplexDataDefinitionInterface || $definition instanceof ListDataDefinitionInterface) {
+        return sprintf('property "%s" holds a complex or nested value', $name);
+      }
+    }
+
+    return NULL;
   }
 
   /**
