@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Drupal\Tests\Driver\Kernel\Core\Field;
 
 use ConsumerProject\Driver\ConsumerCore;
+use ConsumerProject\Driver\Field\DatetimeHandler as ConsumerDatetimeHandler;
 use ConsumerProject\Driver\Field\StringLongHandler as ConsumerStringLongHandler;
-use ConsumerProject\Driver\Field\TextLongHandler as ConsumerTextLongHandler;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\Group;
@@ -20,9 +20,9 @@ use PHPUnit\Framework\Attributes\Group;
  * 'Field/' directory scan contributes handlers that actually run during
  * 'entityCreate':
  *
- *  - An override: 'ConsumerProject\Driver\Field\TextLongHandler' shadows the
- *    library's 'Drupal\Driver\Core\Field\TextLongHandler' for the
- *    'text_long' field type.
+ *  - An override: 'ConsumerProject\Driver\Field\DatetimeHandler' shadows the
+ *    library's 'Drupal\Driver\Core\Field\DatetimeHandler' for the
+ *    'datetime' field type.
  *  - A new registration: 'ConsumerProject\Driver\Field\StringLongHandler'
  *    registers a handler for 'string_long', a field type the library does
  *    not cover itself.
@@ -41,8 +41,7 @@ class CustomCoreKernelTest extends FieldHandlerKernelTestBase {
    */
   protected static $modules = [
     ...self::BASE_MODULES,
-    'text',
-    'filter',
+    'datetime',
   ];
 
   /**
@@ -53,35 +52,32 @@ class CustomCoreKernelTest extends FieldHandlerKernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->installConfig(['filter']);
     $this->core = new ConsumerCore($this->root);
   }
 
   /**
-   * Tests that the consumer override replaces the library's 'text_long'.
+   * Tests that the consumer override replaces the library's 'datetime'.
    *
-   * Input differs from the handler's marker so the assertion only passes
-   * when the consumer handler actually ran - a pass-through handler would
-   * leave the raw input in storage and fail the comparison.
+   * Input differs from the handler's marker so the assertion only passes when
+   * the consumer handler actually ran - the library's date-parsing handler
+   * would store the converted input date, not the marker.
    */
   public function testConsumerCoreOverridesLibraryHandler(): void {
-    $this->attachField('field_body', 'text_long');
+    $this->attachField('field_when', 'datetime', ['datetime_type' => 'datetime']);
 
     $stub = new EntityStub(self::ENTITY_TYPE, self::BUNDLE, [
       'name' => 'test entity',
-      'field_body' => [
-        ['value' => 'raw input', 'format' => 'plain_text'],
-      ],
+      'field_when' => ['2020-01-01T00:00:00'],
     ]);
 
     $this->core->entityCreate($stub);
 
-    $field_body = $stub->getValue('field_body');
-    $this->assertSame(ConsumerTextLongHandler::MARKER, $field_body[0]['value'], 'Consumer handler did not transform the field value during expand().');
+    $field_when = $stub->getValue('field_when');
+    $this->assertSame(ConsumerDatetimeHandler::MARKER, $field_when[0]['value'], 'Consumer handler did not transform the field value during expand().');
 
     $reloaded = \Drupal::entityTypeManager()->getStorage(self::ENTITY_TYPE)->loadUnchanged($stub->getValue('id'));
     $this->assertInstanceOf(ContentEntityInterface::class, $reloaded);
-    $this->assertSame(ConsumerTextLongHandler::MARKER, $reloaded->get('field_body')->getValue()[0]['value'], 'Storage did not receive the consumer handler output.');
+    $this->assertSame(ConsumerDatetimeHandler::MARKER, $reloaded->get('field_when')->getValue()[0]['value'], 'Storage did not receive the consumer handler output.');
   }
 
   /**

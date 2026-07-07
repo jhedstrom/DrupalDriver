@@ -20,7 +20,7 @@ handler-selection sub-table below.
 
 | ID | Origin                                                          | Storage profile | Writable?              | Example field                                                                        | Resolution         | Notes                                                                                                                                                                                                                                                                                                             |
 |----|-----------------------------------------------------------------|-----------------|------------------------|--------------------------------------------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| F1 | `baseFieldDefinitions()`                                        | standard        | yes                    | `node.title`, `node.uid`, `node.status`, `commerce_product.variations`, `user.roles` | Expand via handler | Identified by `fieldIsBaseStandard()`. Iterated by `getEntityFieldTypes()`, routed through `getFieldHandler()`. Handler chosen by field type (see sub-table); `DefaultHandler` used only for H1 scalars. |
+| F1 | `baseFieldDefinitions()`                                        | standard        | yes                    | `node.title`, `node.uid`, `node.status`, `commerce_product.variations`, `user.roles` | Expand via handler | Identified by `fieldIsBaseStandard()`. Iterated by `getEntityFieldTypes()`, routed through `getFieldHandler()`. Handler chosen by field type (see sub-table); `DefaultHandler` used for plain-scalar fields (H1). |
 | F2 | `baseFieldDefinitions()`                                        | computed        | read-only              | TBD (pure derived accessors; examples sought)                                        | Skip entirely      | Identified by `fieldIsBaseComputedReadOnly()`. Rejected by `getEntityFieldTypes()`. Stub property, if set, flows untouched to the entity constructor; Drupal discards it on save because the field has no storage. |
 | F3 | `baseFieldDefinitions()`                                        | computed        | writable (side-effect) | `node.moderation_state`                                                              | Skip entirely      | Identified by `fieldIsBaseComputedWritable()`. Rejected by `getEntityFieldTypes()`. Stub property flows untouched into `Node::create((array) $stub)`; the field class's item-list captures the raw value and performs its side-effect at save (e.g. `moderation_state` writes a `ContentModerationState` revision). |
 | F4 | `baseFieldDefinitions()`                                        | custom storage  | yes                    | TBD (examples sought)                                                                | Skip entirely      | Identified by `fieldIsBaseCustomStorage()`. Rejected by `getEntityFieldTypes()`. Stub property flows untouched to the entity constructor; the declaring module's custom storage layer owns whatever happens next. |
@@ -37,8 +37,8 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 
 | ID  | Field-type shape                   | Representative types                                                                                               | Handler                                                                                                | Rationale                                                                                                                  |
 |-----|------------------------------------|--------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| H1  | Single-column scalar               | `string`, `integer`, `boolean`, `float`, `decimal`, `email`, `telephone`, `uri`, `timestamp`, `created`, `changed` | `DefaultHandler`                                                                                       | `(array) $value` produces the correct `['value' => ...]` shape for all single-column scalars.                              |
-| H2  | Multi-column compound              | `text`, `text_long`, `text_with_summary`, `link`, `address`, `daterange`                                           | Typed handler required (`TextHandler`, `TextLongHandler`, `TextWithSummaryHandler`, `LinkHandler`, `AddressHandler`, `DaterangeHandler`) | `DefaultHandler` must throw if it is invoked on a field type outside H1. See "DefaultHandler loud-failure policy" below.   |
+| H1  | Plain-scalar columns (single or multi) | `string`, `integer`, `boolean`, `float`, `decimal`, `email`, `telephone`, `uri`, `timestamp`, `created`, `changed`, `text`, `text_long`, `text_with_summary`, `color_field_type` | `DefaultHandler` | Every stored column is a plain scalar the caller authors verbatim, so the normalised records relay to storage unchanged. No dedicated handler needed - a future contrib field of the same shape is absorbed automatically. |
+| H2  | Multi-column compound              | `link`, `address`, `daterange`                                           | Typed handler required (`LinkHandler`, `AddressHandler`, `DaterangeHandler`) | A dedicated handler marshals the compound value. `DefaultHandler` proactively rejects the structurally-translating shapes here (`link`'s `map` column, `daterange`'s `datetime_iso8601` columns). See "DefaultHandler classification policy" below. |
 | H3  | Simple datetime                    | `datetime`                                                                                                         | `DatetimeHandler`                                                                                      | Parses human date strings to ISO 8601 storage shape.                                                                       |
 | H4  | Entity reference (single target)   | `entity_reference`, `file`, `image`                                                                                | `EntityReferenceHandler`, `FileHandler`, `ImageHandler`                                                | Resolve human-readable label/path/filename to `target_id`. `FileHandler`/`ImageHandler` first try to reuse an existing managed file at the given URI or bare basename (searching `public://` and `private://`) before falling back to uploading a new file under `public://<uniqid>.<ext>`. |
 | H5  | Entity reference with revision     | `entity_reference_revisions` (paragraphs)                                                                          | `EntityReferenceRevisionsHandler`                                                                      | Composite `target_id` + `target_revision_id`. Resolves target and auto-populates the current revision id.                  |
@@ -48,8 +48,7 @@ field-type string returned by `FieldDefinitionInterface::getType()`.
 | H9  | Organic Groups reference (contrib) | `og_standard_reference`                                                                                            | `OgStandardReferenceHandler`                                                                           | OG-specific lookup.                                                                                                        |
 | H10 | Embedded asset reference (contrib) | `embridge_asset_item`                                                                                              | `EmbridgeAssetItemHandler`                                                                             | Embridge-specific shape.                                                                                                   |
 | H11 | Smart date range (contrib)         | `smartdate`                                                                                                        | `SmartdateHandler`                                                                                     | Six-column timestamp range with auto-derived duration; accepts numeric Unix timestamps or `strtotime()` strings.            |
-| H12 | Color with opacity (contrib)       | `color_field_type`                                                                                                 | `ColorFieldTypeHandler`                                                                                | Two columns (`color` hex + optional `opacity` float); `preSave()` owns hex formatting, so the handler relays records unchanged. |
-| H13 | Recurring date (contrib)           | `date_recur`                                                                                                       | `DateRecurHandler`                                                                                     | Five columns (`value`/`end_value`/`rrule`/`timezone`/`infinite`); dates stored verbatim in the record's own timezone and `preSave()` derives `infinite`, so the handler relays records unchanged. |
+| H12 | Recurring date (contrib)           | `date_recur`                                                                                                       | `DateRecurHandler`                                                                                     | `value`/`end_value` are `datetime_iso8601` (inherited from `daterange`) but stored verbatim in the record's own timezone rather than converted, so the handler relays records unchanged. The datetime typing is what makes the default reject it, so this verbatim pass-through must be declared by a handler. |
 
 ## Cardinality
 
@@ -57,40 +56,55 @@ Independent of resolution. Handlers must accept either a scalar or an array.
 Internally, they normalize a scalar to `[$scalar]` before returning the storage
 shape. No category in the primary table changes behavior based on cardinality.
 
-## DefaultHandler loud-failure policy
+## DefaultHandler classification policy
 
 `DefaultHandler` is the fallback when no typed handler matches a field's type
-string. It runs `(array) $value`, which is only correct for H1 (single-column
-scalars). For H2-H10 it would silently produce a malformed storage shape that
-the entity layer then persists as broken data (entity reference by string
-instead of id, datetime stored as raw user input, address fields left null,
-etc.).
+string. It inspects the field's stored (non-computed) property definitions and
+relays the normalised records verbatim **only when every stored property is a
+plain scalar the caller authors as-is** - the shape of `string`, `text`,
+`color_field_type`, and any future contrib field whose columns hold literal
+values. Such fields need no dedicated handler.
 
-**`DefaultHandler` loudly fails when invoked on a field type outside H1.**
+A stored property that needs a translation the default cannot perform makes the
+field ineligible, and `DefaultHandler::expand()` throws a clearly-worded
+exception naming the field, its type, entity type, bundle, and the offending
+property. Three shapes are rejected:
 
-Detection criterion: the field's storage definition has exactly one column (the
-canonical `value` column). If the field has multiple columns or its single
-column is not named `value`, `DefaultHandler::expand()` throws a clearly-worded
-exception identifying the field name, entity type, bundle, and field-type
-string, and stating that a dedicated handler must be implemented for this
-field type. The error is a direct call to action: implement the handler (or
-register one), then re-run.
+- **Entity-reference target** (a `DataReferenceTargetDefinition`, e.g.
+  `target_id`): the caller supplies a label, path, or name that must be
+  resolved to an id the author cannot know.
+- **Datetime/duration string** (`datetime_iso8601`, `duration_iso8601`): the
+  stored ISO 8601 form differs from the friendlier, timezone-relative input a
+  caller writes.
+- **Complex or nested value** (a `ComplexDataDefinitionInterface` such as a
+  `map`, or a `ListDataDefinitionInterface`): there is no single scalar shape
+  to relay.
 
-In typical scenarios (node title, boolean status, integer counters, etc.)
-nothing changes - `DefaultHandler` works as today. In edge cases where a user
-stubs a compound field that has no registered handler, they get an immediate,
-actionable error instead of silently corrupted data downstream.
+Detection is **proactive, not try/catch**. These translations fail silently - a
+label persisted as a bogus id, a date shifted by the timezone offset - so the
+field is rejected before expansion rather than after a corrupt save. The error
+is a direct call to action: register a dedicated handler, then re-run.
+
+The one class the property types cannot reveal is value-aliasing: `boolean`
+("yes" -> 1), `list_*` (label -> key), and component fields like `name` store
+plain scalars yet ship a handler for author-friendliness. The default relays
+those verbatim, so they keep their registered handlers; the classifier neither
+detects nor removes that need.
+
+The classification lives in `DefaultHandler::unsupportedPropertyReason()`, a
+static method the coverage safety net below reuses so the driver and the test
+share one definition of "default-safe".
 
 ## Handler-coverage safety net
 
 `FieldTypeCoverageKernelTest` enumerates every field-type plugin the loaded
 Drupal install exposes and asserts that each one is either (a) backed by a
-registered handler, (b) schema-compatible with `DefaultHandler` (single
-`value` column), or (c) listed in the test's `SKIP` map with a documented
-reason (computed, write-only, composite-lifecycle, etc.). Adding a new core
-field type without a handler or a SKIP entry fails that test, preventing
-the type from silently falling through to `DefaultHandler` and blowing up
-the first time a scenario references it.
+registered handler, (b) default-safe per
+`DefaultHandler::unsupportedPropertyReason()` (every stored property is a plain
+scalar), or (c) listed in the test's `SKIP` map with a documented reason
+(computed, write-only, composite-lifecycle, etc.). Adding a new core field type
+that needs translation without a handler or a SKIP entry fails that test,
+preventing the type from silently falling through to `DefaultHandler`.
 
 ## What each resolution actually means in code
 

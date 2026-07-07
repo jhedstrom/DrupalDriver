@@ -6,6 +6,9 @@ namespace Drupal\Tests\Driver\Unit\Core\Field;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\TypedData\DataDefinition;
+use Drupal\Core\TypedData\DataReferenceTargetDefinition;
+use Drupal\Core\TypedData\MapDataDefinition;
 use Drupal\Driver\Core\Field\AbstractHandler;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldHandlerInterface;
@@ -23,7 +26,7 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
    * {@inheritdoc}
    */
   protected function createHandler(): FieldHandlerInterface {
-    return $this->handlerWithColumns(['value' => []]);
+    return $this->handlerWithProperties(['value' => DataDefinition::create('string')]);
   }
 
   /**
@@ -70,39 +73,86 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
   }
 
   /**
-   * Tests that a multi-column field triggers the loud-failure policy.
+   * Tests that a multi-column field of plain scalars relays records verbatim.
    */
-  public function testExpandThrowsForMultipleColumns(): void {
-    $handler = $this->handlerWithColumns(['value' => [], 'format' => []]);
+  public function testExpandPassesMultiColumnScalars(): void {
+    $handler = $this->handlerWithProperties([
+      'color' => DataDefinition::create('string'),
+      'opacity' => DataDefinition::create('float'),
+    ], 'color');
+
+    $records = [['color' => '#1A2B3C', 'opacity' => 0.5]];
+
+    $this->assertSame($records, $handler->expand($records));
+  }
+
+  /**
+   * Tests that a computed reference property does not block the pass-through.
+   */
+  public function testExpandIgnoresComputedProperties(): void {
+    $handler = $this->handlerWithProperties([
+      'value' => DataDefinition::create('string'),
+      'entity' => DataReferenceTargetDefinition::create('integer')->setComputed(TRUE),
+    ]);
+
+    $this->assertSame([['value' => 'hello']], $handler->expand('hello'));
+  }
+
+  /**
+   * Tests that an entity-reference target triggers the loud-failure policy.
+   */
+  public function testExpandThrowsForEntityReferenceTarget(): void {
+    $handler = $this->handlerWithProperties([
+      'target_id' => DataReferenceTargetDefinition::create('integer'),
+    ], 'target_id');
 
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage('No dedicated handler is registered');
-    $this->expectExceptionMessage('2 column(s) (value, format)');
+    $this->expectExceptionMessage('property "target_id" is an entity-reference target');
 
-    $handler->expand([['value' => 'hello']]);
+    $handler->expand([['target_id' => 42]]);
   }
 
   /**
-   * Tests that a single-column field not keyed by 'value' triggers failure.
+   * Tests that a datetime property triggers the loud-failure policy.
    */
-  public function testExpandThrowsForSingleColumnNotNamedValue(): void {
-    $handler = $this->handlerWithColumns(['target_id' => []]);
+  public function testExpandThrowsForDatetimeProperty(): void {
+    $handler = $this->handlerWithProperties([
+      'value' => DataDefinition::create('datetime_iso8601'),
+    ]);
 
     $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage('target_id');
+    $this->expectExceptionMessage('property "value" is a "datetime_iso8601" value');
 
-    $handler->expand([['value' => 42]]);
+    $handler->expand('2025-01-01');
   }
 
   /**
-   * Builds a DefaultHandler wired to a mocked field storage/config pair.
-   *
-   * @param array<string, array<string, mixed>> $columns
-   *   Column descriptors keyed by column name.
+   * Tests that a complex property triggers the loud-failure policy.
    */
-  protected function handlerWithColumns(array $columns): DefaultHandler {
+  public function testExpandThrowsForComplexProperty(): void {
+    $handler = $this->handlerWithProperties([
+      'value' => DataDefinition::create('string'),
+      'options' => MapDataDefinition::create(),
+    ]);
+
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage('property "options" holds a complex or nested value');
+
+    $handler->expand('hello');
+  }
+
+  /**
+   * Builds a DefaultHandler wired to a mocked storage/config pair.
+   *
+   * @param array<string, \Drupal\Core\TypedData\DataDefinitionInterface> $properties
+   *   Property definitions keyed by property name.
+   * @param string $main_property
+   *   The field's main property name.
+   */
+  protected function handlerWithProperties(array $properties, string $main_property = 'value'): DefaultHandler {
     $storage = $this->createMock(FieldStorageDefinitionInterface::class);
-    $storage->method('getColumns')->willReturn($columns);
+    $storage->method('getPropertyDefinitions')->willReturn($properties);
     $storage->method('getName')->willReturn('field_example');
     $storage->method('getType')->willReturn('example_type');
     $storage->method('getTargetEntityTypeId')->willReturn('node');
@@ -119,8 +169,8 @@ class DefaultHandlerTest extends FieldHandlerUnitTestBase {
     $config_prop = $reflection->getParentClass()->getProperty('fieldConfig');
     $config_prop->setValue($handler, $config);
 
-    $main_property = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
-    $main_property->setValue($handler, 'value');
+    $main_prop = new \ReflectionProperty(AbstractHandler::class, 'mainProperty');
+    $main_prop->setValue($handler, $main_property);
 
     return $handler;
   }
