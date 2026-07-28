@@ -101,21 +101,9 @@ class DrushDriverTest extends TestCase {
 }
 
 /**
- * Testable subclass that stubs the 'drush()' method.
+ * Testable subclass that exposes protected helpers.
  */
 class TestDrushDriver extends DrushDriver {
-
-  /**
-   * The output to return from 'drush()'.
-   */
-  public string $drushOutput = '';
-
-  /**
-   * {@inheritdoc}
-   */
-  public function drush($command, array $arguments = [], array $options = []): string {
-    return $this->drushOutput;
-  }
 
   /**
    * Exposes 'parseUserId()' for testing.
