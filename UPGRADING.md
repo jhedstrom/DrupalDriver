@@ -131,6 +131,29 @@ the missing behaviour themselves. Test the capability with
 `instanceof ContentCapabilityInterface` (or the relevant capability interface)
 before calling.
 
+### DrushDriver no longer detects legacy Drush
+
+`DrushDriver` used to probe `drush version` during `bootstrap()` and cache the
+answer in a `protected static bool $isLegacyDrush` to pick between Drush 8 and
+Drush 9+ behaviour. Drupal `^10 || ^11` requires Drush 11 or newer, so the
+Drush 8 branches were unreachable. Both the probe and the flag are gone:
+
+- `DrushDriver::isLegacyDrush()` (protected) - removed.
+- `DrushDriver::$isLegacyDrush` (protected static) - removed.
+
+The behaviour they gated is now unconditional:
+
+- `drushResult()` always passes `--no-ansi`. The Drush 8 `--nocolor` spelling
+  is never emitted.
+- `cacheClear()` always takes the `cache:rebuild` path. A `'drush'` type still
+  short-circuits to `cache-clear drush`.
+- `bootstrap()` no longer shells out to Drush; it only flips the bootstrapped
+  flag.
+
+Subclasses that overrode `isLegacyDrush()` or read `static::$isLegacyDrush`
+must drop those overrides. Sites that still run Drush 8 are on Drupal 9 or
+earlier and belong on the 2.x line.
+
 ### CoreInterface expanded
 
 `Drupal\Driver\Core\CoreInterface` now extends every capability interface in
