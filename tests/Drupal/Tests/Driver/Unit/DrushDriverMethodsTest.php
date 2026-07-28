@@ -9,7 +9,6 @@ use Drupal\Driver\DrushDriver;
 use Drupal\Driver\Entity\EntityStub;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -27,25 +26,10 @@ use PHPUnit\Framework\TestCase;
 class DrushDriverMethodsTest extends TestCase {
 
   /**
-   * Sets 'DrushDriver::$isLegacyDrush' directly, bypassing bootstrap caching.
-   */
-  protected function forceLegacyDrush(bool $legacy): void {
-    $reflection = new \ReflectionClass(DrushDriver::class);
-    $prop = $reflection->getProperty('isLegacyDrush');
-    $prop->setValue(NULL, $legacy);
-  }
-
-  /**
    * Tests that 'bootstrap()' flips the bootstrapped flag.
-   *
-   * Runs in its own process so the static 'isLegacyDrush' cache starts
-   * uninitialised; without isolation the bootstrap's caching guard skips
-   * the version-detection assignment.
    */
-  #[RunInSeparateProcess]
   public function testBootstrapMarksAsBootstrapped(): void {
     $driver = $this->createDriver();
-    $driver->drushResponse = "12.5.2.0\n";
 
     $this->assertFalse($driver->isBootstrapped());
     $driver->bootstrap();
@@ -82,30 +66,16 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
-   * Tests 'cacheClear()' on a modern Drush (cache:rebuild path).
+   * Tests 'cacheClear()' rebuilds the cache.
    */
-  public function testCacheClearOnModernDrushRebuilds(): void {
+  public function testCacheClearRebuilds(): void {
     $driver = $this->createDriver();
-    $this->forceLegacyDrush(FALSE);
 
     $driver->cacheClear();
 
     $this->assertNotEmpty($driver->invocations);
     $commands = array_column($driver->invocations, 'command');
     $this->assertContains('cache:rebuild', $commands);
-  }
-
-  /**
-   * Tests 'cacheClear()' on a legacy Drush (cache-clear path).
-   */
-  public function testCacheClearOnLegacyDrushUsesCacheClear(): void {
-    $driver = $this->createDriver();
-    $this->forceLegacyDrush(TRUE);
-
-    $driver->cacheClear('all');
-
-    $this->assertSame('cache-clear', $driver->invocations[0]['command']);
-    $this->assertSame(['all'], $driver->invocations[0]['arguments']);
   }
 
   /**
@@ -154,27 +124,16 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
-   * Tests 'cacheClear()' on legacy Drush with a drush-only bin.
+   * Tests 'cacheClear()' with a drush-only bin skips the rebuild.
    */
-  public function testCacheClearDrushOnlyOnModernDrushSkipsRebuild(): void {
+  public function testCacheClearDrushOnlySkipsRebuild(): void {
     $driver = $this->createDriver();
-    $this->forceLegacyDrush(FALSE);
 
     $driver->cacheClear('drush');
 
     $this->assertCount(1, $driver->invocations);
     $this->assertSame('cache-clear', $driver->invocations[0]['command']);
     $this->assertSame(['drush'], $driver->invocations[0]['arguments']);
-  }
-
-  /**
-   * Tests 'isLegacyDrush()' treats 'version' failure as legacy.
-   */
-  public function testIsLegacyDrushTreatsExceptionAsLegacy(): void {
-    $driver = $this->createDriver();
-    $driver->drushThrows = TRUE;
-
-    $this->assertTrue($driver->callIsLegacyDrushWithThrowing());
   }
 
   /**
@@ -219,20 +178,19 @@ class DrushDriverMethodsTest extends TestCase {
   }
 
   /**
-   * Tests that 'drush()' emits the legacy '--nocolor' flag when set.
+   * Tests that 'drush()' always emits the '--no-ansi' flag.
    */
-  public function testDrushEmitsLegacyFlagWhenMarkedLegacy(): void {
+  public function testDrushAlwaysEmitsNoAnsiFlag(): void {
     $echo = $this->resolveSystemBinary('echo');
     if ($echo === NULL) {
       $this->markTestSkipped('echo binary is not available on this system.');
     }
 
-    $this->forceLegacyDrush(TRUE);
     $driver = new DrushDriver('alias', binary: $echo);
 
     $result = $driver->drush('version');
 
-    $this->assertStringContainsString('--nocolor=1', $result);
+    $this->assertStringContainsString('--no-ansi', $result);
   }
 
   /**
@@ -415,11 +373,6 @@ class RecordingDrushDriver extends DrushDriver {
   public string $drushResponse = '';
 
   /**
-   * When TRUE, 'drush()' throws a RuntimeException.
-   */
-  public bool $drushThrows = FALSE;
-
-  /**
    * {@inheritdoc}
    */
   public function drush(string $command, array $arguments = [], array $options = []): string {
@@ -429,18 +382,7 @@ class RecordingDrushDriver extends DrushDriver {
       'options' => $options,
     ];
 
-    if ($this->drushThrows) {
-      throw new \RuntimeException('drush stubbed failure');
-    }
-
     return $this->drushResponse;
-  }
-
-  /**
-   * Exposes 'isLegacyDrush()' for testing the exception-path coverage.
-   */
-  public function callIsLegacyDrushWithThrowing(): bool {
-    return $this->isLegacyDrush();
   }
 
 }

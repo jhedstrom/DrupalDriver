@@ -53,11 +53,6 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
   protected string $arguments = '';
 
   /**
-   * Tracks legacy drush.
-   */
-  protected static bool $isLegacyDrush;
-
-  /**
    * Set drush alias or root path.
    *
    * @param string $alias
@@ -119,10 +114,6 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
    * {@inheritdoc}
    */
   public function bootstrap(): void {
-    if (!isset(self::$isLegacyDrush)) {
-      self::$isLegacyDrush = $this->isLegacyDrush();
-    }
-
     $this->bootstrapped = TRUE;
   }
 
@@ -145,11 +136,6 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
    * {@inheritdoc}
    */
   public function cacheClear(?string $type = 'all'): void {
-    if (self::$isLegacyDrush) {
-      $this->drush('cache-clear', [$type], []);
-      return;
-    }
-
     // Drush-only cache clear does not need a full rebuild.
     if ($type === 'drush') {
       $this->drush('cache-clear', ['drush'], []);
@@ -356,12 +342,7 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
   public function drushResult(string $command, array $arguments = [], array $options = []): DrushResult {
     $argument_string = implode(' ', $arguments);
 
-    if (isset(static::$isLegacyDrush) && static::$isLegacyDrush) {
-      $options['nocolor'] = TRUE;
-    }
-    else {
-      $options['no-ansi'] = NULL;
-    }
+    $options['no-ansi'] = NULL;
 
     $option_string = static::parseArguments($options);
     $alias = isset($this->alias) ? '@' . $this->alias : '--root=' . $this->root;
@@ -461,29 +442,6 @@ class DrushDriver implements DrushDriverInterface, CreationAliasCapabilityInterf
     }
 
     return $fallback;
-  }
-
-  /**
-   * Determine if drush is a legacy version.
-   *
-   * @return bool
-   *   Returns TRUE if drush is older than drush 9.
-   */
-  protected function isLegacyDrush(): bool {
-    try {
-      // Try for a drush 9 version.
-      $output = trim($this->drush('version', [], ['format' => 'string']));
-      // On PHP 8.4, deprecation warnings from Drush dependencies may be
-      // written to stdout before the version string. Extract the actual
-      // version number from the output to avoid misdetection.
-      $version = preg_match('/(\d+\.\d+\.\d+(\.\d+)?)\s*$/', $output, $matches) ? $matches[1] : $output;
-      return version_compare($version, '9', '<=');
-    }
-    catch (\RuntimeException) {
-      // The version of drush is old enough that only `--version` was available,
-      // so this is a legacy version.
-      return TRUE;
-    }
   }
 
   /**
