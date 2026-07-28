@@ -213,12 +213,6 @@ jobs:
       - name: Checkout DrupalDriver
         uses: actions/checkout@v6
         with:
-          # Check out the branch by name (not the merge SHA) so the path
-          # repo composer adds below has a real branch to work with. The
-          # version exposed to composer is overridden in the 'Add path
-          # repository' step to match DrupalExtension's constraint, so it
-          # resolves regardless of the actual branch name.
-          ref: ${{ github.head_ref || github.ref_name }}
           path: drupaldriver
 
       - name: Checkout DrupalExtension
