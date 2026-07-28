@@ -30,7 +30,7 @@ abstract class AbstractHandler implements FieldHandlerInterface {
    * 'name'); those handlers must override 'normalise()' to interpret
    * records themselves.
    */
-  protected ?string $mainProperty = NULL;
+  protected ?string $mainProperty;
 
   /**
    * Constructs an AbstractHandler object.
