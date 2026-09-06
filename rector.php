@@ -11,14 +11,15 @@
 declare(strict_types=1);
 
 use DrupalFinder\DrupalFinderComposerRuntime;
-use DrupalRector\Set\Drupal10SetList;
+use DrupalRector\Rector\Deprecation\FunctionToStaticRector;
+use DrupalRector\Rector\PHPUnit\PhpUnitAddRunTestsInSeparateProcessesAttributeRector;
+use DrupalRector\Set\Drupal11SetList;
 use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\ClassMethod\InlineArrayReturnAssignRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
 use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
 use Rector\CodingStyle\Rector\ClassLike\NewlineBetweenClassLikeStmtsRector;
 use Rector\CodingStyle\Rector\ClassMethod\NewlineBeforeNewAssignSetRector;
-use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
 use Rector\CodingStyle\Rector\Stmt\NewlineAfterStatementRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\If_\RemoveAlwaysTrueIfConditionRector;
@@ -60,7 +61,7 @@ return RectorConfig::configure()
         earlyReturn: TRUE,
     )
     ->withSets([
-        Drupal10SetList::DRUPAL_10,
+        Drupal11SetList::DRUPAL_11,
     ])
     ->withRules([
         DeclareStrictTypesRector::class,
@@ -77,7 +78,6 @@ return RectorConfig::configure()
         // promoted parameter and trips PHPCS multi-line declaration sniffs.
         ClassPropertyAssignToConstructorPromotionRector::class,
         CompleteDynamicPropertiesRector::class,
-        CountArrayToEmptyArrayComparisonRector::class,
         DisallowedEmptyRuleFixerRector::class,
         InlineArrayReturnAssignRector::class,
         NewlineAfterStatementRector::class,
@@ -90,6 +90,12 @@ return RectorConfig::configure()
         RenameVariableToMatchMethodCallReturnTypeRector::class,
         RenameVariableToMatchNewTypeRector::class,
         SimplifyEmptyCheckOnEmptyArrayRector::class,
+        // Wraps a call that is already guarded by 'class_exists()' in a second
+        // version check, so the version is tested twice for one call.
+        FunctionToStaticRector::class,
+        // Isolating every kernel test in its own process multiplies the suite
+        // runtime; the tests share no mutable global state.
+        PhpUnitAddRunTestsInSeparateProcessesAttributeRector::class,
         // Breaks 'drupal_static()' caching in 'Core::getAllPermissions()':
         // assigning into the static reference is required for subsequent
         // calls to hit the cache, so the intermediate variable is not dead

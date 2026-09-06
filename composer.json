@@ -46,7 +46,7 @@
         "ergebnis/composer-normalize": "^2.50",
         "mglaman/phpstan-drupal": "^2.0",
         "mikey179/vfsstream": "^1.6.11",
-        "palantirnet/drupal-rector": "^0.21.1",
+        "palantirnet/drupal-rector": "^1.1.3",
         "php-parallel-lint/php-parallel-lint": "^1.0",
         "phpspec/prophecy-phpunit": "^2",
         "phpstan/extension-installer": "^1.4",
