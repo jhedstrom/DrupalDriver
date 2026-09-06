@@ -17,11 +17,15 @@ A collection of lightweight drivers with a common interface for
 interacting with [Drupal](https://www.drupal.org). These are generally
 intended for testing and are not meant to be API-complete.
 
-> **Note:** v3 supports Drupal 10 and 11 on PHP 8.2+. Sites that
-> need Drupal 7 or PHP 8.1 should pin to the
-> [`2.x` branch](https://github.com/jhedstrom/DrupalDriver/tree/2.x).
-> See [UPGRADING.md](UPGRADING.md) for the v2 to v3 migration
-> guide.
+## Supported versions
+
+| Version | Drupal | PHP | Support |
+| --- | --- | --- | --- |
+| 4.x | 11 | 8.3, 8.4 | Active development |
+| 3.x | 10, 11 | 8.2, 8.3, 8.4 | Security fixes only until 1 July 2027. 3.4 is the final release. |
+| 2.x | 8, 9, 10, 11 | 7.4+ | Unsupported |
+
+See [UPGRADING.md](UPGRADING.md) for migration guides.
 
 ## Drivers
 

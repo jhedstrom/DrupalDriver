@@ -1,5 +1,17 @@
 # Upgrading
 
+## From v3 to v4
+
+### Platform requirements
+
+- PHP `^8.3` (was `^8.2`).
+- Drupal `^11` (was `^10 || ^11`). `DrupalDriver::detectMajorVersion()` throws a
+  `BootstrapException` when it detects Drupal < 11, and
+  `DrupalDriver::setCoreFromVersion()` stops walking the `Drupal\Driver\Core{N}\Core`
+  lookup chain at `Core11`.
+- Sites on Drupal 10 or PHP 8.2 should pin to `^3.4`, which receives security
+  fixes only. See the support table in [README.md](README.md).
+
 ## From v2 to v3
 
 v3 reworks the driver contract into a set of composable capability interfaces,
@@ -16,8 +28,8 @@ updating.
   detects Drupal < 10.
 - Symfony `^6.4 || ^7` for `dependency-injection`, `process`, and
   `phpunit-bridge`.
-- Sites that need to stay on PHP 8.1 or Drupal 9 should pin to the 2.x line,
-  now maintained on the `2.x` branch. `master` is the active 3.x branch.
+- Sites that need to stay on PHP 8.1 or Drupal 9 have no supported option: the
+  2.x line is unsupported.
 
 ### Namespace and source layout changes
 
