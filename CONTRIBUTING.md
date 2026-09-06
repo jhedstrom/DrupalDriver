@@ -65,7 +65,7 @@ This repository tests the drivers and field handlers:
 ## Setting up the local environment
 
 Testing is performed automatically in GitHub Actions when a PR is
-submitted. To execute tests locally, ensure you have PHP 8.2+
+submitted. To execute tests locally, ensure you have PHP 8.3+
 installed:
 
 ```shell

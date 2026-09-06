@@ -62,29 +62,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php_version: '8.2'
-            drupal_version: '10'
-            deps: 'normal'
-          - php_version: '8.2'
-            drupal_version: '10'
-            deps: 'lowest'
-          - php_version: '8.3'
-            drupal_version: '10'
-            deps: 'normal'
-          - php_version: '8.3'
-            drupal_version: '10'
-            deps: 'lowest'
           - php_version: '8.3'
             drupal_version: '11'
             deps: 'normal'
           - php_version: '8.3'
             drupal_version: '11'
-            deps: 'lowest'
-          - php_version: '8.4'
-            drupal_version: '10'
-            deps: 'normal'
-          - php_version: '8.4'
-            drupal_version: '10'
             deps: 'lowest'
           - php_version: '8.4'
             drupal_version: '11'
@@ -117,10 +99,6 @@ jobs:
       - name: Add Drupal core dependency
         run: composer require --no-interaction --dev --no-update drupal/core-recommended:^${DRUPAL_VERSION} drupal/core-composer-scaffold:^${DRUPAL_VERSION}
 
-      - name: Pin Drupal 10 tooling
-        if: ${{ matrix.drupal_version == '10' }}
-        run: composer require --no-interaction --dev --no-update mglaman/phpstan-drupal:^1.1.25 phpstan/phpstan:^1.10 phpunit/phpunit:^9.6 symfony/phpunit-bridge:^6.4
-
       - name: Install Composer dependencies
         run: |
           if [[ "${{ matrix.deps }}" == "lowest" ]]; then
@@ -131,7 +109,6 @@ jobs:
 
       - name: Migrate PHPUnit configuration
         run: vendor/bin/phpunit --migrate-configuration || true
-        if: "${{ matrix.drupal_version == '11'}}"
 
       - name: Test with coverage
         if: ${{ matrix.coverage }}

@@ -10,6 +10,7 @@ use Drupal\Core\DrupalKernel;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Driver\Capability\CreationAliasCapabilityInterface;
 use Drupal\Driver\Core\Field\DefaultHandler;
 use Drupal\Driver\Core\Field\FieldClassifier;
@@ -222,7 +223,7 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
    *
    * Subclasses override this method when they ship a version-specific
    * classifier. The default returns the base 'FieldClassifier' which covers
-   * Drupal 10 and 11.
+   * Drupal 11.
    */
   protected function createFieldClassifier(): FieldClassifierInterface {
     return new FieldClassifier($this->getEntityFieldManager());
@@ -244,7 +245,7 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
    *
    * Subclasses override this method when they ship a version-specific value
    * shape classifier. The default returns the base 'FieldShapeClassifier' which
-   * covers Drupal 10 and 11.
+   * covers Drupal 11.
    */
   protected function createFieldShapeClassifier(): FieldShapeClassifierInterface {
     return new FieldShapeClassifier();
@@ -446,12 +447,9 @@ class Core implements CoreInterface, CreationAliasCapabilityInterface {
     $request = Request::createFromGlobals();
     $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
     $kernel->boot();
-    // A route is required for route matching. In order to support Drupal 10
-    // along with 8/9, we use the hardcoded values of RouteObjectInterface
-    // constants ROUTE_NAME and ROUTE_OBJECT.
-    // @see https://www.drupal.org/node/3151009
-    $request->attributes->set('_route_object', new Route('<none>'));
-    $request->attributes->set('_route', '<none>');
+    // Route matching requires a route on the request.
+    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
+    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, '<none>');
 
     $kernel->preHandle($request);
 

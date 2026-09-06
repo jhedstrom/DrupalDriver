@@ -11,7 +11,7 @@ use Drupal\Driver\DrupalDriver;
  *
  * The parent constructor calls 'detectMajorVersion()' which in turn calls
  * 'readVersionConstant()'. Overriding the latter lets tests exercise the
- * malformed-version and sub-10 branches without mutating '\Drupal::VERSION'.
+ * malformed-version and sub-11 branches without mutating '\Drupal::VERSION'.
  */
 class FakeVersionDrupalDriver extends DrupalDriver {
 

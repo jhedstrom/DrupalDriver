@@ -40,7 +40,7 @@ class DrupalDriverConstructionKernelTest extends KernelTestBase {
 
     $version = $driver->getDrupalVersion();
 
-    $this->assertGreaterThanOrEqual(10, $version, 'Driver should detect Drupal 10 or higher.');
+    $this->assertGreaterThanOrEqual(11, $version, 'Driver should detect Drupal 11 or higher.');
   }
 
   /**

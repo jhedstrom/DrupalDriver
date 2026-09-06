@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\field\Entity\FieldStorageConfig;
 
 /**
- * Default Drupal 10/11 field classifier.
+ * Default Drupal 11 field classifier.
  *
  * See 'src/Drupal/Driver/Core/Field/README.md' for the full truth table.
  */

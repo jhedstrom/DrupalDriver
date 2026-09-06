@@ -21,8 +21,8 @@
     ],
     "homepage": "http://github.com/jhedstrom/DrupalDriver",
     "require": {
-        "php": "^8.2",
-        "drupal/core-utility": "^10 || ^11",
+        "php": "^8.3",
+        "drupal/core-utility": "^11",
         "symfony/dependency-injection": "^6.4 || ^7",
         "symfony/process": "^6.4 || ^7"
     },

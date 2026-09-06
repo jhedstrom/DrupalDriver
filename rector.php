@@ -30,6 +30,7 @@ use Rector\Naming\Rector\Foreach_\RenameForeachValueVariableToMatchExprVariableR
 use Rector\Naming\Rector\Foreach_\RenameForeachValueVariableToMatchMethodCallReturnTypeRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
+use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\YieldDataProviderRector;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
@@ -67,6 +68,9 @@ return RectorConfig::configure()
     ])
     ->withSkip([
         // Rules added by Rector's rule sets.
+        // Overridden methods already carry an '{@inheritdoc}' docblock, which
+        // the Drupal coding standard requires; the attribute repeats it.
+        AddOverrideAttributeToOverriddenMethodsRector::class,
         CatchExceptionNameMatchingTypeRector::class,
         ChangeSwitchToMatchRector::class,
         // Constructor property promotion mangles existing docblocks for the

@@ -115,7 +115,7 @@ class DrupalDriver implements DrupalDriverInterface, CreationAliasCapabilityInte
     $version = $this->getDrupalVersion();
     $candidates = [];
 
-    for ($n = $version; $n >= 10; $n--) {
+    for ($n = $version; $n >= 11; $n--) {
       $candidates[] = sprintf('Drupal\\Driver\\Core%d\\Core', $n);
     }
 
@@ -441,8 +441,8 @@ class DrupalDriver implements DrupalDriverInterface, CreationAliasCapabilityInte
       throw new BootstrapException(sprintf('Unable to extract major Drupal core version from version string %s.', $version_string));
     }
 
-    if ((int) $major < 10) {
-      throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 10 or higher is required.', $version_string));
+    if ((int) $major < 11) {
+      throw new BootstrapException(sprintf('Unsupported Drupal core version %s. Drupal 11 or higher is required.', $version_string));
     }
 
     return (int) $major;
@@ -452,7 +452,7 @@ class DrupalDriver implements DrupalDriverInterface, CreationAliasCapabilityInte
    * Reads the Drupal VERSION constant.
    *
    * Subclasses override this to return a synthetic version for testing the
-   * non-numeric and sub-10 branches of 'detectMajorVersion()'.
+   * non-numeric and sub-11 branches of 'detectMajorVersion()'.
    */
   protected function readVersionConstant(): string {
     return \Drupal::VERSION;

@@ -95,13 +95,13 @@ class DrupalDriverTest extends TestCase {
   }
 
   /**
-   * Tests that 'detectMajorVersion()' rejects pre-10 versions.
+   * Tests that 'detectMajorVersion()' rejects pre-11 versions.
    */
-  public function testDetectMajorVersionRejectsPre10(): void {
+  public function testDetectMajorVersionRejectsPre11(): void {
     $this->expectException(BootstrapException::class);
     $this->expectExceptionMessageMatches('/Unsupported Drupal core version/');
 
-    FakeVersionDrupalDriver::$nextVersion = '9.5.0';
+    FakeVersionDrupalDriver::$nextVersion = '10.4.0';
     new FakeVersionDrupalDriver(__DIR__, 'default');
   }
 
